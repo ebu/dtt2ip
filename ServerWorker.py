@@ -28,8 +28,9 @@ class ServerWorker:
 	OK_200_DESCRIBE = 4
 	OK_200_DESCRIBE_SESSION = 5
 	OK_200_SETUP = 6
-	OK_200_PLAY = 7
-	OK_200_TEARDOWN = 8
+	OK_200_SETUP_PIDS = 7
+	OK_200_PLAY = 8
+	OK_200_TEARDOWN = 9
 
 	SERVER_RUNNING = 1
 	
@@ -65,6 +66,7 @@ class ServerWorker:
 	def processRtspRequest(self, data):
 		"""Process RTSP request sent from the client."""
 		global session
+		pidsFound = 0
 		# Get the request type
 		request = data.split('\n')
 		line1 = request[0].split(' ')
@@ -75,9 +77,16 @@ class ServerWorker:
 		
 		# Get the RTSP sequence number 
 		for seq_find in request:
-			match = re.search(r'CSeq', seq_find)	
-			if match:
+			match_seq = re.search(r'CSeq', seq_find)
+			match_pids = re.search(r'pids=([\w]+)', seq_find)	
+			if match_seq:
 				seq = seq_find.split(':')
+			if match_pids:
+				pids = match_pids.group(1)
+				print 'HEllo pids', pids
+			else:
+				pids = ''
+
 
 		# Process SETUP request
 		if requestType == self.SETUP:
@@ -98,7 +107,11 @@ class ServerWorker:
 				print "SESSION", session
 				
 				# Send RTSP reply
-				self.replyRtsp(self.OK_200_SETUP, seq[1])
+				if pids == 'none' or pids == '':
+					print 'HEllo pids 2', pids
+					self.replyRtsp(self.OK_200_SETUP, seq[1])
+				else:
+					self.replyRtsp(self.OK_200_SETUP_PIDS, seq[1])
 				
 				# Get the RTP/UDP port from the last line
 				for seq_find in request:
@@ -241,6 +254,11 @@ class ServerWorker:
 			connSocket = self.clientInfo['rtspSocket']# object does not support indexing [0]
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0
+		elif code == self.OK_200_SETUP_PIDS:
+			reply = 'RTSP/1.0 200 OK\r\nSession:c8d13e72c33931f;timeout=30\r\ncom.ses.streamID:%d\r\nTransport: RTP/AVP;unicast;destination=%s;client_port=5000-5001\r\nCSeq:%s\r\n\r\n' % (self.streamID, self.clientInfo['addr_IP'], seq)
+			connSocket = self.clientInfo['rtspSocket']# object does not support indexing [0]
+			connSocket.send(reply)
+			self.SERVER_RUNNING = 1
 		elif code == self.OK_200_PLAY:
 			reply = 'RTSP/1.0 200 OK\r\nRTP-Info:url=//192.168.2.61/stream=23;seq=50230\r\nCSeq:%s\r\nSession:c8d13e72c33931f\r\n\r\n' % (seq)
 			connSocket = self.clientInfo['rtspSocket']# object does not support indexing [0]
