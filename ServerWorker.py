@@ -1,10 +1,12 @@
 #!/usr/bin/python
 
 from random import randint
-import sys, traceback, threading, socket, signal, re
+import sys, traceback, threading, socket, signal, re, commands
 
-global session 
+global session
+global state
 session = ''
+state = 0 # INI = 0
 
 class ServerWorker:
 	# Events
@@ -19,7 +21,6 @@ class ServerWorker:
 	INI = 0
 	READY = 1
 	PLAYING = 2
-	state = INI
 
 	OK_200 = 0
 	FILE_NOT_FOUND_404 = 1
@@ -66,7 +67,17 @@ class ServerWorker:
 	def processRtspRequest(self, data):
 		"""Process RTSP request sent from the client."""
 		global session
-		pidsFound = 0
+		global state
+
+		self.state = state
+
+		print "Current STATE", self.state
+		
+		#Initialize pids to ''
+		pids = ''
+		#Initialize streamId to 0
+		streamID = 0
+
 		# Get the request type
 		request = data.split('\n')
 		line1 = request[0].split(' ')
@@ -78,15 +89,18 @@ class ServerWorker:
 		# Get the RTSP sequence number 
 		for seq_find in request:
 			match_seq = re.search(r'CSeq', seq_find)
-			match_pids = re.search(r'pids=([\w]+)', seq_find)	
+			match_pids = re.search(r'pids=([\w]+)', seq_find)
+			match_client_port = re.search(r'client_port', seq_find)
+			match_stream = re.search(r'stream=([\w]+)', seq_find)
+			if match_client_port:
+				seq_find_array = seq_find.split(';')
+				self.clientInfo['rtpPort']= seq_find_array[2].split('=')[1].split('-')[0]
 			if match_seq:
 				seq = seq_find.split(':')
 			if match_pids:
 				pids = match_pids.group(1)
-				print 'HEllo pids', pids
-			else:
-				pids = ''
-
+			if match_stream:
+				streamID = match_stream.group(1)
 
 		# Process SETUP request
 		if requestType == self.SETUP:
@@ -98,29 +112,20 @@ class ServerWorker:
 					# self.clientInfo['videoStream'] = VideoStream(filename)
 					print "New State: READY\n"
 					self.state = self.READY
+					state = self.READY
 				except IOError:
 					self.replyRtsp(self.FILE_NOT_FOUND_404, seq[1])
 				
-				# Generate a randomized RTSP session ID
-				self.clientInfo['session'] = randint(100000, 999999)
+				# # Generate a randomized RTSP session ID
+				# self.clientInfo['session'] = randint(100000, 999999)
 				session = 'c8d13e72c33931f'
 				print "SESSION", session
-				
+	
 				# Send RTSP reply
 				if pids == 'none' or pids == '':
-					print 'HEllo pids 2', pids
 					self.replyRtsp(self.OK_200_SETUP, seq[1])
 				else:
 					self.replyRtsp(self.OK_200_SETUP_PIDS, seq[1])
-				
-				# Get the RTP/UDP port from the last line
-				for seq_find in request:
-					match = re.search(r'client_port', seq_find)
-					if match:
-						seq_find_array = seq_find.split(';')
-						self.clientInfo['rtpPort']= seq_find_array[2].split('=')[1].split('-')[0]
-						# print "SEQ_CLIENT_PORT", seq_find
-						# print "rtpPORT", self.clientInfo['rtpPort'] 
 
 			elif self.state == self.READY:
 				# Update parameters
@@ -128,70 +133,78 @@ class ServerWorker:
 
 				try:
 					print "State: READY\n"
-					self.state = self.READY
 				except IOError:
 					self.replyRtsp(self.FILE_NOT_FOUND_404, seq[1])
-				
-				# Generate a randomized RTSP session ID
-				self.clientInfo['session'] = randint(100000, 999999)
 				
 				# Send RTSP reply
 				self.replyRtsp(self.OK_200, seq[1])
 				
 				# Get the RTP/UDP port from the last line
-				self.clientInfo['rtpPort'] = request[2].split(' ')[3]
+				# self.clientInfo['rtpPort'] = request[2].split(' ')[3]
 			elif self.state == self.PLAYING:
 				# Update parameters
 				print "processing SETUP"
 
 				try:
 					print "State: PLAYING\n"
-					self.state = self.PLAYING
 				except IOError:
 					self.replyRtsp(self.FILE_NOT_FOUND_404, seq[1])
-				
-				# Generate a randomized RTSP session ID
-				self.clientInfo['session'] = randint(100000, 999999)
 				
 				# Send RTSP reply
 				self.replyRtsp(self.OK_200, seq[1])
 				
 				# Get the RTP/UDP port from the last line
-				self.clientInfo['rtpPort'] = request[2].split(' ')[3]
+				# self.clientInfo['rtpPort'] = request[2].split(' ')[3]
 
 		# Process PLAY request 		
 		elif requestType == self.PLAY:
 			if self.state == self.PLAYING:
 				print "processing PLAY"
-				self.state = self.PLAYING
 				print "State: PLAY\n"
-				self.replyRtsp(self.OK_200, seq[1])
+				self.replyRtsp(self.OK_200_PLAY, seq[1])
 				
 			if self.state == self.READY:
 				print "processing PLAY"
 				print "New State: PLAY\n"
 				self.state = self.PLAYING
-				
-				self.replyRtsp(self.OK_200, seq[1])
+				state = self.PLAYING
+				self.replyRtsp(self.OK_200_PLAY, seq[1])
 
-			print "processing PLAY"	
-			# self.state = self.PLAYING
-			print "State: PLAY\n"
-			self.replyRtsp(self.OK_200_PLAY, seq[1])	
+			if streamID:
+				f = open('/home/alex/Documents/dvb-t/pid.cfg', 'w')
+				f.write('192.168.2.157:5004	1	258')
+				f.close()
+				cmd = 'dvblastctl -r /tmp/dvblast.sock reload'
+				print  'about to run: ', cmd
+				(status, output) = commands.getstatusoutput(cmd)
+				if status:
+					sys.stderr.write(output)
+					sys.exit(1)
+				print output
+
 		
 		# Process TEARDOWN request
 		elif requestType == self.TEARDOWN:
 			print "processing TEARDOWN"
 			print "New State: INI\n"
 			self.state = self.INI
+			state = self.INI
 			session = ''
-
+			f = open('/home/alex/Documents/dvb-t/pid.cfg', 'w')
+			f.write('')
+			f.close()
+			cmd = 'dvblastctl -r /tmp/dvblast.sock reload'
+			print  'about to run: ', cmd
+			(status, output) = commands.getstatusoutput(cmd)
+			if status:
+				sys.stderr.write(output)
+				sys.exit(1)
+			print output
 			self.replyRtsp(self.OK_200_TEARDOWN, seq[1])
 			
 		# Process OPTIONS request 		
 		elif requestType == self.OPTIONS:
 			print "processing OPTIONS\n"
-			
 			self.replyRtsp(self.OK_200, seq[1])
 
 		# Process DESCRIBE request 		
@@ -218,7 +231,6 @@ class ServerWorker:
 
 	def replyRtsp(self, code, seq):
 		"""Send RTSP reply to the client."""
-		print "Code" , code
 		if code == self.OK_200:
 			#print "200 OK"
 			# try:
@@ -237,7 +249,7 @@ class ServerWorker:
 			print "500 CONNECTION ERROR"
 		elif code == self.OK_200_DESCRIBE_SESSION:
 			# reply = 'RTSP/1.0 404 Not Found\r\nCSeq:%s\r\n' % (seq)
-			reply = 'RTSP/1.0 200 OK\r\nContent-length:228\r\nContent-type:application/sdp\r\nContent-Base:rtsp://192.168.2.61/\r\nCSeq:%s\r\nSession:c8d13e72c33931f\r\nv=0\r\no=- 534863118 534863118 IN IP4 192.168.2.61\r\ns=SatIPServer:1 4\r\nt=0 0\r\nm=video 0 RTP/AVP 33\r\nc=IN IP4 0.0.0.0\r\na=control:stream=%d\r\na=fmtp:33 ver=1.0;scr=1;tuner=1,0,0,0,12402.00,v,dvbs,qpsk,off,0.35,27500,34\r\na=inactive\r\n\r\n' % (seq,self.streamID)
+			reply = 'RTSP/1.0 200 OK\r\nContent-length:228\r\nContent-type:application/sdp\r\nContent-Base:rtsp://192.168.2.61/\r\nSession:c8d13e72c33931f\r\nCSeq:%s\r\nv=0\r\no=- 534863118 534863118 IN IP4 192.168.2.61\r\ns=SatIPServer:1 4\r\nt=0 0\r\nm=video 0 RTP/AVP 33\r\nc=IN IP4 0.0.0.0\r\na=control:stream=%d\r\na=fmtp:33 ver=1.0;scr=1;tuner=1,0,0,0,12402.00,v,dvbs,qpsk,off,0.35,27500,34\r\na=inactive\r\n\r\n' % (seq,self.streamID)
 			# reply = 'RTSP/1.0 200 OK\r\nContent-length:0\r\nContent-type:application/sdp\r\nContent-Base:rtsp://192.168.2.61/\r\nCSeq:%s\r\n\r\n' % (seq)
 			connSocket = self.clientInfo['rtspSocket']# object does not support indexing [0]
 			connSocket.send(reply)
@@ -260,7 +272,7 @@ class ServerWorker:
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 1
 		elif code == self.OK_200_PLAY:
-			reply = 'RTSP/1.0 200 OK\r\nRTP-Info:url=//192.168.2.61/stream=23;seq=50230\r\nCSeq:%s\r\nSession:c8d13e72c33931f\r\n\r\n' % (seq)
+			reply = 'RTSP/1.0 200 OK\r\nRTP-Info:url=//192.168.2.61/stream=23;seq=50230\r\nCSeq:%s\nSession:c8d13e72c33931f\r\n\r\n' % (seq)
 			connSocket = self.clientInfo['rtspSocket']# object does not support indexing [0]
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0

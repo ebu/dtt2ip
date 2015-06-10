@@ -29,8 +29,6 @@ class Server:
 
 			clientInfo = {}
 			clientInfo['rtspSocket'], addr = rtspSocket.accept()
-			print "clientInfo", clientInfo
-			print "clientAddr", addr
 			clientInfo['addr_IP'] = addr[0]
 			clientInfo['addr_PORT'] = addr[1]
 				 
