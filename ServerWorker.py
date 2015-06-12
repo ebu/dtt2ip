@@ -1,7 +1,8 @@
 #!/usr/bin/python
 
 from random import randint
-import sys, traceback, threading, socket, signal, re, commands, os
+import sys, traceback, threading, socket, signal, re, commands, os, time
+from subprocess import Popen
 
 global session
 global state
@@ -12,7 +13,7 @@ global streamID
 
 clientsDict = {}
 tunerDict = {'0':[]}
-chList = {'10719':['474000000','8','qam_auto', '513', '515', '516', '517', '518', '519'], 
+chList = {'10803':['578000000','8','qam_16', '513', '515', '516', '517', '518', '519'], 
 		  '10949':['498000000', '8', 'qam_auto', '1537', '1538', '1539', '1542', '1543'],
 		  '10971':['578000000','8','qam_16', '1', '257', '258', '513']}
 session = ''
@@ -152,7 +153,15 @@ class ServerWorker:
 						streamID = 1
 						for tuner in tunerDict:
 							if tunerDict[tuner] == []:
-								cmd = 'sudo dvblast -a ' + tuner + ' -c pid.cfg -f ' + chList[str(freq)][0] + ' -m ' + chList[str(freq)][2] + ' -b ' + chList[str(freq)][1] + ' -C -u -r /tmp/dvblast.sock &'
+								f = open('/home/alex/Documents/dvb-t/pid.cfg', 'w')
+								f.write('192.168.2.228:5004	1	258')
+								f.close()
+								cmd = 'sudo dvblast -a ' + tuner + ' -c pid.cfg -f ' + chList[str(freq)][0] + ' -m ' + chList[str(freq)][2] + ' -b ' + chList[str(freq)][1] + ' -C -u -r /tmp/dvblast.sock -q &'
+								# print 'about to run: ', cmd
+								# cmd1 = 'sh ../dvb-t/run_dvblast.sh'
+								# # p = Popen([cmd], shell = False)
+								# os.popen(cmd)
+
 								t_dvblast = threading.Thread( target = self.run_dvblast, args=(cmd,  ) )
 								t_dvblast.daemon = True
 								t_dvblast.start()
@@ -186,6 +195,9 @@ class ServerWorker:
 									os.system(cmd)
 
 									cmd = 'sudo dvblast -a ' + tuner + ' -c pid.cfg -f ' + chList[str(freq)][0] + ' -m ' + chList[str(freq)][2] + ' -b ' + chList[str(freq)][1] + ' -C -u -r /tmp/dvblast.sock &'
+									# print 'about to run: ', cmd
+									# os.popen(cmd)
+									p = Popen([cmd], shell = False) 
 									t_dvblast = threading.Thread( target = self.run_dvblast, args=(cmd,  ) )
 									t_dvblast.daemon = True
 									t_dvblast.start()
@@ -247,6 +259,7 @@ class ServerWorker:
 				f = open('/home/alex/Documents/dvb-t/pid.cfg', 'w')
 				f.write('192.168.2.228:5004	1	258')
 				f.close()
+				time.sleep(2)
 				cmd = 'dvblastctl -r /tmp/dvblast.sock reload'
 				print  'about to run: ', cmd
 				os.system(cmd)
