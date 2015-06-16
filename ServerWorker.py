@@ -13,21 +13,29 @@ global streamID
 
 clientsDict = {}
 tunerDict = {'0':[]}
-chList = {'10803':['473000000','8','qam_auto', '513'],
-		  '10830':['473000000','8','qam_auto', '515'],
-		  '10854':['473000000','8','qam_auto', '516'], 
-		  '10719':['473000000','8','qam_auto', '517'], 
-		  '10949':['473000000','8','qam_auto', '518'], 
-		  '10971':['473000000','8','qam_auto', '519'], 
-		  '11471':['498000000', '8', 'qam_auto', '1537'],
-		  '11541':['498000000', '8', 'qam_auto', '1538'],
-		  '11566':['498000000', '8', 'qam_auto', '1539'],
-		  '11604':['498000000', '8', 'qam_auto', '1542'],
-		  '11727':['498000000', '8', 'qam_auto', '1543'],
-		  '11785':['578000000','8','qam_16', '1'],
-		  '11823':['578000000','8','qam_16', '257'],
-		  '11843':['578000000','8','qam_16', '258'],
-		  '11862':['578000000','8','qam_16', '513']}
+chList = {
+		  '10721':['666000000','8','qam_auto', '257'],
+		  '10733':['666000000','8','qam_auto', '260'],
+		  '10770':['666000000','8','qam_auto', '261'], 
+		  '10804':['666000000','8','qam_auto', '262'], 
+		  '10880':['666000000','8','qam_auto', '282'], 
+		  '10962':['666000000','8','qam_auto', '324']
+		  # '11471':['498000000', '8', 'qam_auto', '1537'],
+		  # '11541':['498000000', '8', 'qam_auto', '1538'],
+		  # '11566':['498000000', '8', 'qam_auto', '1539'],
+		  # '11604':['498000000', '8', 'qam_auto', '1542'],
+		  # '11727':['498000000', '8', 'qam_auto', '1543'],
+		  # '10803':['578000000','8','qam_16', '1'],
+		  # '10854':['578000000','8','qam_16', '257'],
+		  # '10719':['578000000','8','qam_16', '258'],
+		  # '10723':['578000000','8','qam_16', '513'],   # 11785 11823 11843 10854 10949
+  		#   '10949':['474000000','8','qam_auto', '513'],
+		  # '11471':['474000000','8','qam_auto', '515'],
+		  # '11566':['474000000','8','qam_auto', '516'], 
+		  # '11727':['474000000','8','qam_auto', '517'], 
+		  # '11823':['474000000','8','qam_auto', '518'], 
+		  # '11862':['474000000','8','qam_auto', '519']
+		  }
 session = ''
 state = 0 # INI = 0
 streamID = 0
@@ -165,8 +173,9 @@ class ServerWorker:
 				else:
 					if freq in chList:
 						streamID = (streamID + 1) % 256
+						print 'ALEX' , '/home/alex/Documents/dvb-t/pid' + chList[freq][0] + '.cfg'
 						f = open('/home/alex/Documents/dvb-t/pid' + chList[freq][0] + '.cfg', 'a')
-						f.write(self.clientInfo['addr_IP'] + '\t1\t' + chList[freq][3])
+						f.write(self.clientInfo['addr_IP'] + ':' + clientsDict[self.clientInfo['addr_IP']][0] + '\t1\t' + chList[freq][3])
 						# lines = f.readlines()
 						# lineToCompare = self.clientInfo['addr_IP'] + '\t1'
 						# for line in lines:
@@ -175,7 +184,10 @@ class ServerWorker:
 						# 		f.write(line)
 						# f.write(lineToCompare + '\t' + chList[freq][3])
 						f.close()
-						clientsDict[self.clientInfo['addr_IP']].append(freq)
+						if len(clientsDict[self.clientInfo['addr_IP']]) < 3:
+							clientsDict[self.clientInfo['addr_IP']].append(chList[freq][0])
+						else:
+							clientsDict[self.clientInfo['addr_IP']][2] = chList[freq][0]
 
 						# cmd = 'dvblastctl -r /tmp/dvblast' + chList[freq][0] + '.sock reload'
 						# print 'about to run: ', cmd
@@ -224,7 +236,7 @@ class ServerWorker:
 				print "New State: PLAY\n"
 				# self.state = self.PLAYING
 				# state = self.PLAYING
-				clientsDict[self.clientInfo['addr_IP']][1] = self.PLAYING:
+				clientsDict[self.clientInfo['addr_IP']][1] = self.PLAYING
 				self.replyRtsp(self.OK_200_PLAY, seq[1])
 
 			print "STREAMID: ", streamID
@@ -243,31 +255,35 @@ class ServerWorker:
 		elif requestType == self.TEARDOWN:
 			print "processing TEARDOWN"
 			print "New State: INI\n"
-			clientsDict[self.clientInfo['addr_IP']][1] == self.INI
+			clientsDict[self.clientInfo['addr_IP']][1] = self.INI
 			# self.state = self.INI
 			# state = self.INI
 			session = ''
-			f = open('/home/alex/Documents/dvb-t/pid' + clientsDict[self.clientInfo['addr_IP']][2] + '.cfg', 'w')
-			# f.write(self.clientInfo['addr_IP'] + '\t1\t' + chList[freq][3])
-			lines = f.readlines()
-			lineToCompare = self.clientInfo['addr_IP'] + '\t1'
-			for line in lines:
-				match_line = re.search(lineToCompare, seq_find)
-				if not match_line:
-					f.write(line)
-			# f.write(lineToCompare + '\t' + chList[freq][3])
-			f.close()
-			# f = open('/home/alex/Documents/dvb-t/pid.cfg', 'w')
-			# f.write('')
-			# f.close()
-			cmd = 'dvblastctl -r /tmp/dvblast' + clientsDict[self.clientInfo['addr_IP']][2] + '.sock reload'
-			print  'about to run: ', cmd
-			# (status, output) = commands.getstatusoutput(cmd)
-			# if status:
-			# 	sys.stderr.write(output)
-			# 	sys.exit(1)
-			# print output
-			os.system(cmd)
+			try:
+				f = open('/home/alex/Documents/dvb-t/pid' + clientsDict[self.clientInfo['addr_IP']][2] + '.cfg', 'a')
+				# f.write(self.clientInfo['addr_IP'] + '\t1\t' + chList[freq][3])
+				lines = f.readlines()
+				lineToCompare = self.clientInfo['addr_IP']
+				for line in lines:
+					match_line = re.search(lineToCompare, line)
+					print "ALEX ALEX ALEX .................."
+					if not match_line:
+						f.write(line+ '\n')
+				# f.write(lineToCompare + '\t' + chList[freq][3])
+				f.close()
+				# f = open('/home/alex/Documents/dvb-t/pid.cfg', 'w')
+				# f.write('')
+				# f.close()
+				cmd = 'dvblastctl -r /tmp/dvblast' + clientsDict[self.clientInfo['addr_IP']][2] + '.sock reload'
+				print  'about to run: ', cmd
+				# (status, output) = commands.getstatusoutput(cmd)
+				# if status:
+				# 	sys.stderr.write(output)
+				# 	sys.exit(1)
+				# print output
+				os.system(cmd)
+			except:
+				print 'No previous config for client'
 			self.replyRtsp(self.OK_200_TEARDOWN, seq[1])
 			
 		# Process OPTIONS request 		
@@ -339,12 +355,12 @@ class ServerWorker:
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 1
 		elif code == self.OK_200_PLAY:
-			reply = 'RTSP/1.0 200 OK\r\nRTP-Info:url=//192.168.2.61/stream=23;seq=50230\r\nCSeq:%s\nSession:c8d13e72c33931f\r\n\r\n' % (seq)
+			reply = 'RTSP/1.0 200 OK\r\nRTP-Info:url=//192.168.2.61/stream=%d;seq=50230\r\nCSeq:%s\nSession:c8d13e72c33931f\r\n\r\n' % (streamID, seq)
 			connSocket = self.clientInfo['rtspSocket']# object does not support indexing [0]
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0
 		elif code == self.OK_200_TEARDOWN:
-			reply = 'RTSP/1.0 200 OK\r\nContent-length:0\r\nCSeq:%s\r\nSession:c8d13e72c33931f\r\n\r\n'
+			reply = 'RTSP/1.0 200 OK\r\nContent-length:0\r\nCSeq:%s\r\nSession:c8d13e72c33931f\r\n\r\n' % (seq)
 			connSocket = self.clientInfo['rtspSocket']# object does not support indexing [0]
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0			
