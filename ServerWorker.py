@@ -13,9 +13,21 @@ global streamID
 
 clientsDict = {}
 tunerDict = {'0':[]}
-chList = {'10803':['578000000','8','qam_16', '513', '515', '516', '517', '518', '519'], 
-		  '10949':['498000000', '8', 'qam_auto', '1537', '1538', '1539', '1542', '1543'],
-		  '10971':['578000000','8','qam_16', '1', '257', '258', '513']}
+chList = {'10803':['473000000','8','qam_auto', '513'],
+		  '10830':['473000000','8','qam_auto', '515'],
+		  '10854':['473000000','8','qam_auto', '516'], 
+		  '10719':['473000000','8','qam_auto', '517'], 
+		  '10949':['473000000','8','qam_auto', '518'], 
+		  '10971':['473000000','8','qam_auto', '519'], 
+		  '11471':['498000000', '8', 'qam_auto', '1537'],
+		  '11541':['498000000', '8', 'qam_auto', '1538'],
+		  '11566':['498000000', '8', 'qam_auto', '1539'],
+		  '11604':['498000000', '8', 'qam_auto', '1542'],
+		  '11727':['498000000', '8', 'qam_auto', '1543'],
+		  '11785':['578000000','8','qam_16', '1'],
+		  '11823':['578000000','8','qam_16', '257'],
+		  '11843':['578000000','8','qam_16', '258'],
+		  '11862':['578000000','8','qam_16', '513']}
 session = ''
 state = 0 # INI = 0
 streamID = 0
@@ -115,6 +127,7 @@ class ServerWorker:
 				
 				if len(clientsDict[self.clientInfo['addr_IP']]) < 1:
 					clientsDict[self.clientInfo['addr_IP']].append(self.clientInfo['rtpPort'])
+					clientsDict[self.clientInfo['addr_IP']].append(self.INI)
 				print "clientsDict", clientsDict
 
 			if match_seq:
@@ -128,15 +141,16 @@ class ServerWorker:
 
 		# Process SETUP request
 		if requestType == self.SETUP:
-			if self.state == self.INI:
+			if clientsDict[self.clientInfo['addr_IP']][1] == self.INI: #self.state == self.INI:
 				# Update state
 				print "processing SETUP"
 				
 				try:
 					# self.clientInfo['videoStream'] = VideoStream(filename)
 					print "New State: READY\n"
-					self.state = self.READY
-					state = self.READY
+					clientsDict[self.clientInfo['addr_IP']][1] = self.READY
+					# self.state = self.READY
+					# state = self.READY
 				except IOError:
 					self.replyRtsp(self.FILE_NOT_FOUND_404, seq[1])
 				
@@ -150,68 +164,26 @@ class ServerWorker:
 					self.replyRtsp(self.OK_200_SETUP, seq[1])
 				else:
 					if freq in chList:
-						streamID = 1
-						for tuner in tunerDict:
-							if tunerDict[tuner] == []:
-								f = open('/home/alex/Documents/dvb-t/pid.cfg', 'w')
-								f.write('192.168.2.228:5004	1	258')
-								f.close()
-								cmd = 'sudo dvblast -a ' + tuner + ' -c pid.cfg -f ' + chList[str(freq)][0] + ' -m ' + chList[str(freq)][2] + ' -b ' + chList[str(freq)][1] + ' -C -u -r /tmp/dvblast.sock -q &'
-								# print 'about to run: ', cmd
-								# cmd1 = 'sh ../dvb-t/run_dvblast.sh'
-								# # p = Popen([cmd], shell = False)
-								# os.popen(cmd)
+						streamID = (streamID + 1) % 256
+						f = open('/home/alex/Documents/dvb-t/pid' + chList[freq][0] + '.cfg', 'a')
+						f.write(self.clientInfo['addr_IP'] + '\t1\t' + chList[freq][3])
+						# lines = f.readlines()
+						# lineToCompare = self.clientInfo['addr_IP'] + '\t1'
+						# for line in lines:
+						# 	match_line = re.search(lineToCompare, seq_find)
+						# 	if not match_line:
+						# 		f.write(line)
+						# f.write(lineToCompare + '\t' + chList[freq][3])
+						f.close()
+						clientsDict[self.clientInfo['addr_IP']].append(freq)
 
-								t_dvblast = threading.Thread( target = self.run_dvblast, args=(cmd,  ) )
-								t_dvblast.daemon = True
-								t_dvblast.start()
-								try:
-									while t_dvblast.is_alive():
-										t_dvblast.join(timeout=1.0)
-								except (KeyboardInterrupt, SystemExit):
-									# shutdown_event.set()
-									self.SERVER_RUNNING = 0
+						# cmd = 'dvblastctl -r /tmp/dvblast' + chList[freq][0] + '.sock reload'
+						# print 'about to run: ', cmd
+						# os.system(cmd)
 
-								tunerDict[tuner].append(str(freq))
-								tunerDict[tuner].append(self.clientInfo['addr_IP'])
-							elif tunerDict[tuner][0] == freq:
-								if tunerDict[tuner][1] == self.clientInfo['addr_IP']:
-									print "ALEX 3333333333333333333333333333333333333333333333333333333333"
-									f = open('/home/alex/Documents/dvb-t/pid.cfg', 'w')
-									f.write('192.168.2.228:5000	1	258')
-									f.close()
-									cmd = 'dvblastctl -r /tmp/dvblast.sock reload'
-									print 'about to run: ', cmd
-									os.system(cmd)
-
-							elif tunerDict[tuner][0] != freq:
-								if tunerDict[tuner][1] == self.clientInfo['addr_IP']:
-									f = open('/home/alex/Documents/dvb-t/pid.cfg', 'w')
-									f.write('192.168.2.228:5000	1	258')
-									f.close()
-
-									cmd = 'dvblastctl -r /tmp/dvblast.sock shutdown'
-									print 'about to run: ', cmd
-									os.system(cmd)
-
-									cmd = 'sudo dvblast -a ' + tuner + ' -c pid.cfg -f ' + chList[str(freq)][0] + ' -m ' + chList[str(freq)][2] + ' -b ' + chList[str(freq)][1] + ' -C -u -r /tmp/dvblast.sock &'
-									# print 'about to run: ', cmd
-									# os.popen(cmd)
-									p = Popen([cmd], shell = False) 
-									t_dvblast = threading.Thread( target = self.run_dvblast, args=(cmd,  ) )
-									t_dvblast.daemon = True
-									t_dvblast.start()
-									try:
-										while t_dvblast.is_alive():
-											t_dvblast.join(timeout=1.0)
-									except (KeyboardInterrupt, SystemExit):
-										# shutdown_event.set()
-										self.SERVER_RUNNING = 0
-
-							# os.system(cmd)
 					self.replyRtsp(self.OK_200_SETUP_PIDS, seq[1])
 
-			elif self.state == self.READY:
+			elif clientsDict[self.clientInfo['addr_IP']][1] == self.READY: #self.state == self.READY:
 				# Update parameters
 				print "processing SETUP"
 
@@ -225,7 +197,7 @@ class ServerWorker:
 				
 				# Get the RTP/UDP port from the last line
 				# self.clientInfo['rtpPort'] = request[2].split(' ')[3]
-			elif self.state == self.PLAYING:
+			elif clientsDict[self.clientInfo['addr_IP']][1] == self.PLAYING: #self.state == self.PLAYING:
 				# Update parameters
 				print "processing SETUP"
 
@@ -242,26 +214,23 @@ class ServerWorker:
 
 		# Process PLAY request 		
 		elif requestType == self.PLAY:
-			if self.state == self.PLAYING:
+			if clientsDict[self.clientInfo['addr_IP']][1] == self.PLAYING: #self.state == self.PLAYING:
 				print "processing PLAY"
 				print "State: PLAY\n"
 				self.replyRtsp(self.OK_200_PLAY, seq[1])
 				
-			if self.state == self.READY:
+			if clientsDict[self.clientInfo['addr_IP']][1] == self.READY: #self.state == self.READY:
 				print "processing PLAY"
 				print "New State: PLAY\n"
-				self.state = self.PLAYING
-				state = self.PLAYING
+				# self.state = self.PLAYING
+				# state = self.PLAYING
+				clientsDict[self.clientInfo['addr_IP']][1] = self.PLAYING:
 				self.replyRtsp(self.OK_200_PLAY, seq[1])
 
 			print "STREAMID: ", streamID
 			if streamID:
-				f = open('/home/alex/Documents/dvb-t/pid.cfg', 'w')
-				f.write('192.168.2.228:5004	1	258')
-				f.close()
-				time.sleep(2)
-				cmd = 'dvblastctl -r /tmp/dvblast.sock reload'
-				print  'about to run: ', cmd
+				cmd = 'dvblastctl -r /tmp/dvblast' + clientsDict[self.clientInfo['addr_IP']][2] + '.sock reload'
+				print 'about to run: ', cmd
 				os.system(cmd)
 				# (status, output) = commands.getstatusoutput(cmd)
 				# if status:
@@ -274,13 +243,24 @@ class ServerWorker:
 		elif requestType == self.TEARDOWN:
 			print "processing TEARDOWN"
 			print "New State: INI\n"
-			self.state = self.INI
-			state = self.INI
+			clientsDict[self.clientInfo['addr_IP']][1] == self.INI
+			# self.state = self.INI
+			# state = self.INI
 			session = ''
-			f = open('/home/alex/Documents/dvb-t/pid.cfg', 'w')
-			f.write('')
+			f = open('/home/alex/Documents/dvb-t/pid' + clientsDict[self.clientInfo['addr_IP']][2] + '.cfg', 'w')
+			# f.write(self.clientInfo['addr_IP'] + '\t1\t' + chList[freq][3])
+			lines = f.readlines()
+			lineToCompare = self.clientInfo['addr_IP'] + '\t1'
+			for line in lines:
+				match_line = re.search(lineToCompare, seq_find)
+				if not match_line:
+					f.write(line)
+			# f.write(lineToCompare + '\t' + chList[freq][3])
 			f.close()
-			cmd = 'dvblastctl -r /tmp/dvblast.sock reload'
+			# f = open('/home/alex/Documents/dvb-t/pid.cfg', 'w')
+			# f.write('')
+			# f.close()
+			cmd = 'dvblastctl -r /tmp/dvblast' + clientsDict[self.clientInfo['addr_IP']][2] + '.sock reload'
 			print  'about to run: ', cmd
 			# (status, output) = commands.getstatusoutput(cmd)
 			# if status:
