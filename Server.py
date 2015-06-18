@@ -32,9 +32,9 @@ class Server:
 			clientInfo['addr_IP'] = addr[0]
 			clientInfo['addr_PORT'] = addr[1]
 			
-			print "ALEX 1"
+			# print "ALEX 1"
 			ServerWorker(clientInfo).run()
-			print "Alex 2"
+			# print "Alex 2"
 			
 		rtspSocket.close()
 
