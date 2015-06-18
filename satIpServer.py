@@ -42,7 +42,7 @@ MSOK = 'HTTP/1.1 200 OK\r\nCACHE-CONTROL:max-age=1800\r\nDATE:Mon 03 Jan 2000 11
 class Base(DatagramProtocol):
 	def datagramReceived(self, datagram, address):
 		datagram_array = datagram.rsplit('\r\n')
-		print "datagram_array", datagram_array
+		# print "datagram_array", datagram_array
 		# first_line = datagram.rsplit('\r\n')[0]
 
 		try: 
@@ -53,8 +53,8 @@ class Base(DatagramProtocol):
 			if match:
 				match2 = re.search(r'ssdp:discover',datagram)
 				if match2:
-					print 'received M-SEARCH from SAT>IP clients'
-					print 'sending replay'
+					# print 'received M-SEARCH from SAT>IP clients'
+					# print 'sending replay'
 					print 'ip', address[0], 'port', address[1]
 					self.ssdp.write(MSOK, (address[0], address[1]))
 
