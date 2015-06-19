@@ -136,7 +136,10 @@ class ServerWorker:
 				if len(clientsDict[self.clientInfo['addr_IP']]) < 1:
 					clientsDict[self.clientInfo['addr_IP']].append(self.clientInfo['rtpPort'])
 					clientsDict[self.clientInfo['addr_IP']].append(self.INI)
-				# print "clientsDict", clientsDict
+				else:
+					clientsDict[self.clientInfo['addr_IP']][0] = self.clientInfo['rtpPort']
+
+				print "clientsDict", clientsDict
 
 			if match_seq:
 				seq = seq_find.split(':')
@@ -149,16 +152,13 @@ class ServerWorker:
 
 		# Process SETUP request
 		if requestType == self.SETUP:
-			if clientsDict[self.clientInfo['addr_IP']][1] == self.INI: #self.state == self.INI:
-				# Update state
-				# print "processing SETUP"
+
+			if clientsDict[self.clientInfo['addr_IP']][1] == self.INI: 
+				print "INI state"
+				print "processing SETUP"
 				
 				try:
-					# self.clientInfo['videoStream'] = VideoStream(filename)
-					# print "New State: READY\n"
 					clientsDict[self.clientInfo['addr_IP']][1] = self.READY
-					# self.state = self.READY
-					# state = self.READY
 				except IOError:
 					self.replyRtsp(self.FILE_NOT_FOUND_404, seq[1])
 				
@@ -168,36 +168,43 @@ class ServerWorker:
 				# print "SESSION", session
 	
 				# Send RTSP reply
-				if pids == 'none' or pids == '':
-					self.replyRtsp(self.OK_200_SETUP, seq[1])
-				else:
+				if pids == '':
 					if freq in chList:
 						streamID = (streamID + 1) % 256
-						# print 'ALEX' , '/home/alex/Documents/dvb-t/pid' + chList[freq][0] + '.cfg'
 						f = open('/home/alex/Documents/dvb-t/pid' + chList[freq][0] + '.cfg', 'a')
 						f.write(self.clientInfo['addr_IP'] + ':' + clientsDict[self.clientInfo['addr_IP']][0] + '\t1\t' + chList[freq][3] + '\n')
-						# lines = f.readlines()
-						# lineToCompare = self.clientInfo['addr_IP'] + '\t1'
-						# for line in lines:
-						# 	match_line = re.search(lineToCompare, seq_find)
-						# 	if not match_line:
-						# 		f.write(line)
-						# f.write(lineToCompare + '\t' + chList[freq][3])
 						f.close()
 						if len(clientsDict[self.clientInfo['addr_IP']]) < 3:
 							clientsDict[self.clientInfo['addr_IP']].append(chList[freq][0])
 						else:
 							clientsDict[self.clientInfo['addr_IP']][2] = chList[freq][0]
 
-						# cmd = 'dvblastctl -r /tmp/dvblast' + chList[freq][0] + '.sock reload'
-						# print 'about to run: ', cmd
-						# os.system(cmd)
+						print "ALEX ----------", clientsDict[self.clientInfo['addr_IP']]
 
-					self.replyRtsp(self.OK_200_SETUP_PIDS, seq[1])
+					self.replyRtsp(self.OK_200_SETUP, seq[1])
+				else:
+					if freq in chList:
+						streamID = (streamID + 1) % 256
 
-			elif clientsDict[self.clientInfo['addr_IP']][1] == self.READY: #self.state == self.READY:
-				# Update parameters
-				# print "processing SETUP"
+						f = open('/home/alex/Documents/dvb-t/pid' + chList[freq][0] + '.cfg', 'a')
+						f.write(self.clientInfo['addr_IP'] + ':' + clientsDict[self.clientInfo['addr_IP']][0] + '\t1\t' + chList[freq][3] + '\n')
+						f.close()
+
+						if len(clientsDict[self.clientInfo['addr_IP']]) < 3:
+							clientsDict[self.clientInfo['addr_IP']].append(chList[freq][0])
+						else:
+							clientsDict[self.clientInfo['addr_IP']][2] = chList[freq][0]
+
+						print "ALEX ----------", clientsDict[self.clientInfo['addr_IP']]
+
+					if pids == "none":
+						self.replyRtsp(self.OK_200_SETUP, seq[1])
+					else:
+						self.replyRtsp(self.OK_200_SETUP_PIDS, seq[1])
+
+			elif clientsDict[self.clientInfo['addr_IP']][1] == self.READY: 
+				print "READY state"
+				print "processing SETUP"
 
 				try:
 					print "State: READY\n"
@@ -209,8 +216,8 @@ class ServerWorker:
 				
 				# Get the RTP/UDP port from the last line
 				# self.clientInfo['rtpPort'] = request[2].split(' ')[3]
-			elif clientsDict[self.clientInfo['addr_IP']][1] == self.PLAYING: #self.state == self.PLAYING:
-				# Update parameters
+			elif clientsDict[self.clientInfo['addr_IP']][1] == self.PLAYING:
+				print "PLAYING state"
 				print "processing SETUP"
 
 				try:
@@ -259,27 +266,30 @@ class ServerWorker:
 			# self.state = self.INI
 			# state = self.INI
 			session = ''
-			f = open('/home/alex/Documents/dvb-t/pid' + clientsDict[self.clientInfo['addr_IP']][2] + '.cfg', 'r')
-			# f.write(self.clientInfo['addr_IP'] + '\t1\t' + chList[freq][3])
-			lines = f.readlines()
-			f.close()
-			f = open('/home/alex/Documents/dvb-t/pid' + clientsDict[self.clientInfo['addr_IP']][2] + '.cfg', 'w')
-			lineToCompare = self.clientInfo['addr_IP']
+			try:
+				f = open('/home/alex/Documents/dvb-t/pid' + clientsDict[self.clientInfo['addr_IP']][2] + '.cfg', 'r')
+				# f.write(self.clientInfo['addr_IP'] + '\t1\t' + chList[freq][3])
+				lines = f.readlines()
+				f.close()
+				f = open('/home/alex/Documents/dvb-t/pid' + clientsDict[self.clientInfo['addr_IP']][2] + '.cfg', 'w')
+				lineToCompare = self.clientInfo['addr_IP']
 
-			for line in lines:
-				print "line ", line
-				match_line = re.search(lineToCompare, line)
-				print "line to comapre ", lineToCompare
-				if not match_line:
-					f.write(line)
-					print 'not match'
-				else:
-					print 'match'
-			f.close()
+				for line in lines:
+					print "line ", line
+					match_line = re.search(lineToCompare, line)
+					print "line to comapre ", lineToCompare
+					if not match_line:
+						f.write(line)
+						print 'not match'
+					else:
+						print 'match'
+				f.close()
 
-			cmd = 'dvblastctl -r /tmp/dvblast' + clientsDict[self.clientInfo['addr_IP']][2] + '.sock reload'
-			# print  'about to run: ', cmd
-			os.system(cmd)
+				cmd = 'dvblastctl -r /tmp/dvblast' + clientsDict[self.clientInfo['addr_IP']][2] + '.sock reload'
+				# print  'about to run: ', cmd
+				os.system(cmd)
+			except:
+				print "processing TEARDOWN NONE"
 
 			self.replyRtsp(self.OK_200_TEARDOWN, seq[1])
 			
@@ -295,8 +305,16 @@ class ServerWorker:
 				# print "processing DESCRIBE\n"
 				self.replyRtsp(self.OK_200_DESCRIBE, seq[1])
 			else:
+				try:
+					cmd = 'dvblastctl -r /tmp/dvblast' + clientsDict[self.clientInfo['addr_IP']][2] + '.sock reload'
+					# print 'about to run: ', cmd
+					os.system(cmd)
+				except:
+					print "processing DESCRIBE NONE"
 				# print "processing DESCRIBE SESSION\n"
 				self.replyRtsp(self.OK_200_DESCRIBE_SESSION, seq[1])
+
+
 
 		# Process CLOSE_CONNETION request 		
 		elif requestType == self.CLOSE_CONNETION:
@@ -329,7 +347,7 @@ class ServerWorker:
 			print "500 CONNECTION ERROR"
 		elif code == self.OK_200_DESCRIBE_SESSION:
 			# reply = 'RTSP/1.0 404 Not Found\r\nCSeq:%s\r\n' % (seq)
-			reply = 'RTSP/1.0 200 OK\r\nContent-length:228\r\nContent-type:application/sdp\r\nContent-Base:rtsp://192.168.2.61/\r\nSession:c8d13e72c33931f\r\nCSeq:%s\r\nv=0\r\no=- 534863118 534863118 IN IP4 192.168.2.61\r\ns=SatIPServer:1 4\r\nt=0 0\r\nm=video 0 RTP/AVP 33\r\nc=IN IP4 0.0.0.0\r\na=control:stream=%d\r\na=fmtp:33 ver=1.0;scr=1;tuner=1,0,0,0,12402.00,v,dvbs,qpsk,off,0.35,27500,34\r\na=inactive\r\n\r\n' % (seq,streamID)
+			reply = 'RTSP/1.0 200 OK\r\nContent-length:232\r\nContent-type:application/sdp\r\nContent-Base:rtsp://192.168.2.61/\r\nCSeq:%s\r\nSession:c8d13e72c33931f\r\nv=0\r\no=- 534863118 534863118 IN IP4 192.168.2.61\r\ns=SatIPServer:1 4\r\nt=0 0\r\nm=video 0 RTP/AVP 33\r\nc=IN IP4 0.0.0.0\r\na=control:stream=%d\r\na=fmtp:33 ver=1.0;scr=1;tuner=1,0,0,0,12402.00,v,dvbs,qpsk,off,0.35,27500,34\r\na=inactive\r\n\r\n' % (seq,streamID)
 			# reply = 'RTSP/1.0 200 OK\r\nContent-length:0\r\nContent-type:application/sdp\r\nContent-Base:rtsp://192.168.2.61/\r\nCSeq:%s\r\n\r\n' % (seq)
 			connSocket = self.clientInfo['rtspSocket']# object does not support indexing [0]
 			connSocket.send(reply)
@@ -357,7 +375,7 @@ class ServerWorker:
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0
 		elif code == self.OK_200_TEARDOWN:
-			reply = 'RTSP/1.0 200 OK\r\nContent-length:0\r\nCSeq:%s\r\nSession:c8d13e72c33931f\r\n\r\n' % (seq)
+			reply = 'RTSP/1.0 200 OK\r\nContent-length:0\r\nCSeq:%s\nSession:c8d13e72c33931f\r\n\r\n' % (seq)
 			connSocket = self.clientInfo['rtspSocket']# object does not support indexing [0]
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0			
