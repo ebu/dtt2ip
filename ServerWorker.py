@@ -154,8 +154,7 @@ class ServerWorker:
 		if requestType == self.SETUP:
 
 			if clientsDict[self.clientInfo['addr_IP']][1] == self.INI: 
-				print "INI state"
-				print "processing SETUP"
+				print "processing SETUP, New State: READY\n"
 				
 				try:
 					clientsDict[self.clientInfo['addr_IP']][1] = self.READY
@@ -203,42 +202,34 @@ class ServerWorker:
 						self.replyRtsp(self.OK_200_SETUP_PIDS, seq[1])
 
 			elif clientsDict[self.clientInfo['addr_IP']][1] == self.READY: 
-				print "READY state"
-				print "processing SETUP"
+				print "processing SETUP, State: READY\n"
+				print ""
 
-				try:
-					print "State: READY\n"
-				except IOError:
-					self.replyRtsp(self.FILE_NOT_FOUND_404, seq[1])
-				
 				# Send RTSP reply
-				self.replyRtsp(self.OK_200, seq[1])
+				self.replyRtsp(self.OK_200_SETUP, seq[1])
 				
 				# Get the RTP/UDP port from the last line
 				# self.clientInfo['rtpPort'] = request[2].split(' ')[3]
 			elif clientsDict[self.clientInfo['addr_IP']][1] == self.PLAYING:
-				print "PLAYING state"
-				print "processing SETUP"
-
-				try:
-					print "State: PLAYING\n"
-				except IOError:
-					self.replyRtsp(self.FILE_NOT_FOUND_404, seq[1])
+				print "processing SETUP, State: PLAYING\n"
 				
 				# Send RTSP reply
-				self.replyRtsp(self.OK_200, seq[1])
+				self.replyRtsp(self.OK_200_SETUP, seq[1])
 				
 				# Get the RTP/UDP port from the last line
 				# self.clientInfo['rtpPort'] = request[2].split(' ')[3]
 
 		# Process PLAY request 		
 		elif requestType == self.PLAY:
+
 			if clientsDict[self.clientInfo['addr_IP']][1] == self.PLAYING: #self.state == self.PLAYING:
+				print "processing PLAY, State: PLAYING\n"
 				# print "processing PLAY"
 				# print "State: PLAY\n"
 				self.replyRtsp(self.OK_200_PLAY, seq[1])
 				
 			if clientsDict[self.clientInfo['addr_IP']][1] == self.READY: #self.state == self.READY:
+				print "processing PLAY, New State: PLAYING\n"
 				# print "processing PLAY"
 				# print "New State: PLAY\n"
 				# self.state = self.PLAYING
@@ -260,8 +251,7 @@ class ServerWorker:
 		
 		# Process TEARDOWN request
 		elif requestType == self.TEARDOWN:
-			# print "processing TEARDOWN"
-			# print "New State: INI\n"
+			print "processing TEARDOWN, New State: INI\n"
 			clientsDict[self.clientInfo['addr_IP']][1] = self.INI
 			# self.state = self.INI
 			# state = self.INI
@@ -295,21 +285,21 @@ class ServerWorker:
 			
 		# Process OPTIONS request 		
 		elif requestType == self.OPTIONS:
-			# print "processing OPTIONS\n"
+			print "processing OPTIONS\n"
 			self.replyRtsp(self.OK_200, seq[1])
 
 		# Process DESCRIBE request 		
 		elif requestType == self.DESCRIBE:
 			# print "SESSION", session
 			if session == '':
-				# print "processing DESCRIBE\n"
+				print "processing DESCRIBE\n"
 				self.replyRtsp(self.OK_200_DESCRIBE, seq[1])
 			else:
-				try:
-					cmd = 'dvblastctl -r /tmp/dvblast' + clientsDict[self.clientInfo['addr_IP']][2] + '.sock reload'
-					# print 'about to run: ', cmd
-					os.system(cmd)
-				except:
+				# try:
+				# 	cmd = 'dvblastctl -r /tmp/dvblast' + clientsDict[self.clientInfo['addr_IP']][2] + '.sock reload'
+				# 	# print 'about to run: ', cmd
+				# 	os.system(cmd)
+				# except:
 					print "processing DESCRIBE NONE"
 				# print "processing DESCRIBE SESSION\n"
 				self.replyRtsp(self.OK_200_DESCRIBE_SESSION, seq[1])
@@ -347,8 +337,7 @@ class ServerWorker:
 			print "500 CONNECTION ERROR"
 		elif code == self.OK_200_DESCRIBE_SESSION:
 			# reply = 'RTSP/1.0 404 Not Found\r\nCSeq:%s\r\n' % (seq)
-			reply = 'RTSP/1.0 200 OK\r\nContent-length:232\r\nContent-type:application/sdp\r\nContent-Base:rtsp://192.168.2.61/\r\nCSeq:%s\r\nSession:c8d13e72c33931f\r\nv=0\r\no=- 534863118 534863118 IN IP4 192.168.2.61\r\ns=SatIPServer:1 4\r\nt=0 0\r\nm=video 0 RTP/AVP 33\r\nc=IN IP4 0.0.0.0\r\na=control:stream=%d\r\na=fmtp:33 ver=1.0;scr=1;tuner=1,0,0,0,12402.00,v,dvbs,qpsk,off,0.35,27500,34\r\na=inactive\r\n\r\n' % (seq,streamID)
-			# reply = 'RTSP/1.0 200 OK\r\nContent-length:0\r\nContent-type:application/sdp\r\nContent-Base:rtsp://192.168.2.61/\r\nCSeq:%s\r\n\r\n' % (seq)
+			reply = 'RTSP/1.0 200 OK\r\nContent-length:226\r\nContent-type:application/sdp\r\nContent-Base:rtsp://192.168.2.61/\r\nCSeq:%s\nSession:c8d13e72c33931f\r\n\r\nv=0\r\no=- 534863118 534863118 IN IP4 192.168.2.61\r\ns=SatIPServer:1 4\r\nt=0 0\r\nm=video 0 RTP/AVP 33\r\nc=IN IP4 0.0.0.0\r\na=control:stream=%d\r\na=fmtp:33 ver=1.0;scr=1;tuner=1,123,1,3,10719.00,v,dvbs,qpsk,off,0.35,27500,34\r\na=sendonly\r\n' % (seq, streamID)
 			connSocket = self.clientInfo['rtspSocket']# object does not support indexing [0]
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0
