@@ -10,16 +10,18 @@ global clientsDict
 global tunerDict
 global chList
 global streamID
+global dvblastReload
 
+dvblastReload = 0
 clientsDict = {}
 tunerDict = {'0':[]}
 chList = {
-		  '10721':['666000000','8','qam_auto', '257'],
-		  '10733':['666000000','8','qam_auto', '260'],
-		  '10770':['666000000','8','qam_auto', '261'], 
-		  '10804':['666000000','8','qam_auto', '262'], 
-		  '10880':['666000000','8','qam_auto', '282'], 
-		  '10962':['666000000','8','qam_auto', '324']
+		  '12508':['666000000','8','qam_auto', '257'], # 10721, 10733, 10770, 10804, 10880, 10962
+		  '12526':['666000000','8','qam_auto', '260'],
+		  '12595':['666000000','8','qam_auto', '261'], 
+		  '12681':['666000000','8','qam_auto', '262'], 
+		  '12703':['666000000','8','qam_auto', '282'],  #282
+		  '12728':['666000000','8','qam_auto', '324']
 		  # '11471':['498000000', '8', 'qam_auto', '1537'],
 		  # '11541':['498000000', '8', 'qam_auto', '1538'],
 		  # '11566':['498000000', '8', 'qam_auto', '1539'],
@@ -103,6 +105,7 @@ class ServerWorker:
 		global session
 		global state
 		global streamID
+		global dvblastReload
 
 		self.state = state
 
@@ -113,6 +116,10 @@ class ServerWorker:
 
 		#Initialize freq to 0
 		freq = 0
+
+		#Initialize delPids and delPid to 0
+		delPids = 0
+		delPid = 0
 
 		# Get the request type
 		request = data.split('\n')
@@ -129,6 +136,7 @@ class ServerWorker:
 			match_client_port = re.search(r'client_port', seq_find)
 			match_stream = re.search(r'stream=([\w]+)', seq_find)
 			match_freq = re.search(r'freq=([\w]+)', seq_find)
+			match_delpids = re.search(r'delpids=([\w]+)', seq_find)
 			if match_client_port:
 				seq_find_array = seq_find.split(';')
 				self.clientInfo['rtpPort']= seq_find_array[2].split('=')[1].split('-')[0]
@@ -149,6 +157,10 @@ class ServerWorker:
 				streamID = int(match_stream.group(1))
 			if match_freq:
 				freq = match_freq.group(1)
+			if match_delpids:
+				delPids = 1
+				delPid = match_delpids.group(1)
+				print "delPid", delPid
 
 		# Process SETUP request
 		if requestType == self.SETUP:
@@ -173,6 +185,8 @@ class ServerWorker:
 						f = open('/home/alex/Documents/dvb-t/pid' + chList[freq][0] + '.cfg', 'a')
 						f.write(self.clientInfo['addr_IP'] + ':' + clientsDict[self.clientInfo['addr_IP']][0] + '\t1\t' + chList[freq][3] + '\n')
 						f.close()
+						dvblastReload = 1
+
 						if len(clientsDict[self.clientInfo['addr_IP']]) < 3:
 							clientsDict[self.clientInfo['addr_IP']].append(chList[freq][0])
 						else:
@@ -188,6 +202,7 @@ class ServerWorker:
 						f = open('/home/alex/Documents/dvb-t/pid' + chList[freq][0] + '.cfg', 'a')
 						f.write(self.clientInfo['addr_IP'] + ':' + clientsDict[self.clientInfo['addr_IP']][0] + '\t1\t' + chList[freq][3] + '\n')
 						f.close()
+						dvblastReload = 1
 
 						if len(clientsDict[self.clientInfo['addr_IP']]) < 3:
 							clientsDict[self.clientInfo['addr_IP']].append(chList[freq][0])
@@ -213,6 +228,21 @@ class ServerWorker:
 			elif clientsDict[self.clientInfo['addr_IP']][1] == self.PLAYING:
 				print "processing SETUP, State: PLAYING\n"
 				
+				if freq in chList:
+					streamID = (streamID + 1) % 256
+
+					f = open('/home/alex/Documents/dvb-t/pid' + chList[freq][0] + '.cfg', 'a')
+					f.write(self.clientInfo['addr_IP'] + ':' + clientsDict[self.clientInfo['addr_IP']][0] + '\t1\t' + chList[freq][3] + '\n')
+					f.close()
+					dvblastReload = 1
+
+					if len(clientsDict[self.clientInfo['addr_IP']]) < 3:
+						clientsDict[self.clientInfo['addr_IP']].append(chList[freq][0])
+					else:
+						clientsDict[self.clientInfo['addr_IP']][2] = chList[freq][0]
+
+					print "ALEX ----------", clientsDict[self.clientInfo['addr_IP']]
+
 				# Send RTSP reply
 				self.replyRtsp(self.OK_200_SETUP, seq[1])
 				
@@ -238,16 +268,38 @@ class ServerWorker:
 				self.replyRtsp(self.OK_200_PLAY, seq[1])
 
 			# print "STREAMID: ", streamID
-			if streamID:
+			if streamID and dvblastReload:
 				cmd = 'dvblastctl -r /tmp/dvblast' + clientsDict[self.clientInfo['addr_IP']][2] + '.sock reload'
 				# print 'about to run: ', cmd
 				os.system(cmd)
-				# (status, output) = commands.getstatusoutput(cmd)
-				# if status:
-				# 	sys.stderr.write(output)
-				# 	# sys.exit(1)
-				# print output
+				dvblastReload = 0
 
+			# Remove corresponding pid from config file and reload for sat>ip app
+			if streamID and delPids and int(delPid):
+				try:
+					f = open('/home/alex/Documents/dvb-t/pid' + clientsDict[self.clientInfo['addr_IP']][2] + '.cfg', 'r')
+					# f.write(self.clientInfo['addr_IP'] + '\t1\t' + chList[freq][3])
+					lines = f.readlines()
+					f.close()
+					f = open('/home/alex/Documents/dvb-t/pid' + clientsDict[self.clientInfo['addr_IP']][2] + '.cfg', 'w')
+					lineToCompare = self.clientInfo['addr_IP']
+
+					for line in lines:
+						print "line ", line
+						match_line = re.search(lineToCompare, line)
+						print "line to comapre ", lineToCompare
+						if not match_line:
+							f.write(line)
+							print 'not match'
+						else:
+							print 'match'
+					f.close()
+
+					cmd = 'dvblastctl -r /tmp/dvblast' + clientsDict[self.clientInfo['addr_IP']][2] + '.sock reload'
+					# print  'about to run: ', cmd
+					os.system(cmd)
+				except:
+					print "processing PLAY DELETE PIDS"
 		
 		# Process TEARDOWN request
 		elif requestType == self.TEARDOWN:
@@ -300,7 +352,7 @@ class ServerWorker:
 				# 	# print 'about to run: ', cmd
 				# 	os.system(cmd)
 				# except:
-					print "processing DESCRIBE NONE"
+				print "processing DESCRIBE NONE"
 				# print "processing DESCRIBE SESSION\n"
 				self.replyRtsp(self.OK_200_DESCRIBE_SESSION, seq[1])
 
@@ -337,7 +389,7 @@ class ServerWorker:
 			print "500 CONNECTION ERROR"
 		elif code == self.OK_200_DESCRIBE_SESSION:
 			# reply = 'RTSP/1.0 404 Not Found\r\nCSeq:%s\r\n' % (seq)
-			reply = 'RTSP/1.0 200 OK\r\nContent-length:226\r\nContent-type:application/sdp\r\nContent-Base:rtsp://192.168.2.61/\r\nCSeq:%s\nSession:c8d13e72c33931f\r\n\r\nv=0\r\no=- 534863118 534863118 IN IP4 192.168.2.61\r\ns=SatIPServer:1 4\r\nt=0 0\r\nm=video 0 RTP/AVP 33\r\nc=IN IP4 0.0.0.0\r\na=control:stream=%d\r\na=fmtp:33 ver=1.0;scr=1;tuner=1,123,1,3,10719.00,v,dvbs,qpsk,off,0.35,27500,34\r\na=sendonly\r\n' % (seq, streamID)
+			reply = 'RTSP/1.0 200 OK\r\nContent-length:228\r\nContent-type:application/sdp\r\nContent-Base:rtsp://192.168.2.61/\r\nCSeq:%s\nSession:c8d13e72c33931f\r\n\r\nv=0\r\no=- 534863118 534863118 IN IP4 192.168.2.61\r\ns=SatIPServer:1 4\r\nt=0 0\r\nm=video 0 RTP/AVP 33\r\nc=IN IP4 0.0.0.0\r\na=control:stream=%d\r\na=fmtp:33 ver=1.0;scr=1;tuner=1,123,1,3,10719.00,v,dvbs,qpsk,off,0.35,27500,34\r\na=sendonly\r\n' % (seq, streamID)
 			connSocket = self.clientInfo['rtspSocket']# object does not support indexing [0]
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0
