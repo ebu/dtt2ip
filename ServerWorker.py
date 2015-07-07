@@ -107,6 +107,7 @@ class ServerWorker:
 		global state
 		global streamID
 		global dvblastReload
+		global chList
 
 		self.state = state
 
@@ -169,11 +170,8 @@ class ServerWorker:
 			if clientsDict[self.clientInfo['addr_IP']][1] == self.INI: 
 				print "processing SETUP, New State: READY\n"
 				
-				try:
-					clientsDict[self.clientInfo['addr_IP']][1] = self.READY
-				except IOError:
-					self.replyRtsp(self.FILE_NOT_FOUND_404, seq[1])
-				
+				clientsDict[self.clientInfo['addr_IP']][1] = self.READY
+
 				# # Generate a randomized RTSP session ID
 				# self.clientInfo['session'] = randint(100000, 999999)
 				session = 'c8d13e72c33931f'
@@ -194,10 +192,10 @@ class ServerWorker:
 
 					print "ALEX ----------", clientsDict[self.clientInfo['addr_IP']]
 
-					if pids == 'none' or pids == '':
-						self.replyRtsp(self.OK_200_SETUP, seq[1])
-					else:
-						self.replyRtsp(self.OK_200_SETUP_PIDS, seq[1])
+				if pids == 'none' or pids == '':
+					self.replyRtsp(self.OK_200_SETUP, seq[1])
+				else:
+					self.replyRtsp(self.OK_200_SETUP_PIDS, seq[1])
 
 
 				# # Send RTSP reply
@@ -244,16 +242,27 @@ class ServerWorker:
 
 				# Send RTSP reply
 				self.replyRtsp(self.OK_200_SETUP, seq[1])
-				
-				# Get the RTP/UDP port from the last line
-				# self.clientInfo['rtpPort'] = request[2].split(' ')[3]
+
 			elif clientsDict[self.clientInfo['addr_IP']][1] == self.PLAYING:
 				print "processing SETUP, State: PLAYING\n"
 				
 				if freq in chList:
 					streamID = (streamID + 1) % 256
 
-					f = open('/home/alex/Documents/dvb-t/pid' + chList[freq][0] + '.cfg', 'a')
+					f = open('/home/alex/Documents/dvb-t/pid' + chList[freq][0] + '.cfg', 'r')
+					lines = f.readlines()
+					f.close()
+
+					f = open('/home/alex/Documents/dvb-t/pid' + chList[freq][0] + '.cfg', 'w')
+					lineToCompare = self.clientInfo['addr_IP']
+
+					for line in lines:
+						print "line ", line
+						match_line = re.search(lineToCompare, line)
+						print "line to comapre ", lineToCompare
+						if not match_line:
+							f.write(line)
+					
 					f.write(self.clientInfo['addr_IP'] + ':' + clientsDict[self.clientInfo['addr_IP']][0] + '\t1\t' + chList[freq][3] + '\n')
 					f.close()
 					dvblastReload = 1
@@ -264,33 +273,20 @@ class ServerWorker:
 						clientsDict[self.clientInfo['addr_IP']][2] = chList[freq][0]
 
 					print "ALEX ----------", clientsDict[self.clientInfo['addr_IP']]
-
-				# Send RTSP reply
 				self.replyRtsp(self.OK_200_SETUP, seq[1])
 				
-				# Get the RTP/UDP port from the last line
-				# self.clientInfo['rtpPort'] = request[2].split(' ')[3]
-
 		# Process PLAY request 		
 		elif requestType == self.PLAY:
-
 			if clientsDict[self.clientInfo['addr_IP']][1] == self.PLAYING: #self.state == self.PLAYING:
 				print "processing PLAY, State: PLAYING\n"
-				# print "processing PLAY"
-				# print "State: PLAY\n"
 				self.replyRtsp(self.OK_200_PLAY, seq[1])
 				
 			if clientsDict[self.clientInfo['addr_IP']][1] == self.READY: #self.state == self.READY:
 				print "processing PLAY, New State: PLAYING\n"
-				# print "processing PLAY"
-				# print "New State: PLAY\n"
-				# self.state = self.PLAYING
-				# state = self.PLAYING
 				clientsDict[self.clientInfo['addr_IP']][1] = self.PLAYING
 				self.replyRtsp(self.OK_200_PLAY, seq[1])
 
-			# print "STREAMID: ", streamID
-			if streamID and dvblastReload:
+			if streamID and dvblastReload and delPids == 0:
 				cmd = 'dvblastctl -r /tmp/dvblast' + clientsDict[self.clientInfo['addr_IP']][2] + '.sock reload'
 				# print 'about to run: ', cmd
 				os.system(cmd)
@@ -369,12 +365,14 @@ class ServerWorker:
 				print "processing DESCRIBE NONE\n"
 				self.replyRtsp(self.OK_404_DESCRIBE, seq[1])
 			else:
-				if clientsDict[self.clientInfo['addr_IP']][2] in chList:
+				print "dvblastReload", dvblastReload
+				if dvblastReload:
 					print "processing DESCRIBE SIGNAL\n"
 					self.replyRtsp(self.OK_200_DESCRIBE, seq[1])
 				else:
 					print "processing DESCRIBE NO SIGNAL\n"
 					self.replyRtsp(self.OK_200_DESCRIBE_NOSIGNAL, seq[1])
+
 
 
 		# Process CLOSE_CONNETION request 		
@@ -416,7 +414,7 @@ class ServerWorker:
 			tunerValues2 = ',v,dvbs,qpsk,off,0.35,27500,34'
 			active = 'sendonly'
 			sdpString = 'v=0\r\no=- 534863118 534863118 IN IP4 %s\ns=SatIPServer:%d %d\r\nt=0 0\r\nm=video 0 RTP/AVP 33\r\nc=IN IP4 %s\na=control:stream=%d\na=fmtp:33 ver=1.0;scr=1;tuner=%s%.2f%s\na=%s\n' % (ipServer, serverID, serverTunerNr, unicastIp, streamID, tunerValues, freq, tunerValues2, active)
-			sdpLen = len(sdp_string)
+			sdpLen = len(sdpString)
 			rtspString = 'RTSP/1.0 200 OK\r\nContent-length:%d\r\nContent-type:application/sdp\r\nContent-Base:rtsp://192.168.2.61/\r\nCSeq:%s\nSession:c8d13e72c33931f\r\n\r\n' % (sdpLen ,seq)
 			
 			reply = rtspString + sdpString
@@ -434,7 +432,7 @@ class ServerWorker:
 			tunerValues2 = ',v,dvbs,qpsk,off,0.35,27500,34'
 			active = 'sendonly'
 			sdpString = 'v=0\r\no=- 534863118 534863118 IN IP4 %s\ns=SatIPServer:%d %d\r\nt=0 0\r\nm=video 0 RTP/AVP 33\r\nc=IN IP4 %s\na=control:stream=%d\na=fmtp:33 ver=1.0;scr=1;tuner=%s%.2f%s\na=%s\n' % (ipServer, serverID, serverTunerNr, unicastIp, streamID, tunerValues, freq, tunerValues2, active)
-			sdpLen = len(sdp_string)
+			sdpLen = len(sdpString)
 			rtspString = 'RTSP/1.0 200 OK\r\nContent-length:%d\r\nContent-type:application/sdp\r\nContent-Base:rtsp://192.168.2.61/\r\nCSeq:%s\nSession:c8d13e72c33931f\r\n\r\n' % (sdpLen ,seq)
 			
 			reply = rtspString + sdpString
