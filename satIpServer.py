@@ -108,7 +108,7 @@ class Server(Base):
 		self.ssdp.setLoopbackMode(1)
 		self.ssdp.joinGroup(ssdpAddr, interface=iface)
 
-		# self.ssdpClient = reactor.listenUDP(1900, self, interface=self.iface)
+		self.ssdpClient = reactor.listenUDP(1900, self, interface=self.iface)
 		self.sendNOTIFY(MS_NOTIFY_ALIVE)
 
  
