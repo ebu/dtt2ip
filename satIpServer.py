@@ -1,7 +1,7 @@
 #!/usr/bin/python
  
-# Python program that can send out M-SEARCH messages using SSDP (in server
-# mode), or listen for SSDP messages (in client mode).
+# Discovery state machine
+# SSDP protocol
  
 import sys
 from twisted.internet import reactor, task
@@ -89,15 +89,9 @@ class Base(DatagramProtocol):
 					self.sendNOTIFY(MS_NOTIFY_ALIVE)
 
 				elif match2:
-					# print 'received M-SEARCH from SAT>IP clients'
-					# print 'sending replay'
 					print 'ip', address[0], 'port', address[1]
 					self.ssdp.write(MS_OK, (address[0], address[1]))
 
-					# Run server RTSP
-					# os.spawnl(os.P_DETACH, 'python Server.py 8005')
-					# os.system('python Server.py 8005')
-					# os.system('python ClientLauncher.py 127.0.0.1 8005 127.0.0.1 12001 video.ts')
 		except:
 			print 'Something went wrong'
 
@@ -115,7 +109,7 @@ class Server(Base):
 		self.ssdp.setLoopbackMode(1)
 		self.ssdp.joinGroup(ssdpAddr, interface=iface)
 
-		# self.ssdpClient = reactor.listenUDP(1900, self, interface=self.iface)
+		self.ssdpClient = reactor.listenUDP(1900, self, interface=self.iface)
 		self.sendNOTIFY(MS_NOTIFY_ALIVE)
 
  
