@@ -16,6 +16,7 @@ global t
 global datagramNotify
 global deviceIdOk
 global deviceID
+import threading, socket, struct
 
 deviceID = 1
 datagramNotify = ''
@@ -121,14 +122,94 @@ class Server(Base):
 	def stop(self):
 		self.ssdp.leaveGroup(ssdpAddr, interface=self.iface)
 		self.ssdp.stopListening()
- 
-def main():
 
+class Client(Base):
+    def __init__(self, iface, ssdpPort, ssdpAddr):
+        self.iface = iface
+        self.ssdp = reactor.listenUDP(ssdpPort, self, interface=self.iface)
+        # self.ssdp.setLoopbackMode(1)
+        # self.ssdp.joinGroup(SSDP_ADDR, interface=iface)
+ 
+    def stop(self):
+        self.ssdp.leaveGroup(SSDP_ADDR, interface=self.iface)
+        self.ssdp.stopListening()
+ 
+def mainServer():
 	obj = Server(serverIP, ssdpPort, ssdpAddr)
 	reactor.addSystemEventTrigger('before', 'shutdown', obj.stop)
+
+def mainClient():
+	obj = Client(serverIP, ssdpPort, ssdpAddr)
+	reactor.addSystemEventTrigger('before', 'shutdown', obj.stop)
+
+def callServerReactor():
+	print 'first thread : Server'
+	ssdpMulticastSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	
+	group = socket.inet_aton(ssdpAddr)
+	mreq = struct.pack('4sL', group, socket.INADDR_ANY)
+	ssdpMulticastSocket.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+	ssdpMulticastSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+	
+	ssdpMulticastSocket.bind((ssdpAddr, ssdpPort))
+	while (1):
+		try:
+			data, addr = ssdpMulticastSocket.recv(1024)
+
+			print "message from " + str(addr)
+			print "from connected user " + str(data)
+			print "Sending ... Hello world"
+			ssdpMulticastSocket.sendto("Sending ... Hello world", addr)
+		except:
+			print 'no multicast message received'
+		# if dataRecv:
+		# 	print "Data received: " + dataRecv
+		# 	socket.send
+		# ssdpMulticastSocket.listen(1)        
+
+		# Receive client info (address,port) through RTSP/TCP session
+		# while True:
+
+		# clientInfo = {}
+		# clientInfo['rtspSocket'], addr = rtspSocket.accept()
+		# clientInfo['addr_IP'] = addr[0]
+		# clientInfo['addr_PORT'] = addr[1]
+
+		# rtspSocket.close()
+	# reactor.callWhenRunning(mainServer)
+	# reactor.run()
+
+def callClientReactor():
+	print 'second thread : Client'
+	ssdpUnicastSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	ssdpUnicastSocket.bind((serverIP, ssdpPort))
+	
+	while (1):
+		ssdpUnicastSocket.sendto("Hello", (ssdpAddr,ssdpPort))
+		data, addr = ssdpUnicastSocket.recvfrom(1024)
+		print "Received from server: " + str(data)
+		# ssdpUnicastSocket.listen(1)        
+
+		# Receive client info (address,port) through RTSP/TCP session
+		# while True:
+
+		# clientInfo = {}
+		# clientInfo['rtspSocket'], addr = rtspSocket.accept()
+		# clientInfo['addr_IP'] = addr[0]
+		# clientInfo['addr_PORT'] = addr[1]`
+	# reactor.callWhenRunning(mainClient)
+	# reactor.run()
+
+def main():
+	t1 = threading.Thread(target=callServerReactor)
+	t2 = threading.Thread(target=callClientReactor)
+	t1.start()
+	t2.start()
+
  
 if __name__ == "__main__":
-	reactor.callWhenRunning(main)
-	reactor.run()
+	main()
+	# reactor.callWhenRunning(mainServer)
+	# reactor.run()
 
 
