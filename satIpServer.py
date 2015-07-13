@@ -3,142 +3,78 @@
 # Discovery state machine
 # SSDP protocol
  
-import sys
-from twisted.internet import reactor, task
-from twisted.internet.protocol import DatagramProtocol
-# from netInterfaceStatus import getNetworkInt
+import sys, re, os, random
+import threading, socket, struct, time, calendar
 from netInterfaceStatus import getServerIP
-import re
-import os
-from threading import Timer
 
-global t
-global datagramNotify
-global deviceIdOk
-global deviceID
-import threading, socket, struct, time
-import signal
+from datetime import date, datetime
+
 global SSDP_TERMINATE
+global deviceId, deviceIdOk
+global ssdpAddr, ssdpPort, httpPort, serverIP
+global cacheControl, location, nts_alive, nts_byebye
+global server, uuid, upnp, urn, NT, USN, bootId, configId, deviceId, st 
 
 SSDP_TERMINATE = 0
 
-deviceID = 1
-datagramNotify = ''
 deviceIdOk = False
 
 ssdpAddr = '239.255.255.250'
 ssdpPort = 1900
-
 httpPort = 80
-
 serverIP = getServerIP()
 
-MS_OK = 'HTTP/1.1 200 OK\r\nCACHE-CONTROL:max-age=1800\r\nDATE:Mon 03 Jan 2000 11:29:31 GMT\r\nEXT:\r\nLOCATION:http://%s:%d/desc.xml\r\nSERVER:CW/1.0 UPnP/1.1 CWUpnp/1.1\r\nST:urn:ses-com:device:SatIPServer:1\r\nUSN:uuip:7f764937-d0d7-11e1-9b23-00059e9651fd::urn:ses-com:device:SatIPServer:1\r\nBOOTID.UPNP.ORG:998\r\nCONFIGID.UPNP.ORG:2212703\r\nDEVICEID.SES.COM:%d\r\n\r\n' % (serverIP, httpPort, deviceID)
+# To Do  make configuration file
+cacheControl = 1800
+location = 'desc.xml'
+nts_alive = 'ssdp:alive'
+nts_beybey = 'ssdp:byebye'
+server = 'CW/1.0 UPnP/1.1 CWUpnp/1.1'
+uuid = '7f764937-d0d7-11e1-9b23-00059e9651fd'
+upnp = 'rootdevice'
+urn = 'ses-com:device:SatIPServer:1'
 
-MS_NOTIFY_ALIVE = 'NOTIFY * HTTP/1.1\r\nHOST: %s:%d\r\nBOOTID.UPNP.ORG:981\r\nCONFIGID.UPNP.ORG:12555367\r\nCACHE-CONTROL: max-age=1800\r\nLOCATION:http://%s/desc.xml\r\nNT:upnp:rootdevice\r\nNTS:ssdp:alive\r\nSERVER:CW/1.0 UPnP/1.1 CWUpnp/1.1\r\nUSN:uuip:7f764937-d0d7-11e1-9b23-00059e9651fd::upnp:rootdevice\r\nDEVICEID.SES.COM:%d\r\n\r\n' % (ssdpAddr, ssdpPort, serverIP, deviceID)
+nt1 = 'upnp:' + upnp
+nt2 = 'uuid:' + uuid
+nt3 = 'urn:' + urn
+NT = [nt1, nt2, nt3]
 
-MS_NOTIFY_BYEBYE = 'NOTIFY * HTTP/1.1\r\nHOST: %s:%d\r\nNT:upnp:rootdevice\r\nNTS:ssdp:byebye\r\nUSN:uuip:7f764937-d0d7-11e1-9b23-00059e9651fd::upnp:rootdevice\r\nBOOTID.UPNP.ORG:981\r\nCONFIGID.UPNP.ORG:12555367\r\n\r\n' % (ssdpAddr, ssdpPort)
+usn1 = 'uuid:' + uuid + '::upnp:' + upnp
+usn2 = 'uuid:' + uuid
+usn3 = 'uuid:' + uuid + '::urn:' + urn
+USN = [usn1, usn2, usn3]
 
-MS_SEARCH = 'M-SEARCH * HTTP/1.1\r\nHOST:%s:%d\r\nMAN:"ssdp-discover"ST:urn:ses-com:device:SatIPServer:1\r\nUSER-AGENT:CW/1.0 UPnP/1.1 CWUpnp/1.1\r\nDEVICEID.SES.COM:%d' % (serverIP, ssdpPort, deviceID)
+bootId = 981
+configId = 2212703
+deviceId = 1
+st = 'urn:' + urn
+# To Do make configuration file
 
-def timeout():
-	deviceIdOk = True
+def ms_ok(toClient):
+	myDate = date.today()
+	currentTime = datetime.now().time()
+	if myDate.day < 10:
+		dateStr = calendar.day_name[myDate.weekday()] + ' ' + str(myDate.weekday()) + ' ' + calendar.month_name[myDate.month] + ' ' + str(myDate.year) + ' ' + currentTime.isoformat()[:-7] + ' ' + 'GMT'
+	else:
+		dateStr = calendar.day_name[myDate.weekday()] + ' 0' + str(myDate.weekday()) + ' ' + calendar.month_name[myDate.month] + ' ' + str(myDate.year) + ' ' + currentTime.isoformat()[:-7] + ' ' + 'GMT'
+	if toClient:
+		MS_OK = 'HTTP/1.1 200 OK\r\nCACHE-CONTROL:max-age=%d\r\nDATE:%s\nEXT:\r\nLOCATION:http://%s:%d/%s\nSERVER:%s\nST:%s\nUSN:%s\nBOOTID.UPNP.ORG:%d\r\nCONFIGID.UPNP.ORG:%d\n\r\n' % (cacheControl, dateStr, serverIP, httpPort, location, server, st, USN[2], bootId, configId)
+	else:
+		MS_OK = 'HTTP/1.1 200 OK\r\nCACHE-CONTROL:max-age=%d\r\nDATE:%s\nEXT:\r\nLOCATION:http://%s:%d/%s\nSERVER:%s\nST:%s\nUSN:%s\nBOOTID.UPNP.ORG:%d\r\nCONFIGID.UPNP.ORG:%d\r\nDEVICEID.SES.COM:%d\r\n\r\n' % (cacheControl, dateStr, serverIP, httpPort, location, server, st, USN[2], bootId, configId, deviceId)
+	
+	return MS_OK
 
+def ms_notify_alive(nt, usn):	
+	MS_NOTIFY_ALIVE = 'NOTIFY * HTTP/1.1\r\nHOST: %s:%d\r\nBOOTID.UPNP.ORG:%d\r\nCONFIGID.UPNP.ORG:%d\r\nCACHE-CONTROL: max-age=%d\r\nLOCATION:http://%s:%d/%s\nNT:%s\nNTS:%s\nSERVER:%s\nUSN:%s\nDEVICEID.SES.COM:%d\r\n\r\n' % (ssdpAddr, ssdpPort, bootId, configId, cacheControl, serverIP, httpPort, location, nt, nts_alive, server, usn, deviceId)
+	return MS_NOTIFY_ALIVE
 
-class Base(DatagramProtocol):
+def ms_nofity_byebye(nt, usn):
+	MS_NOTIFY_BYEBYE = 'NOTIFY * HTTP/1.1\r\nHOST: %s:%d\r\nNT:%s\nNTS:%s\nUSN:%s\nBOOTID.UPNP.ORG:%d\r\nCONFIGID.UPNP.ORG:%d\r\n\r\n' % (ssdpAddr, ssdpPort, nt, nts, usn, bootId, configId)
+	return MS_NOTIFY_BYEBYE
 
-	def sendNOTIFY(self, msNOTIFY):
-		global t
-		for i in range(3):
-			self.ssdp.write(msNOTIFY, (ssdpAddr, ssdpPort))
-			print "msNOTIFY", msNOTIFY
-		if msNOTIFY == MS_NOTIFY_ALIVE:
-			t.start()
-
-	def datagramReceived(self, datagram, address):
-		global datagramNotify
-		global deviceIdOk
-		global deviceID
-
-		datagram_array = datagram.rsplit('\r\n')
-		datagramNotify = datagram_array
-		# print "datagram_array", datagram_array
-		# first_line = datagram.rsplit('\r\n')[0]
-		
-		try: 
-			first_line = datagram_array[0]
-			# second_line = datagram_array[2]
-
-			matchNotify = re.search(r'NOTIFY',first_line)
-			matchMSearch = re.search(r'M-SEARCH',first_line)
-
-			if matchNotify:
-				matchSES = re.search(r'DEVICEID.SES.COM:([\w]+)',datagram)
-				if matchSES:
-					if matchSES.group(1) == deviceID:
-						self.ssdp.write(MS_OK, (address[0], address[1]))
-						print "MS_OK"
-
-
-
-			if matchMSearch:
-				match2 = re.search(r'ssdp:discover',datagram)
-				match3 = re.search(r'DEVICEID.SES.COM',datagram)
-				
-				if match3 and not deviceIdOk:
-					t.cancel()
-					self.ssdp.write(MS_OK, (address[0], address[1]))
-					self.sendNOTIFY(MS_NOTIFY_BYEBYE)
-					deviceID = deviceID + 1
-					self.sendNOTIFY(MS_NOTIFY_ALIVE)
-
-				elif match2:
-					print 'ip', address[0], 'port', address[1]
-					self.ssdp.write(MS_OK, (address[0], address[1]))
-
-		except:
-			print 'Something went wrong'
-
-	def stop(self):
-		pass
- 
-class Server(Base):
-
-	def __init__(self, iface, ssdpPort, ssdpAddr):
-		global t
-		t = Timer(5, timeout)
-
-		self.iface = iface
-		self.ssdp = reactor.listenMulticast(ssdpPort, self, listenMultiple=True)
-		self.ssdp.setLoopbackMode(1)
-		self.ssdp.joinGroup(ssdpAddr, interface=iface)
-
-		self.ssdpClient = reactor.listenUDP(1900, self, interface=self.iface)
-		self.sendNOTIFY(MS_NOTIFY_ALIVE)
-
- 
-	def stop(self):
-		self.ssdp.leaveGroup(ssdpAddr, interface=self.iface)
-		self.ssdp.stopListening()
-
-class Client(Base):
-    def __init__(self, iface, ssdpPort, ssdpAddr):
-        self.iface = iface
-        self.ssdp = reactor.listenUDP(ssdpPort, self, interface=self.iface)
-        # self.ssdp.setLoopbackMode(1)
-        # self.ssdp.joinGroup(SSDP_ADDR, interface=iface)
- 
-    def stop(self):
-        self.ssdp.leaveGroup(SSDP_ADDR, interface=self.iface)
-        self.ssdp.stopListening()
- 
-def mainServer():
-	obj = Server(serverIP, ssdpPort, ssdpAddr)
-	reactor.addSystemEventTrigger('before', 'shutdown', obj.stop)
-
-def mainClient():
-	obj = Client(serverIP, ssdpPort, ssdpAddr)
-	reactor.addSystemEventTrigger('before', 'shutdown', obj.stop)
+def ms_search():
+	MS_SEARCH = 'M-SEARCH * HTTP/1.1\r\nHOST:%s:%d\r\nMAN:"ssdp-discover"ST:%s\nUSER-AGENT:%s\nDEVICEID.SES.COM:%d' % (serverIP, ssdpPort, st, server, deviceId)
+	return MS_SEARCH
 
 def callServerReactor():
 	global SSDP_TERMINATE
@@ -152,52 +88,96 @@ def callServerReactor():
 	ssdpMulticastSocket.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 	ssdpMulticastSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 	
-	while (1):
-		data, addr = ssdpMulticastSocket.recvfrom(1024)
+	while (not SSDP_TERMINATE):
+		datagram, address = ssdpMulticastSocket.recvfrom(1024)
+		datagram_array = datagram.rsplit('\r\n')
+		
+		try: 
+			first_line = datagram_array[0]
 
-		print "message from " + str(addr)
-		print "from connected user " + str(data)
-		print "Sending ... Hello world"
-		time.sleep(2)
-		ssdpMulticastSocket.sendto("Sending ... Hello world", addr)
+			matchMSearch = re.search(r'M-SEARCH',first_line)
+			matchNotify = re.search(r'NOTIFY',first_line)
 
+			if matchMSearch:
+				match2 = re.search(r'ses-com',datagram)
+				if match2:
+					print 'ip', address[0], 'port', address[1]
+					toClient = True
+					ssdpMulticastSocket.sendto(ms_ok(toClient), (address[0], address[1]))
 
+			if matchNotify:
+				matchSES = re.search(r'DEVICEID.SES.COM:([\w]+)',datagram)
+				if matchSES:
+					if matchSES.group(1) == deviceId:
+						ssdpMulticastSocket.sendto(ms_search(), (address[0], address[1]))
+						print "MS_SEARCH"
+		except:
+			print "Something went wrong"
 
 	ssdpMulticastSocket.close()
 
 def callClientReactor():
 	global SSDP_TERMINATE
+	global deviceId, deviceIdOk
 
 	print 'second thread : Client'
+	oldDeviceId = deviceId
 	ssdpUnicastSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 	ssdpUnicastSocket.bind((serverIP, ssdpPort))
-	
-	while (1):
-			ssdpUnicastSocket.sendto("Hello", (ssdpAddr,ssdpPort))
-			data, addr = ssdpUnicastSocket.recvfrom(1024)
-			print "Received from server: " + str(data)
+	ssdpUnicastSocket.settimeout(5.0)
 
+	while (not SSDP_TERMINATE):
+		while (not deviceIdOk):
+			for i in range(3):
+				ssdpUnicastSocket.sendto(ms_notify_alive(NT[i], USN[i]), (ssdpAddr, ssdpPort))
+				print "MS_NOTIFY_ALIVE"
+			try:
+				oldDeviceId = deviceId	
+				datagram, address = ssdpUnicastSocket.recvfrom(1024)
+				datagram_array = datagram.rsplit('\r\n')
+
+				try:
+					first_line = datagram_array[0]
+					matchMSearch = re.search(r'M-SEARCH',first_line)
+
+					if matchMSearch:
+						matchSES = re.search(r'DEVICEID.SES.COM:([\w]+)',datagram)
+						if matchSES:
+							if matchSES.group(1) == deviceId:
+								toClient = False
+								ssdpUnicastSocket.sendto(ms_ok(toClient), (address[0], address[1]))
+								print "MS_OK"
+								deviceId = deviceId + 1
+								for i in range(3):
+									ssdpUnicastSocket.sendto(ms_nofity_byebye(NT[i], USN[i]), (ssdpAddr, ssdpPort))
+									print "MS_NOTIFY_BYEBYE"
+				except:
+					print 'Something went wrong'
+			except:
+				if oldDeviceId == deviceId:
+					deviceIdOk = True
+
+		print "Sleep and send NOTIFY later"
+		time.sleep(random.randint(0, cacheControl/2))
 
 	ssdpUnicastSocket.close()
-
-def signal_handler(signal, frame):
-	global SSDP_TERMINATE
-	print "SSDP terminated"
-	SSDP_TERMINATE = 1
-	sys.exit(0)
 
 def main():
 	t1 = threading.Thread(target=callServerReactor)
 	t2 = threading.Thread(target=callClientReactor)
+	t1.daemon = True
+	t2.daemon = True
 	t1.start()
 	t2.start()
-	signal.signal(signal.SIGINT, signal_handler)
-	print "ALEX-------------------------------------------"
+
+	try:
+		while t1.is_alive() and t2.is_alive():
+			a = 1
+	except (KeyboardInterrupt, SystemExit):
+		SSDP_TERMINATE = 1
 
  
 if __name__ == "__main__":
 	main()
-	# reactor.callWhenRunning(mainServer)
-	# reactor.run()
 
 
