@@ -159,7 +159,10 @@ def callClientReactor():
 
 		print "Sleep and send NOTIFY later"
 		time.sleep(random.randint(0, cacheControl/2))
-		ssdpUnicastSocket.sendto(ms_notify_alive(NT[i], USN[i]), (ssdpAddr, ssdpPort))
+
+		for i in range(3):
+			ssdpUnicastSocket.sendto(ms_notify_alive(NT[i], USN[i]), (ssdpAddr, ssdpPort))
+			print "MS_NOTIFY_ALIVE"
 
 	ssdpUnicastSocket.close()
 
