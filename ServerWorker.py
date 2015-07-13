@@ -16,12 +16,12 @@ dvblastReload = 0
 clientsDict = {}
 tunerDict = {'0':[]}
 chList = {
-		  '10729':['666000000','8','qam_auto', '257'], # 10721, 10733, 10770, 10804, 10880, 10962
-		  '10773':['666000000','8','qam_auto', '260'],
-		  '10818':['666000000','8','qam_auto', '261'], 
-		  '10847':['666000000','8','qam_auto', '262'], 
-		  '11541':['666000000','8','qam_auto', '282'],  #282 10876
-		  '11023':['666000000','8','qam_auto', '324']
+		  '11538':['666000000','8','qam_auto', '257'], # 10729, 10721, 10733, 10770, 10804, 10880, 10962
+		  '11568':['666000000','8','qam_auto', '260'],
+		  # '10818':['666000000','8','qam_auto', '261'], 
+		  # '10847':['666000000','8','qam_auto', '262'], 
+		  '11541':['666000000','8','qam_auto', '282']  #282 10876
+		  # '11023':['666000000','8','qam_auto', '324']
 		  # '11471':['498000000', '8', 'qam_auto', '1537'],
 		  # '11541':['498000000', '8', 'qam_auto', '1538'],
 		  # '11566':['498000000', '8', 'qam_auto', '1539'],
@@ -449,12 +449,12 @@ class ServerWorker:
 			# connSocket.send(reply)
 			# self.SERVER_RUNNING = 0
 		elif code == self.OK_404_DESCRIBE:
-			reply = 'RTSP/1.0 404 Not Found\r\nCSeq:%s\r\n\r\n' % (seq)
+			reply = 'RTSP/1.0 404 Not Found\r\nCSeq:%s\n\r\n' % (seq)
 			connSocket = self.clientInfo['rtspSocket']# object does not support indexing [0]
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0
 		elif code == self.OK_200_SETUP:
-			reply = 'RTSP/1.0 200 OK\r\nSession:c8d13e72c33931f;timeout=30\r\ncom.ses.streamID:%d\r\nTransport: RTP/AVP;unicast;destination=%s;client_port=5000-5001\r\nCSeq:%s\r\n\r\n' % (clientsDict[self.clientInfo['addr_IP']]['stream'], self.clientInfo['addr_IP'], seq)
+			reply = 'RTSP/1.0 200 OK\r\nSession:c8d13e72c33931f;timeout=30\r\ncom.ses.streamID:%d\r\nTransport: RTP/AVP;unicast;destination=%s;client_port=5000-5001\r\nCSeq:%s\n\r\n' % (clientsDict[self.clientInfo['addr_IP']]['stream'], self.clientInfo['addr_IP'], seq)
 			connSocket = self.clientInfo['rtspSocket']# object does not support indexing [0]
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0

@@ -26,7 +26,7 @@ serverIP = getServerIP()
 
 # To Do  make configuration file
 cacheControl = 1800
-location = 'desc.xml'
+location = '7f764937-d0d7-11e1-9b23-00059e9651fd.xml'
 nts_alive = 'ssdp:alive'
 nts_beybey = 'ssdp:byebye'
 server = 'CW/1.0 UPnP/1.1 CWUpnp/1.1'
@@ -58,14 +58,14 @@ def ms_ok(toClient):
 	else:
 		dateStr = calendar.day_name[myDate.weekday()] + ' 0' + str(myDate.weekday()) + ' ' + calendar.month_name[myDate.month] + ' ' + str(myDate.year) + ' ' + currentTime.isoformat()[:-7] + ' ' + 'GMT'
 	if toClient:
-		MS_OK = 'HTTP/1.1 200 OK\r\nCACHE-CONTROL:max-age=%d\r\nDATE:%s\nEXT:\r\nLOCATION:http://%s:%d/%s\nSERVER:%s\nST:%s\nUSN:%s\nBOOTID.UPNP.ORG:%d\r\nCONFIGID.UPNP.ORG:%d\n\r\n' % (cacheControl, dateStr, serverIP, httpPort, location, server, st, USN[2], bootId, configId)
+		MS_OK = 'HTTP/1.1 200 OK\r\nCACHE-CONTROL:max-age=%d\r\nDATE:%s\nEXT:\r\nLOCATION:http://%s:%d/%s\r\nSERVER:%s\nST:%s\nUSN:%s\nBOOTID.UPNP.ORG:%d\r\nCONFIGID.UPNP.ORG:%d\n\r\n' % (cacheControl, dateStr, serverIP, httpPort, location, server, st, USN[2], bootId, configId)
 	else:
-		MS_OK = 'HTTP/1.1 200 OK\r\nCACHE-CONTROL:max-age=%d\r\nDATE:%s\nEXT:\r\nLOCATION:http://%s:%d/%s\nSERVER:%s\nST:%s\nUSN:%s\nBOOTID.UPNP.ORG:%d\r\nCONFIGID.UPNP.ORG:%d\r\nDEVICEID.SES.COM:%d\r\n\r\n' % (cacheControl, dateStr, serverIP, httpPort, location, server, st, USN[2], bootId, configId, deviceId)
+		MS_OK = 'HTTP/1.1 200 OK\r\nCACHE-CONTROL:max-age=%d\r\nDATE:%s\nEXT:\r\nLOCATION:http://%s:%d/%s\r\nSERVER:%s\nST:%s\nUSN:%s\nBOOTID.UPNP.ORG:%d\r\nCONFIGID.UPNP.ORG:%d\r\nDEVICEID.SES.COM:%d\r\n\r\n' % (cacheControl, dateStr, serverIP, httpPort, location, server, st, USN[2], bootId, configId, deviceId)
 	
 	return MS_OK
 
 def ms_notify_alive(nt, usn):	
-	MS_NOTIFY_ALIVE = 'NOTIFY * HTTP/1.1\r\nHOST: %s:%d\r\nBOOTID.UPNP.ORG:%d\r\nCONFIGID.UPNP.ORG:%d\r\nCACHE-CONTROL: max-age=%d\r\nLOCATION:http://%s:%d/%s\nNT:%s\nNTS:%s\nSERVER:%s\nUSN:%s\nDEVICEID.SES.COM:%d\r\n\r\n' % (ssdpAddr, ssdpPort, bootId, configId, cacheControl, serverIP, httpPort, location, nt, nts_alive, server, usn, deviceId)
+	MS_NOTIFY_ALIVE = 'NOTIFY * HTTP/1.1\r\nHOST: %s:%d\r\nBOOTID.UPNP.ORG:%d\r\nCONFIGID.UPNP.ORG:%d\r\nCACHE-CONTROL: max-age=%d\r\nLOCATION:http://%s:%d/%s\r\nNT:%s\nNTS:%s\nSERVER:%s\nUSN:%s\nDEVICEID.SES.COM:%d\r\n\r\n' % (ssdpAddr, ssdpPort, bootId, configId, cacheControl, serverIP, httpPort, location, nt, nts_alive, server, usn, deviceId)
 	return MS_NOTIFY_ALIVE
 
 def ms_nofity_byebye(nt, usn):
@@ -159,15 +159,21 @@ def callClientReactor():
 
 		print "Sleep and send NOTIFY later"
 		time.sleep(random.randint(0, cacheControl/2))
+		ssdpUnicastSocket.sendto(ms_notify_alive(NT[i], USN[i]), (ssdpAddr, ssdpPort))
 
 	ssdpUnicastSocket.close()
 
 def main():
-	t1 = threading.Thread(target=callServerReactor)
-	t2 = threading.Thread(target=callClientReactor)
+	t1 = threading.Thread(target=callClientReactor)
 	t1.daemon = True
-	t2.daemon = True
 	t1.start()
+
+	while not deviceIdOk:
+		a = 1
+	
+	# Wait for DEVICE negotiation to finish then start the Discovery protocol in order for the clients to connect to
+	t2 = threading.Thread(target=callServerReactor)
+	t2.daemon = True
 	t2.start()
 
 	try:
