@@ -15,34 +15,22 @@ global dvblastReload
 dvblastReload = 0
 clientsDict = {}
 tunerDict = {'0':[]}
-chList = {
-		  '11538':['666000000','8','qam_auto', '257'], # 10729, 10721, 10733, 10770, 10804, 10880, 10962
-		  '11568':['666000000','8','qam_auto', '260'],
-		  # '10818':['666000000','8','qam_auto', '261'], 
-		  # '10847':['666000000','8','qam_auto', '262'], 
-		  '11541':['666000000','8','qam_auto', '282']  #282 10876
-		  # '11023':['666000000','8','qam_auto', '324']
-		  # '11471':['498000000', '8', 'qam_auto', '1537'],
-		  # '11541':['498000000', '8', 'qam_auto', '1538'],
-		  # '11566':['498000000', '8', 'qam_auto', '1539'],
-		  # '11604':['498000000', '8', 'qam_auto', '1542'],
-		  # '11727':['498000000', '8', 'qam_auto', '1543'],
-		  # '10803':['578000000','8','qam_16', '1'],
-		  # '10854':['578000000','8','qam_16', '257'],
-		  # '10719':['578000000','8','qam_16', '258'],
-		  # '10723':['578000000','8','qam_16', '513'],   # 11785 11823 11843 10854 10949
-  		#   '10949':['474000000','8','qam_auto', '513'],
-		  # '11471':['474000000','8','qam_auto', '515'],
-		  # '11566':['474000000','8','qam_auto', '516'], 
-		  # '11727':['474000000','8','qam_auto', '517'], 
-		  # '11823':['474000000','8','qam_auto', '518'], 
-		  # '11862':['474000000','8','qam_auto', '519']
-		  }
+chList = {}
+
+f = open('rtspServer.config', 'r')
+lines = f.readlines()
+for i in range(5, len(lines)):
+	line = lines[i]
+	lineArray = line.split(' ')
+	if lineArray[0] != '#':
+		chList[lineArray[0]] = lineArray[1:-1]
+f.close()
+
 session = ''
 state = 0 # INI = 0
 streamID = 0
 
-class ServerWorker:
+class rtspServerWorker:
 	# Events
 	SETUP = 'SETUP'
 	PLAY = 'PLAY'
@@ -434,7 +422,6 @@ class ServerWorker:
 			serverTunerNr = 4
 			tunerValues = '1,0,0,0,'
 			tunerValues2 = ',' + clientsDict[self.clientInfo['addr_IP']]['pol'] + ',' + clientsDict[self.clientInfo['addr_IP']]['msys'] + ',' + clientsDict[self.clientInfo['addr_IP']]['mtype'] + ',' + clientsDict[self.clientInfo['addr_IP']]['plts'] + ',' + clientsDict[self.clientInfo['addr_IP']]['ro'] + ',' + clientsDict[self.clientInfo['addr_IP']]['sr'] + ',' + clientsDict[self.clientInfo['addr_IP']]['fec']
-			# tunerValues2 = ',v,dvbs,qpsk,off,0.35,27500,34'
 			sdpString = 'v=0\r\no=- 534863118 534863118 IN IP4 %s\ns=SatIPServer:%d %d\r\nt=0 0\r\nm=video 0 RTP/AVP 33\r\nc=IN IP4 %s\na=control:stream=%d\na=fmtp:33 ver=1.0;scr=1;tuner=%s%s.00%s\na=%s\n' % (ipServer, serverID, serverTunerNr, unicastIp, clientsDict[self.clientInfo['addr_IP']]['stream'], tunerValues, clientsDict[self.clientInfo['addr_IP']]['freq'], tunerValues2, clientsDict[self.clientInfo['addr_IP']]['status'])
 			sdpLen = len(sdpString)
 			rtspString = 'RTSP/1.0 200 OK\r\nContent-length:%d\r\nContent-type:application/sdp\r\nContent-Base:rtsp://192.168.2.61/\r\nCSeq:%s\nSession:c8d13e72c33931f\r\n\r\n' % (sdpLen ,seq)
@@ -444,10 +431,6 @@ class ServerWorker:
 			connSocket = self.clientInfo['rtspSocket']# object does not support indexing [0]
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0
-			# reply = 'RTSP/1.0 200 OK\r\nContent-length:228\r\nContent-type:application/sdp\r\nContent-Base:rtsp://192.168.2.61/\r\nCSeq:%s\nSession:c8d13e72c33931f\r\n\r\nv=0\r\no=- 534863118 534863118 IN IP4 192.168.2.61\r\ns=SatIPServer:1 4\r\nt=0 0\r\nm=video 0 RTP/AVP 33\r\nc=IN IP4 0.0.0.0\r\na=control:stream=%d\r\na=fmtp:33 ver=1.0;scr=1;tuner=1,0,0,0,10719.00,v,dvbs,qpsk,off,0.35,27500,34\r\na=sendonly\r\n' % (seq, clientsDict[self.clientInfo['addr_IP']]['stream'])
-			# connSocket = self.clientInfo['rtspSocket']# object does not support indexing [0]
-			# connSocket.send(reply)
-			# self.SERVER_RUNNING = 0
 		elif code == self.OK_404_DESCRIBE:
 			reply = 'RTSP/1.0 404 Not Found\r\nCSeq:%s\n\r\n' % (seq)
 			connSocket = self.clientInfo['rtspSocket']# object does not support indexing [0]
@@ -473,9 +456,3 @@ class ServerWorker:
 			connSocket = self.clientInfo['rtspSocket']# object does not support indexing [0]
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0			
-
-		# Closing connection
-		# elif code == self.CLOSING_CONNECTION:
-		# 	print "Closing Connetion. Shuting down server."
-		# 	connSocket = self.clientInfo['rtspSocket']
-		# 	connSocket.close()	

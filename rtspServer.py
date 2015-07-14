@@ -2,39 +2,31 @@
 
 import sys, socket, signal
 
-from ServerWorker import ServerWorker
+from rtspServerWorker import rtspServerWorker
 from netInterfaceStatus import getServerIP
 
 class Server:	
 	
 	def main(self):
+		# Make sure you have root privileges to run this script
+		# it is necesary that we can open the "554" port
 		serverPort = 554
-		# try:
-		# 	SERVER_PORT = int(sys.argv[1])
-		# except:
-		# 	print "[Usage: Server.py Server_port]\n"
 		rtspSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
 		ipAddrServer = getServerIP()
 
 		rtspSocket.bind((ipAddrServer, serverPort))
-		# rtspSocket.bind(('192.168.2.60', SERVER_PORT))
-		# rtspSocket.bind(('10.50.216.140', SERVER_PORT))
-
 		while (1):
+			# Listen for incoming connections
 			rtspSocket.listen(1)        
 
-			# Receive client info (address,port) through RTSP/TCP session
-			# while True:
-
+			# Create the client profile and store necesary information
 			clientInfo = {}
 			clientInfo['rtspSocket'], addr = rtspSocket.accept()
 			clientInfo['addr_IP'] = addr[0]
 			clientInfo['addr_PORT'] = addr[1]
-			
-			# print "ALEX 1"
-			ServerWorker(clientInfo).run()
-			# print "Alex 2"
+
+			# Run the rtspServerWorker for that specific client
+			rtspServerWorker(clientInfo).run()
 			
 		rtspSocket.close()
 
