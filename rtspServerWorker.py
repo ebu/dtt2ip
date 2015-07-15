@@ -3,19 +3,21 @@
 from random import randint
 import sys, traceback, threading, socket, signal, re, commands, os, time
 from subprocess import Popen
+from resources import getFrontEnds
 
 global session
 global state
 global clientsDict
-global tunerDict
 global chList
 global streamID
 global dvblastReload
+global frontEndsDict
 
 dvblastReload = 0
 clientsDict = {}
-tunerDict = {'0':[]}
 chList = {}
+
+frontEndsDict = getFrontEnds()
 
 f = open('conf/rtspServer.config', 'r')
 lines = f.readlines()
@@ -29,6 +31,7 @@ f.close()
 session = ''
 state = 0 # INI = 0
 streamID = 0
+
 
 class rtspServerWorker:
 	# Events
@@ -125,7 +128,8 @@ class rtspServerWorker:
 		global dvblastReload
 		global chList	
 		global clientsDict  # clientsDict = { 'ip_client_1': {'rtpPort': '', state: 0, 'freq': '', stream: 0, 'src': '', 'pol': '', 'ro': '', 'msys': '', 'mtype': '', 'plts': '', 'sr': '', 'fec': '', 'status': 'sendonly'}}
-		
+		global frontEndsDict
+
 		# Initialize local variables
 		freq = ''
 		pids = ''
@@ -211,7 +215,7 @@ class rtspServerWorker:
 	
 				# Send RTSP reply
 				if freq in chList:
-					f = open('/home/alex/Documents/dvb-t/pid' + chList[freq][0] + '.cfg', 'a')
+					f = open('dvb-t/pid' + chList[freq][0] + 'adapter0' + '.cfg', 'a')
 					f.write(self.clientInfo['addr_IP'] + ':' + clientsDict[self.clientInfo['addr_IP']]['rtpPort'] + '\t1\t' + chList[freq][3] + '\n')
 					f.close()
 					dvblastReload = 1
@@ -241,7 +245,7 @@ class rtspServerWorker:
 					lines = f.readlines()
 					f.close()
 
-					f = open('/home/alex/Documents/dvb-t/pid' + chList[freq][0] + 'adapter0' +  '.cfg', 'w')
+					f = open('dvb-t/pid' + chList[freq][0] + 'adapter0' +  '.cfg', 'w')
 					lineToCompare = self.clientInfo['addr_IP']
 
 					for line in lines:
@@ -268,20 +272,55 @@ class rtspServerWorker:
 					print "processing PLAY, State: PLAYING\n"
 				self.replyRtsp(self.OK_200_PLAY, seq[1])
 
-				# Reload configuration for dvblast only if we have a streamID, the configuration file has been update and the PLAY URI is not a delete pid
+				# START/RELOAD configuration for dvblast only if we have a streamID, the configuration file has been update and the PLAY URI is not a delete pid
 				if clientsDict[self.clientInfo['addr_IP']]['stream'] and dvblastReload and delPids == 0:
-					cmd = 'dvblastctl -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + '.sock reload'
-					# print 'about to run: ', cmd
-					os.system(cmd)
-					dvblastReload = 0
+					# Search for any configured tuner with the frequency that we want to tune to
+					for frontEnd in frontEndsDict:
+						print "frontEndsDict", frontEndsDict
+						print "freq", chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]
+						if frontEndsDict[frontEnd]['freq'] == chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]:
+							cmd = 'dvblastctl -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + frontEnd + '.sock reload'
+							# print 'about to run: ', cmd
+							os.system(cmd)
+							dvblastReload = 0
+							if  frontEndsDict[frontEnd]['owner'] != self.clientInfo['addr_IP']:
+								frontEndsDict[frontEnd]['owner'] = '255.255.255.255'  # '255.255.255.255' the IP address for specifying multiple owners
+					# If we did not find any tuner that has that frequency configured then, search for any available tuner
+					if dvblastReload:
+						for frontEnd in frontEndsDict:
+							if frontEndsDict[frontEnd]['freq'] == '':
+								cmd = 'dvblast -a ' + frontEnd[-1] + ' -c dvb-t/pid' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + frontEnd + '.cfg -f ' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + ' -b 8 -C -u -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + frontEnd + '.sock'
+								dvblastReload = 0
+								frontEndsDict[frontEnd]['freq'] = chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]
+								frontEndsDict[frontEnd]['owner'] = self.clientInfo['addr_IP']
+								# Start dvblast in a separate thread	
+								t2 = threading.Thread(target=self.run_dvblast, args=[cmd])
+								t2.daemon = True
+								t2.start()
+
+					if dvblastReload:
+						for frontEnd in frontEndsDict:
+							if frontEndsDict[frontEnd]['owner'] == self.clientInfo['addr_IP']:
+								cmd = 'dvblastctl -r /tmp/dvblast' + frontEndsDict[frontEnd]['freq'] + frontEnd + '.sock shutdown'
+								print "ABOUT TO DO: ", cmd
+								os.system(cmd)
+								# os.SystemExittem(cmd)
+								cmd = 'dvblast -a ' + frontEnd[-1] + ' -c dvb-t/pid' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + frontEnd + '.cfg -f ' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + ' -b 8 -C -u -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + frontEnd + '.sock'
+								dvblastReload = 0
+								frontEndsDict[frontEnd]['freq'] = chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]
+								frontEndsDict[frontEnd]['owner'] = self.clientInfo['addr_IP']
+								# Start dvblast in a separate thread
+								t3 = threading.Thread(target=self.run_dvblast, args=[cmd])
+								t3.daemon = True
+								t3.start()
 
 				# Remove corresponding pid from config file and reload for sat>ip app
 				if clientsDict[self.clientInfo['addr_IP']]['stream'] and delPids and delPid:
 					try:
-						f = open('/home/alex/Documents/dvb-t/pid' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + 'adapter0' +  '.cfg', 'r')
+						f = open('dvb-t/pid' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + 'adapter0' +  '.cfg', 'r')
 						lines = f.readlines()
 						f.close()
-						f = open('/home/alex/Documents/dvb-t/pid' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + 'adapter0' +  '.cfg', 'w')
+						f = open('dvb-t/pid' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + 'adapter0' +  '.cfg', 'w')
 						lineToCompare = self.clientInfo['addr_IP']
 
 						for line in lines:
@@ -295,7 +334,7 @@ class rtspServerWorker:
 								print 'match'
 						f.close()
 
-						cmd = 'dvblastctl -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + '.sock reload'
+						cmd = 'dvblastctl -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + 'adapter0' + '.sock reload'
 						# print  'about to run: ', cmd
 						os.system(cmd)
 					except:
@@ -305,13 +344,12 @@ class rtspServerWorker:
 		elif requestType == self.TEARDOWN:
 			print "processing TEARDOWN, New State: INI\n"
 			# clientsDict[self.clientInfo['addr_IP']]['state'] = self.INI
-			del clientsDict[self.clientInfo['addr_IP']]
 			session = ''
 			try:
-				f = open('/home/alex/Documents/dvb-t/pid' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + 'adapter0' +  '.cfg', 'r')
+				f = open('dvb-t/pid' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + 'adapter0' +  '.cfg', 'r')
 				lines = f.readlines()
 				f.close()
-				f = open('/home/alex/Documents/dvb-t/pid' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + 'adapter0' +  '.cfg', 'w')
+				f = open('dvb-t/pid' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + 'adapter0' +  '.cfg', 'w')
 				lineToCompare = self.clientInfo['addr_IP']
 
 				for line in lines:
@@ -325,12 +363,12 @@ class rtspServerWorker:
 						print 'match'
 				f.close()
 
-				cmd = 'dvblastctl -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + '.sock reload'
+				cmd = 'dvblastctl -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + 'adapter0' + '.sock reload'
 				# print  'about to run: ', cmd
 				os.system(cmd)
 			except:
 				print "processing TEARDOWN NONE"
-
+			del clientsDict[self.clientInfo['addr_IP']]
 			self.replyRtsp(self.OK_200_TEARDOWN, seq[1])
 			
 		# Process OPTIONS request 		
@@ -364,7 +402,15 @@ class rtspServerWorker:
 		
 	def run_dvblast(self, cmd):
 		# print 'ABOUT TO RUN', cmd
+		# cmd = 'sudo dvblast -a 0 -c dvb-t/pid666000000adapter0.cfg -f 666000000 -b 8 -C -u -r /tmp/dvblast666000000adapter0.sock'
+		print 'ABOUT TO DO: ', cmd
 		os.system(cmd)
+		# outtext = commands.getoutput(cmd)
+		# print "outtext", outtext
+		# (exitstatus, outtext) = commands.getstatusoutput(cmd)
+		# print "exitstatus", exitstatus
+		# if not exitstatus:
+			# print "outtext", outtext
 
 	def replyRtsp(self, code, seq):
 		"""Send RTSP reply to the client."""
