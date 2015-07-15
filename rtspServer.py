@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, socket, signal
+import sys, socket, signal, commands, re
 
 from rtspServerWorker import rtspServerWorker
 from netInterfaceStatus import getServerIP
@@ -8,6 +8,19 @@ from netInterfaceStatus import getServerIP
 class Server:	
 	
 	def main(self):
+		# Make sure that all the pidCfgFiles are clean before you start the rtsp state machine
+		cmd = 'ls -l /dvb-t/pid*'
+		print 'about to do this: ', cmd
+		outtext = commands.getoutput(cmd)
+		(exitstatus, outtext) = commands.getstatusoutput(cmd)
+		if not exitstatus:
+			linesArray = outtext.split('\n')
+			for line in linesArray:
+				matchPidCfgFile = re.search(r'pid([\w]+)', line)
+				if matchPidCfgFile:
+					f = open ('pid' + matchPidCfgFile.group(1) + 'adapter0' + '.cfg', 'w')
+					f.close()
+
 		# Make sure you have root privileges to run this script
 		# it is necesary that we can open the "554" port
 		serverPort = 554

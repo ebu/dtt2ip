@@ -17,7 +17,7 @@ global NT, USN, st
 
 
 paramDict = {}
-f = open("discoveryServer.config", 'r')
+f = open("conf/discoveryServer.config", 'r')
 lines = f.readlines()
 for i in range(5, len(lines)):
 	line = lines[i]

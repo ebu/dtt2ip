@@ -17,7 +17,7 @@ clientsDict = {}
 tunerDict = {'0':[]}
 chList = {}
 
-f = open('rtspServer.config', 'r')
+f = open('conf/rtspServer.config', 'r')
 lines = f.readlines()
 for i in range(5, len(lines)):
 	line = lines[i]
@@ -44,7 +44,7 @@ class rtspServerWorker:
 	READY = 1
 	PLAYING = 2
 
-	OK_200 = 0
+	OK_200_OPTIONS = 0
 	FILE_NOT_FOUND_404 = 1
 	CON_ERR_500 = 2
 	CLOSING_CONNECTION = 3
@@ -125,9 +125,8 @@ class rtspServerWorker:
 		global dvblastReload
 		global chList	
 		global clientsDict  # clientsDict = { 'ip_client_1': {'rtpPort': '', state: 0, 'freq': '', stream: 0, 'src': '', 'pol': '', 'ro': '', 'msys': '', 'mtype': '', 'plts': '', 'sr': '', 'fec': '', 'status': 'sendonly'}}
-
 		
-		#Initialize local variables
+		# Initialize local variables
 		freq = ''
 		pids = ''
 		delPids = 0
@@ -151,31 +150,19 @@ class rtspServerWorker:
 			match_client_port = re.search(r'client_port', seq_find)
 			if match_client_port:
 				seq_find_array = seq_find.split(';')
-				self.clientInfo['rtpPort']= seq_find_array[2].split('=')[1].split('-')[0]
-				
+				self.clientInfo['rtpPort']= seq_find_array[2].split('=')[1].split('-')[0]	
 				clientsDict[self.clientInfo['addr_IP']]['rtpPort'] = self.clientInfo['rtpPort']
-				# if len(clientsDict[self.clientInfo['addr_IP']]) < 1:
-				# 	clientsDict[self.clientInfo['addr_IP']].append(self.clientInfo['rtpPort'])
-				# 	clientsDict[self.clientInfo['addr_IP']].append(self.INI)
-				# else:
-				# 	clientsDict[self.clientInfo['addr_IP']][0] = self.clientInfo['rtpPort']
+				# print "clientsDict", clientsDict
 
-				print "clientsDict", clientsDict
-
-
+		# Word parsing for SETUP/PLAY URI request
 		if requestType == self.SETUP or requestType == self.PLAY:
-			# Word parsing for SETUP/PLAY URI request
 			match_pids = re.search(r'pids=([\w]+)', uriLastPart)
 			if match_pids:
 				pids = match_pids.group(1)
-			# match_stream = re.search(r'stream=([\w]+)', seq_find)
-			# if match_stream:
-			# 	streamID = int(match_stream.group(1))
 			match_delpids = re.search(r'delpids=([\w]+)', uriLastPart)
 			if match_delpids:
 				delPids = 1
 				delPid = int(match_delpids.group(1))
-				print "delPid", delPid
 
 		# Process SETUP request
 		if requestType == self.SETUP:
@@ -211,7 +198,7 @@ class rtspServerWorker:
 
 			clientsDict[self.clientInfo['addr_IP']]['status'] = 'sendonly'
 
-
+			# Process SETUP request If STATE is INI
 			if clientsDict[self.clientInfo['addr_IP']]['state'] == self.INI: 
 				print "processing SETUP, New State: READY\n"
 				clientsDict[self.clientInfo['addr_IP']]['state'] = self.READY
@@ -228,8 +215,7 @@ class rtspServerWorker:
 					f.write(self.clientInfo['addr_IP'] + ':' + clientsDict[self.clientInfo['addr_IP']]['rtpPort'] + '\t1\t' + chList[freq][3] + '\n')
 					f.close()
 					dvblastReload = 1
-
-					print "ALEX ----------", clientsDict[self.clientInfo['addr_IP']]
+					# print "ALEX ----------", clientsDict[self.clientInfo['addr_IP']]
 
 				if pids == 'none' or pids == '':
 					self.replyRtsp(self.OK_200_SETUP, seq[1])
@@ -238,7 +224,7 @@ class rtspServerWorker:
 				else:
 					self.replyRtsp(self.OK_200_SETUP_PIDS, seq[1])
 
-
+			# Process SETUP request If STATE is READY
 			elif clientsDict[self.clientInfo['addr_IP']]['state'] == self.READY: 
 				print "processing SETUP, State: READY\n"
 				print ""
@@ -246,15 +232,16 @@ class rtspServerWorker:
 				# Send RTSP reply
 				self.replyRtsp(self.OK_200_SETUP, seq[1])
 
+			# Process SETUP request If STATE is PLAYING
 			elif clientsDict[self.clientInfo['addr_IP']]['state'] == self.PLAYING:
 				print "processing SETUP, State: PLAYING\n"
 				
 				if freq in chList:
-					f = open('/home/alex/Documents/dvb-t/pid' + chList[freq][0] + '.cfg', 'r')
+					f = open('dvb-t/pid' + chList[freq][0] + 'adapter0' + '.cfg', 'r')
 					lines = f.readlines()
 					f.close()
 
-					f = open('/home/alex/Documents/dvb-t/pid' + chList[freq][0] + '.cfg', 'w')
+					f = open('/home/alex/Documents/dvb-t/pid' + chList[freq][0] + 'adapter0' +  '.cfg', 'w')
 					lineToCompare = self.clientInfo['addr_IP']
 
 					for line in lines:
@@ -267,66 +254,64 @@ class rtspServerWorker:
 					f.write(self.clientInfo['addr_IP'] + ':' + clientsDict[self.clientInfo['addr_IP']]['rtpPort'] + '\t1\t' + chList[freq][3] + '\n')
 					f.close()
 					dvblastReload = 1
-
-					print "ALEX ----------", clientsDict[self.clientInfo['addr_IP']]
+					# print "ALEX ----------", clientsDict[self.clientInfo['addr_IP']]
 				self.replyRtsp(self.OK_200_SETUP, seq[1])
 				
 		# Process PLAY request 		
 		elif requestType == self.PLAY:
-			if clientsDict[self.clientInfo['addr_IP']]['state'] == self.PLAYING: #self.state == self.PLAYING:
-				print "processing PLAY, State: PLAYING\n"
+
+			if clientsDict[self.clientInfo['addr_IP']]['state'] == self.PLAYING or clientsDict[self.clientInfo['addr_IP']]['state'] == self.READY: 
+				if clientsDict[self.clientInfo['addr_IP']]['state'] == self.READY:
+					print "processing PLAY, New State: PLAYING\n"
+					clientsDict[self.clientInfo['addr_IP']]['state'] = self.PLAYING
+				else:
+					print "processing PLAY, State: PLAYING\n"
 				self.replyRtsp(self.OK_200_PLAY, seq[1])
-				
-			if clientsDict[self.clientInfo['addr_IP']]['state'] == self.READY: #self.state == self.READY:
-				print "processing PLAY, New State: PLAYING\n"
-				clientsDict[self.clientInfo['addr_IP']]['state'] = self.PLAYING
-				self.replyRtsp(self.OK_200_PLAY, seq[1])
 
-			# Reload configuration for dvblast only if new have a streamID, the configuration file has been update and the PLAY URI is not a delete pid
-			if clientsDict[self.clientInfo['addr_IP']]['stream'] and dvblastReload and delPids == 0:
-				cmd = 'dvblastctl -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + '.sock reload'
-				# print 'about to run: ', cmd
-				os.system(cmd)
-				dvblastReload = 0
-
-			# Remove corresponding pid from config file and reload for sat>ip app
-			if clientsDict[self.clientInfo['addr_IP']]['stream'] and delPids and delPid:
-				try:
-					f = open('/home/alex/Documents/dvb-t/pid' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + '.cfg', 'r')
-					# f.write(self.clientInfo['addr_IP'] + '\t1\t' + chList[freq][3])
-					lines = f.readlines()
-					f.close()
-					f = open('/home/alex/Documents/dvb-t/pid' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + '.cfg', 'w')
-					lineToCompare = self.clientInfo['addr_IP']
-
-					for line in lines:
-						print "line ", line
-						match_line = re.search(lineToCompare, line)
-						print "line to compare ", lineToCompare
-						if not match_line:
-							f.write(line)
-							print 'not match'
-						else:
-							print 'match'
-					f.close()
-
+				# Reload configuration for dvblast only if we have a streamID, the configuration file has been update and the PLAY URI is not a delete pid
+				if clientsDict[self.clientInfo['addr_IP']]['stream'] and dvblastReload and delPids == 0:
 					cmd = 'dvblastctl -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + '.sock reload'
-					# print  'about to run: ', cmd
+					# print 'about to run: ', cmd
 					os.system(cmd)
-				except:
-					print "processing PLAY DELETE PIDS"
+					dvblastReload = 0
+
+				# Remove corresponding pid from config file and reload for sat>ip app
+				if clientsDict[self.clientInfo['addr_IP']]['stream'] and delPids and delPid:
+					try:
+						f = open('/home/alex/Documents/dvb-t/pid' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + 'adapter0' +  '.cfg', 'r')
+						lines = f.readlines()
+						f.close()
+						f = open('/home/alex/Documents/dvb-t/pid' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + 'adapter0' +  '.cfg', 'w')
+						lineToCompare = self.clientInfo['addr_IP']
+
+						for line in lines:
+							print "line ", line
+							match_line = re.search(lineToCompare, line)
+							print "line to compare ", lineToCompare
+							if not match_line:
+								f.write(line)
+								print 'not match'
+							else:
+								print 'match'
+						f.close()
+
+						cmd = 'dvblastctl -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + '.sock reload'
+						# print  'about to run: ', cmd
+						os.system(cmd)
+					except:
+						print "processing PLAY DELETE PIDS"
 		
 		# Process TEARDOWN request
 		elif requestType == self.TEARDOWN:
 			print "processing TEARDOWN, New State: INI\n"
-			clientsDict[self.clientInfo['addr_IP']]['state'] = self.INI
+			# clientsDict[self.clientInfo['addr_IP']]['state'] = self.INI
+			del clientsDict[self.clientInfo['addr_IP']]
 			session = ''
 			try:
-				f = open('/home/alex/Documents/dvb-t/pid' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + '.cfg', 'r')
-				# f.write(self.clientInfo['addr_IP'] + '\t1\t' + chList[freq][3])
+				f = open('/home/alex/Documents/dvb-t/pid' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + 'adapter0' +  '.cfg', 'r')
 				lines = f.readlines()
 				f.close()
-				f = open('/home/alex/Documents/dvb-t/pid' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + '.cfg', 'w')
+				f = open('/home/alex/Documents/dvb-t/pid' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + 'adapter0' +  '.cfg', 'w')
 				lineToCompare = self.clientInfo['addr_IP']
 
 				for line in lines:
@@ -351,7 +336,7 @@ class rtspServerWorker:
 		# Process OPTIONS request 		
 		elif requestType == self.OPTIONS:
 			print "processing OPTIONS\n"
-			self.replyRtsp(self.OK_200, seq[1])
+			self.replyRtsp(self.OK_200_OPTIONS, seq[1])
 
 		# Process DESCRIBE request 		
 		elif requestType == self.DESCRIBE:
@@ -383,12 +368,7 @@ class rtspServerWorker:
 
 	def replyRtsp(self, code, seq):
 		"""Send RTSP reply to the client."""
-		if code == self.OK_200:
-			#print "200 OK"
-			# try:
-				# reply = 'RTSP/1.0 200 OK\nCSeq: ' + seq + '\nSession: ' + str(self.clientInfo['session'])
-			# except:
-			# reply = 'RTSP/1.0 200 OK\nCSeq: ' + seq
+		if code == self.OK_200_OPTIONS:
 			reply = 'RTSP/1.0 200 OK\r\nPublic:OPTIONS,SETUP,PLAY,TEARDOWN,DESCRIBE\r\nCSeq:1\r\n\r\n'
 			connSocket = self.clientInfo['rtspSocket']# object does not support indexing [0]
 			connSocket.send(reply)
@@ -412,7 +392,7 @@ class rtspServerWorker:
 			
 			reply = rtspString + sdpString
 
-			connSocket = self.clientInfo['rtspSocket']# object does not support indexing [0]
+			connSocket = self.clientInfo['rtspSocket']
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0
 		elif code == self.OK_200_DESCRIBE_NOSIGNAL:
@@ -428,31 +408,31 @@ class rtspServerWorker:
 			
 			reply = rtspString + sdpString
 
-			connSocket = self.clientInfo['rtspSocket']# object does not support indexing [0]
+			connSocket = self.clientInfo['rtspSocket']
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0
 		elif code == self.OK_404_DESCRIBE:
 			reply = 'RTSP/1.0 404 Not Found\r\nCSeq:%s\n\r\n' % (seq)
-			connSocket = self.clientInfo['rtspSocket']# object does not support indexing [0]
+			connSocket = self.clientInfo['rtspSocket']
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0
 		elif code == self.OK_200_SETUP:
 			reply = 'RTSP/1.0 200 OK\r\nSession:c8d13e72c33931f;timeout=30\r\ncom.ses.streamID:%d\r\nTransport: RTP/AVP;unicast;destination=%s;client_port=5000-5001\r\nCSeq:%s\n\r\n' % (clientsDict[self.clientInfo['addr_IP']]['stream'], self.clientInfo['addr_IP'], seq)
-			connSocket = self.clientInfo['rtspSocket']# object does not support indexing [0]
+			connSocket = self.clientInfo['rtspSocket']
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0
 		elif code == self.OK_200_SETUP_PIDS:
 			reply = 'RTSP/1.0 200 OK\r\nSession:c8d13e72c33931f;timeout=30\r\ncom.ses.streamID:%d\r\nTransport: RTP/AVP;unicast;destination=%s;client_port=5000-5001\r\nCSeq:%s\r\n\r\n' % (clientsDict[self.clientInfo['addr_IP']]['stream'], self.clientInfo['addr_IP'], seq)
-			connSocket = self.clientInfo['rtspSocket']# object does not support indexing [0]
+			connSocket = self.clientInfo['rtspSocket']
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 1
 		elif code == self.OK_200_PLAY:
 			reply = 'RTSP/1.0 200 OK\r\nRTP-Info:url=//192.168.2.61/stream=%d;seq=50230\r\nCSeq:%s\nSession:c8d13e72c33931f\r\n\r\n' % (clientsDict[self.clientInfo['addr_IP']]['stream'], seq)
-			connSocket = self.clientInfo['rtspSocket']# object does not support indexing [0]
+			connSocket = self.clientInfo['rtspSocket']
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0
 		elif code == self.OK_200_TEARDOWN:
 			reply = 'RTSP/1.0 200 OK\r\nContent-length:0\r\nCSeq:%s\nSession:c8d13e72c33931f\r\n\r\n' % (seq)
-			connSocket = self.clientInfo['rtspSocket']# object does not support indexing [0]
+			connSocket = self.clientInfo['rtspSocket']
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0			
