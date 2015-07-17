@@ -23,7 +23,7 @@ chList = {}
 frontEndsDict = getFrontEnds()
 freqDict = {}
 
-f = open('conf/rtspServer.config', 'r')
+f = open('conf/rtspServer2.config', 'r')
 lines = f.readlines()
 for i in range(5, len(lines)):
 	line = lines[i]
@@ -222,7 +222,7 @@ class rtspServerWorker:
 				# Send RTSP reply
 				if freq in chList:
 					f = open('dvb-t/pid' + chList[freq][0] + '.cfg', 'a')
-					f.write(self.clientInfo['addr_IP'] + ':' + clientsDict[self.clientInfo['addr_IP']]['rtpPort'] + '\t1\t' + chList[freq][3] + '\n')
+					f.write(self.clientInfo['addr_IP'] + ':' + clientsDict[self.clientInfo['addr_IP']]['rtpPort'] + '\t1\t' + chList[freq][1] + '\n')
 					f.close()
 					dvblastReload = 1
 					# print "ALEX ----------", clientsDict[self.clientInfo['addr_IP']]
@@ -261,7 +261,7 @@ class rtspServerWorker:
 						if not match_line:
 							f.write(line)
 					
-					f.write(self.clientInfo['addr_IP'] + ':' + clientsDict[self.clientInfo['addr_IP']]['rtpPort'] + '\t1\t' + chList[freq][3] + '\n')
+					f.write(self.clientInfo['addr_IP'] + ':' + clientsDict[self.clientInfo['addr_IP']]['rtpPort'] + '\t1\t' + chList[freq][1] + '\n')
 					f.close()
 					dvblastReload = 1
 					# print "ALEX ----------", clientsDict[self.clientInfo['addr_IP']]
