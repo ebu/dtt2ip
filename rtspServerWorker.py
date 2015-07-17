@@ -11,10 +11,12 @@ global clientsDict
 global chList
 global streamID
 global dvblastReload
+global lateDvblast
 global frontEndsDict
 global freqDict
 
 dvblastReload = 0
+lateDvblast = 0
 clientsDict = {}
 chList = {}
 
@@ -128,6 +130,7 @@ class rtspServerWorker:
 		global state
 		global streamID
 		global dvblastReload
+		global lateDvblast
 		global chList	
 		global clientsDict  # clientsDict = { 'ip_client_1': {'rtpPort': '', state: 0, 'freq': '', stream: 0, 'src': '', 'pol': '', 'ro': '', 'msys': '', 'mtype': '', 'plts': '', 'sr': '', 'fec': '', 'status': 'sendonly'}}
 		global frontEndsDict
@@ -268,12 +271,6 @@ class rtspServerWorker:
 		elif requestType == self.PLAY:
 
 			if clientsDict[self.clientInfo['addr_IP']]['state'] == self.PLAYING or clientsDict[self.clientInfo['addr_IP']]['state'] == self.READY: 
-				if clientsDict[self.clientInfo['addr_IP']]['state'] == self.READY:
-					print "processing PLAY, New State: PLAYING\n"
-					clientsDict[self.clientInfo['addr_IP']]['state'] = self.PLAYING
-				else:
-					print "processing PLAY, State: PLAYING\n"
-				self.replyRtsp(self.OK_200_PLAY, seq[1])
 
 				# START/RELOAD configuration for dvblast only if we have a streamID, the configuration file has been update and the PLAY URI is not a delete pid
 				if clientsDict[self.clientInfo['addr_IP']]['stream'] and dvblastReload and delPids == 0:
@@ -292,10 +289,16 @@ class rtspServerWorker:
 					if dvblastReload:
 						for frontEnd in frontEndsDict:
 							if frontEndsDict[frontEnd]['owner'] == self.clientInfo['addr_IP']:
+								# Shutdown socket 
 								cmd = 'dvblastctl -r /tmp/dvblast' + frontEndsDict[frontEnd]['freq'] + frontEnd + '.sock shutdown'
 								print "ABOUT TO DO: ", cmd
 								os.system(cmd)
-								# os.SystemExittem(cmd)
+								time.sleep(1)
+								# Clear dvblast sockets before creating any other
+								cmdClean = 'rm -rf /tmp/dvblast' + frontEndsDict[frontEnd]['freq'] + frontEnd + '.sock'
+								print "ABOUT TO DO: ", cmdClean 
+								os.system(cmdClean)
+								# Start dvblast on specified freq
 								cmd = 'dvblast -a ' + frontEnd[-1] + ' -c dvb-t/pid' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + '.cfg -f ' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + ' -b 8 -C -u -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + frontEnd + '.sock'
 								dvblastReload = 0
 								frontEndsDict[frontEnd]['freq'] = chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]
@@ -309,6 +312,7 @@ class rtspServerWorker:
 					if dvblastReload:
 						for frontEnd in frontEndsDict:
 							if frontEndsDict[frontEnd]['freq'] == '':
+								# Start dvblast on specified freq
 								cmd = 'dvblast -a ' + frontEnd[-1] + ' -c dvb-t/pid' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + '.cfg -f ' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + ' -b 8 -C -u -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + frontEnd + '.sock'
 								dvblastReload = 0
 								frontEndsDict[frontEnd]['freq'] = chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]
@@ -345,6 +349,16 @@ class rtspServerWorker:
 						os.system(cmd)
 					except:
 						print "processing PLAY DELETE PIDS"
+				
+				# while not lateDvblast:
+				# 	pass
+				# Send response after processing and starting dvblast
+				if clientsDict[self.clientInfo['addr_IP']]['state'] == self.READY:
+					print "processing PLAY, New State: PLAYING\n"
+					clientsDict[self.clientInfo['addr_IP']]['state'] = self.PLAYING
+				else:
+					print "processing PLAY, State: PLAYING\n"
+				self.replyRtsp(self.OK_200_PLAY, seq[1])
 		
 		# Process TEARDOWN request
 		elif requestType == self.TEARDOWN:
@@ -393,11 +407,14 @@ class rtspServerWorker:
 				if dvblastReload:
 					print "processing DESCRIBE SIGNAL\n"
 					self.replyRtsp(self.OK_200_DESCRIBE, seq[1])
+				elif lateDvblast:
+					# Dvblast has a late start
+					print "processing DESCRIBE SIGNAL\n"
+					self.replyRtsp(self.OK_200_DESCRIBE, seq[1])
+					lateDvblast = 0
 				else:
 					print "processing DESCRIBE NO SIGNAL\n"
 					self.replyRtsp(self.OK_200_DESCRIBE_NOSIGNAL, seq[1])
-
-
 
 		# Process CLOSE_CONNETION request 		
 		elif requestType == self.CLOSE_CONNETION:
@@ -407,16 +424,22 @@ class rtspServerWorker:
 
 		
 	def run_dvblast(self, cmd):
-		# print 'ABOUT TO RUN', cmd
-		# cmd = 'sudo dvblast -a 0 -c dvb-t/pid666000000adapter0.cfg -f 666000000 -b 8 -C -u -r /tmp/dvblast666000000adapter0.sock'
+		global lateDvblast
+
 		print 'ABOUT TO DO: ', cmd
-		# os.system(cmd)
-		outtext = commands.getoutput(cmd)
-		# print "outtext", outtext
-		(exitstatus, outtext) = commands.getstatusoutput(cmd)
+		os.system(cmd)
+		# exitstatus = 256
+		# i = 0
+		# while exitstatus and i < 10:
+		# 	i = i + 1
+		# 	outtext = commands.getoutput(cmd)
+		# 	# print "outtext", outtext
+		# 	(exitstatus, outtext) = commands.getstatusoutput(cmd)
+		# 	print "EXISTSTATUS --------------------", exitstatus
+		# 	if exitstatus:
+		# 		lateDvblast = 1
+				# print "outtext", outtext
 		# print "exitstatus", exitstatus
-		# if not exitstatus:
-			# print "outtext", outtext
 
 	def replyRtsp(self, code, seq):
 		"""Send RTSP reply to the client."""
