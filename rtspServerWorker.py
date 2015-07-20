@@ -4,7 +4,7 @@ import sys, traceback, threading, socket, signal, re, commands, os, time, string
 from random import randint
 from resources import getFrontEnds
 from netInterfaceStatus import getServerIP
-from scaning import getChList
+from scanning import getChList
 from subprocess import Popen, PIPE
 
 
@@ -345,8 +345,8 @@ class rtspServerWorker:
 		
 		# Process TEARDOWN request
 		elif requestType == self.TEARDOWN:
-			fLog.write("Info rtspServerWorker: Processing TEARDOWN, New State: INI")
-			clientsDict[self.clientInfo['addr_IP']]['state'] = self.INI
+			fLog.write("Info rtspServerWorker: Processing TEARDOWN, New State: INI\n")
+			# clientsDict[self.clientInfo['addr_IP']]['state'] = self.INI
 			session = ''
 			try:
 				f = open('dvb-t/pid' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + '.cfg', 'r')

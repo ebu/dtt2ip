@@ -205,7 +205,7 @@ def callClientReactor():
 
 	ssdpUnicastSocket.close()
 
-def main():
+def discoveryServer():
 	global fLog
 
 	# DEVICE ID negotiation thread ( server <---> server communications )
@@ -232,6 +232,6 @@ def main():
 
  
 if __name__ == "__main__":
-	main()
+	discoveryServer()
 
 

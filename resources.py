@@ -23,7 +23,7 @@ def getFrontEnds():
 				frontEndDict[adapter] = {}
 				frontEndDict[adapter]['owner'] = '0.0.0.0'
 				frontEndDict[adapter]['freq'] = ''
-		fLog.write('Info: Available ' + adapter + ' detected\n')
+				fLog.write('Info: Available ' + adapter + ' detected\n')
 	else:
 		fLog.write('Info: NO AVAILABLE adapters detected\n')
 	fLog.close()
