@@ -13,7 +13,8 @@ global SSDP_TERMINATE
 global deviceIdOk
 global ssdpAddr, ssdpPort, serverIP
 global paramDict
-global NT, USN, st 
+global NT, USN, st
+global fLog
 
 
 paramDict = {}
@@ -25,7 +26,6 @@ for i in range(5, len(lines)):
 	lineArray[0] = lineArray[0][:-1]
 	lineArray[1] = lineArray[1][1:-1]
 	paramDict[lineArray[0]] = lineArray[1]
-print paramDict
 f.close()
 SSDP_TERMINATE = 0
 
@@ -33,7 +33,11 @@ deviceIdOk = False
 
 ssdpAddr = '239.255.255.250'
 ssdpPort = 1900
+
 serverIP = getServerIP()
+# Make sure that rtspServer.log file is clean
+fLog = open('logs/discoveryServer.log', 'w')
+fLog.write("Info discoveryServer: ipAddrServer = " + serverIP + '\n')
 
 nt1 = 'upnp:' + paramDict['upnp']
 nt2 = 'uuid:' + paramDict['uuid']
@@ -84,9 +88,11 @@ def ms_search():
 
 def callServerReactor():
 	global SSDP_TERMINATE
+	global fLog
 
 	# Open a multicast socket
-	print 'Info: Discovery server started'
+	fLog.write('Info: Discovery server started\n')
+
 	ssdpMulticastSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 	ssdpMulticastSocket.bind((ssdpAddr, ssdpPort))
 
@@ -111,7 +117,9 @@ def callServerReactor():
 				# If M-SEARCH message from client, then process it and respond to it with a unicast message
 				match2 = re.search(r'ses-com',datagram)
 				if match2:
-					print 'ip', address[0], 'port', address[1]
+					# fLog.write("Info: client = ip " + address[0] + ", port " + address[1] + "\n")
+					fLog.write("Info: client \n")
+					print 'Info: client = ip', address[0], 'port', address[1]
 					toClient = True
 					ssdpMulticastSocket.sendto(ms_ok(toClient), (address[0], address[1]))
 
@@ -123,18 +131,22 @@ def callServerReactor():
 					# informing it that DEVICE ID is ours, else if this is an old DTT2IP / SAT>IP server do not do anything
 					if matchSES.group(1) == int(paramDict['deviceId']):
 						ssdpMulticastSocket.sendto(ms_search(), (address[0], address[1]))
-						print "Info: MS_SEARCH"
+						fLog.write("Info: MS_SEARCH\n")
+
 		except:
-			print "Something went wrong"
+			fLog.write("Info: Something went wrong\n")
+
 
 	ssdpMulticastSocket.close()
 
 def callClientReactor():
 	global SSDP_TERMINATE
 	global deviceIdOk
+	global fLog
 
 	# Open a unicast socket
-	print 'Info: Device ID negotion started'
+	fLog.write('Info: Device ID negotion started\n')
+
 	ssdpUnicastSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 	ssdpUnicastSocket.bind((serverIP, ssdpPort))
 	ssdpUnicastSocket.settimeout(5.0)
@@ -147,7 +159,7 @@ def callClientReactor():
 			for i in range(3):
 				paramDict['bootId'] = int(paramDict['bootId']) + 1
 				ssdpUnicastSocket.sendto(ms_notify_alive(NT[i], USN[i]), (ssdpAddr, ssdpPort))
-				print "Info: MS_NOTIFY_ALIVE"
+				fLog.write("Info: MS_NOTIFY_ALIVE\n")
 			try:
 				# See if DEVICE ID is free, by waiting for a message or a timeout of 5 seconds
 				datagram, address = ssdpUnicastSocket.recvfrom(1024)
@@ -169,30 +181,33 @@ def callClientReactor():
 								paramDict['deviceId'] = int(paramDict['deviceId']) + 1
 								toClient = False
 								ssdpUnicastSocket.sendto(ms_ok(toClient), (address[0], address[1]))
-								print "Info: MS_OK"
+								fLog.write("Info: MS_OK\n")
 
 								for i in range(3):
 									ssdpUnicastSocket.sendto(ms_nofity_byebye(NT[i], USN[i]), (ssdpAddr, ssdpPort))
-									print "Info: MS_NOTIFY_BYEBYE"
+									fLog.write("Info: MS_NOTIFY_BYEBYE\n")
 				except:
-					print 'Info: Something went wrong'
+					fLog.write('Info: Something went wrong\n')
+
 			except:
 				# Change deviceIdOk to True only when we timeout (5.0 seconds)
 				deviceIdOk = True
 		# We have obtain out valid DEVICE ID, we have to maintain it valid on the network by sending 
 		# at pseudo random periods 3 MS_NOTIFY_ALIVE messages. The pseudo random interval is between [0, cacheControl/2].
 		# This guarantees that announcement set is repeated at least twice before it expires.
-		print "Info: Device ID negotiation done. Sleep and send NOTIFY later"
+		fLog.write("Info: Device ID negotiation done. Sleep and send NOTIFY later\n")
 		time.sleep(random.randint(0, int(paramDict['cacheControl'])/2))
 
 		for i in range(3):
 			paramDict['bootId'] = int(paramDict['bootId']) + 1
 			ssdpUnicastSocket.sendto(ms_notify_alive(NT[i], USN[i]), (ssdpAddr, ssdpPort))
-			print "Info: MS_NOTIFY_ALIVE"
+			fLog.write("Info: MS_NOTIFY_ALIVE\n")
 
 	ssdpUnicastSocket.close()
 
 def main():
+	global fLog
+
 	# DEVICE ID negotiation thread ( server <---> server communications )
 	t1 = threading.Thread(target=callClientReactor)
 	t1.daemon = True
@@ -212,6 +227,7 @@ def main():
 		while t1.is_alive() and t2.is_alive():
 			pass
 	except (KeyboardInterrupt, SystemExit):
+		fLog.close()
 		SSDP_TERMINATE = 1
 
  

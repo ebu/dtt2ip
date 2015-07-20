@@ -3,6 +3,9 @@
 import commands, re, os.path
 
 def getChList():
+	# Open that scaning.log file
+	fLog = open('logs/scaning.log', 'a')
+
 	# Get chList 
 	chList = {}
 	f = open('conf/rtspServer.config', 'r')
@@ -13,7 +16,8 @@ def getChList():
 		if lineArray[0] != '#':
 			chList[lineArray[0]] = lineArray[1:-1]
 	f.close()
-	print 'Info: Available channels obtained'
+	fLog.write('Info: Available channels obtained\n')
+	fLog.close()
 	return chList
 
 def main():
@@ -25,14 +29,16 @@ def main():
 				'11954':0, '11973':0, '11992':0, '12012':0, '12032':0, '12051':0 }
 	numFreq = len(satFreq)
 
+	# Open that scaning.log file
+	fLog = open('logs/scaning.log', 'a')
 	# cmd = 'w_scan > allFrequencies.txt'
-	# print 'about to do this: ', cmd
+	# fLog.write('Info: Scaning all available frequencies from your antenna\n')
+
 	# outtext = commands.getoutput(cmd)
 	# (exitstatus, outtext) = commands.getstatusoutput(cmd)
 	# if not exitstatus:
 	f = open('allFrequencies.txt', 'r')
 	lines = f.readlines()
-	print lines
 	for line in lines:
 		# Search for the frequencies available from the scan
 		matchFreq = re.search(r':([\w]+)', line)
@@ -50,7 +56,7 @@ def main():
 			outtext = commands.getoutput(cmd)
 			(exitstatus, outtext) = commands.getstatusoutput(cmd)
 			if not exitstatus:
-				print 'Info: Creating missing pid' + freq + '.cfg file'
+				fLog.write('Info: Creating missing pid' + freq + '.cfg file\n')
 
 		# Update the rtspServer.config file with the new available frequencies
 		for currentFreq in sorted(satFreq):
@@ -60,7 +66,8 @@ def main():
 				f.write(currentFreq + ' ' + freq + ' ' + pid + ' \n')
 				f.close()
 				break
-	print 'Info: W_SCAN has finished. All configuration files have been update.'
+
+	fLog.write('Info: W_SCAN has finished. All configuration files have been update\n')
 
 if __name__ == '__main__':
 	main()

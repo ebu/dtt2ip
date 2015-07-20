@@ -6,9 +6,12 @@ def getFrontEnds():
 	# Initialize frontEnd dictionary 
 	frontEndDict = {}
 
+	# Make sure that resources.log file is clean
+	fLog = open('logs/resources.log', 'w')
+
 	# List the available adapters
 	cmd = 'ls -l /dev/dvb/'
-	print 'Info: about to do find all available adapters'
+	fLog.write('Info: about to do find all available adapters\n')
 	outtext = commands.getoutput(cmd)
 	(exitstatus, outtext) = commands.getstatusoutput(cmd)
 	if not exitstatus:
@@ -20,10 +23,10 @@ def getFrontEnds():
 				frontEndDict[adapter] = {}
 				frontEndDict[adapter]['owner'] = '0.0.0.0'
 				frontEndDict[adapter]['freq'] = ''
-		print 'Info: Available ' + adapter + ' detected'
-	# print frontEndDict
+		fLog.write('Info: Available ' + adapter + ' detected\n')
 	else:
-		print 'Info: NO AVAILABLE adapters detected'
+		fLog.write('Info: NO AVAILABLE adapters detected\n')
+	fLog.close()
 	return frontEndDict
 	
 if __name__ == '__main__':
