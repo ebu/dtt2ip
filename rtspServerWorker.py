@@ -1,10 +1,11 @@
 #!/usr/bin/python
 
 import sys, traceback, threading, socket, signal, re, commands, os, time, string, random, uuid
-from subprocess import Popen
+from random import randint
 from resources import getFrontEnds
 from netInterfaceStatus import getServerIP
-from random import randint
+from scaning import getChList
+
 
 global session
 global state
@@ -15,27 +16,20 @@ global dvblastReload
 global frontEndsDict
 global freqDict
 
-dvblastReload = 0
+# Init global variables
 clientsDict = {}
 chList = {}
-
-frontEndsDict = getFrontEnds()
 freqDict = {}
-
-# Get chList 
-f = open('conf/rtspServer.config', 'r')
-lines = f.readlines()
-for i in range(5, len(lines)):
-	line = lines[i]
-	lineArray = line.split(' ')
-	if lineArray[0] != '#':
-		chList[lineArray[0]] = lineArray[1:-1]
-f.close()
-
+dvblastReload = 0
 session = ''
 state = 0 # INI = 0
 streamID = 0
 
+# Get available frontends
+frontEndsDict = getFrontEnds()
+
+# Get chList 
+chList = getChList()
 
 class rtspServerWorker:
 	# Events

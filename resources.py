@@ -20,7 +20,7 @@ def getFrontEnds():
 				frontEndDict[adapter] = {}
 				frontEndDict[adapter]['owner'] = '0.0.0.0'
 				frontEndDict[adapter]['freq'] = ''
-		print 'Info: Available adapters detected'
+		print 'Info: Available ' + adapter + ' detected'
 	# print frontEndDict
 	else:
 		print 'Info: NO AVAILABLE adapters detected'

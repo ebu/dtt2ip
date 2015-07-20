@@ -2,6 +2,20 @@
 
 import commands, re, os.path
 
+def getChList():
+	# Get chList 
+	chList = {}
+	f = open('conf/rtspServer.config', 'r')
+	lines = f.readlines()
+	for i in range(5, len(lines)):
+		line = lines[i]
+		lineArray = line.split(' ')
+		if lineArray[0] != '#':
+			chList[lineArray[0]] = lineArray[1:-1]
+	f.close()
+	print 'Info: Available channels obtained'
+	return chList
+
 def main():
 	# Statically asigned frequencies from 19.2 degrees E satelite
 	satFreq = { '10729':0, '10743':0, '10773':0, '10788':0, '10818':0, '10832':0, '10847':0, '10862':0, '10876':0, '10979':0, 
@@ -24,23 +38,21 @@ def main():
 		matchFreq = re.search(r':([\w]+)', line)
 		if matchFreq:
 			freq = matchFreq.group(1) + '000'
-			print 'freq', freq
 		line = line[::-1]
 		# Search for the PID's corresponding to the frequencies detected
 		matchPid = re.search(r'([\w]+):([\w]+):([\w]+):([\w]+):', line)
 		if matchPid:
 			pid = matchPid.group(4)[::-1]
-			print 'pid', pid
 		
 		# Create all the necesary '.cfg' files
 		if not os.path.isfile('pid' + freq + '.cfg'):
-			cmd = 'touch pid' + freq + '.cfg' 
-			print 'about to do this: ', cmd
+			cmd = 'touch dvb-t/pid' + freq + '.cfg' 
 			outtext = commands.getoutput(cmd)
 			(exitstatus, outtext) = commands.getstatusoutput(cmd)
 			if not exitstatus:
 				print 'Info: Creating missing pid' + freq + '.cfg file'
 
+		# Update the rtspServer.config file with the new available frequencies
 		for currentFreq in sorted(satFreq):
 			if satFreq[currentFreq] == 0:
 				satFreq[currentFreq] = 1
@@ -48,9 +60,7 @@ def main():
 				f.write(currentFreq + ' ' + freq + ' ' + pid + ' \n')
 				f.close()
 				break
-
-
-
+	print 'Info: W_SCAN has finished. All configuration files have been update.'
 
 if __name__ == '__main__':
 	main()
