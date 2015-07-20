@@ -1,10 +1,10 @@
 #!/usr/bin/python
 
-from random import randint
-import sys, traceback, threading, socket, signal, re, commands, os, time
+import sys, traceback, threading, socket, signal, re, commands, os, time, string, random, uuid
 from subprocess import Popen
 from resources import getFrontEnds
 from netInterfaceStatus import getServerIP
+from random import randint
 
 global session
 global state
@@ -22,7 +22,8 @@ chList = {}
 frontEndsDict = getFrontEnds()
 freqDict = {}
 
-f = open('conf/rtspServer2.config', 'r')
+# Get chList 
+f = open('conf/rtspServer.config', 'r')
 lines = f.readlines()
 for i in range(5, len(lines)):
 	line = lines[i]
@@ -210,8 +211,7 @@ class rtspServerWorker:
 				clientsDict[self.clientInfo['addr_IP']]['state'] = self.READY
 
 				# Generate a randomized RTSP session ID
-				# session = 'c8d13e72c33931f'
-				session = self.sessionGenerator()
+				session = uuid.uuid4().hex[:16]
 				# Increment streamID for every new session
 				clientsDict[self.clientInfo['addr_IP']]['stream'] = (clientsDict[self.clientInfo['addr_IP']]['stream'] + 1) % 65536
 	
@@ -249,9 +249,7 @@ class rtspServerWorker:
 					lineToCompare = self.clientInfo['addr_IP']
 
 					for line in lines:
-						print "line ", line
 						match_line = re.search(lineToCompare, line)
-						print "line to compare ", lineToCompare
 						if not match_line:
 							f.write(line)
 					
@@ -379,7 +377,6 @@ class rtspServerWorker:
 
 		# Process DESCRIBE request 		
 		elif requestType == self.DESCRIBE:
-			# print "SESSION", session
 			if session == '':
 				print "Info: Processing DESCRIBE NONE\n"
 				self.replyRtsp(self.OK_404_DESCRIBE, seq[1])
@@ -401,9 +398,6 @@ class rtspServerWorker:
 	def run_dvblast(self, cmd):
 		print 'Info: Starting dvblast'
 		os.system(cmd)
-
-	def sessionGenerator(size=16, chars=string.ascii_lowercase + string.digits):
-		return ''.join(random.choice(chars) for _ in range(size))
 
 	def replyRtsp(self, code, seq):
 		"""Send RTSP reply to the client."""
@@ -428,7 +422,7 @@ class rtspServerWorker:
 			tunerValues2 = ',' + clientsDict[self.clientInfo['addr_IP']]['pol'] + ',' + clientsDict[self.clientInfo['addr_IP']]['msys'] + ',' + clientsDict[self.clientInfo['addr_IP']]['mtype'] + ',' + clientsDict[self.clientInfo['addr_IP']]['plts'] + ',' + clientsDict[self.clientInfo['addr_IP']]['ro'] + ',' + clientsDict[self.clientInfo['addr_IP']]['sr'] + ',' + clientsDict[self.clientInfo['addr_IP']]['fec']
 			sdpString = 'v=0\r\no=- 534863118 534863118 IN IP4 %s\ns=SatIPServer:%d %d\r\nt=0 0\r\nm=video 0 RTP/AVP 33\r\nc=IN IP4 %s\na=control:stream=%d\na=fmtp:33 ver=1.0;scr=1;tuner=%s%s.00%s\na=%s\n' % (ipServer, serverID, serverTunerNr, unicastIp, clientsDict[self.clientInfo['addr_IP']]['stream'], tunerValues, clientsDict[self.clientInfo['addr_IP']]['freq'], tunerValues2, clientsDict[self.clientInfo['addr_IP']]['status'])
 			sdpLen = len(sdpString)
-			rtspString = 'RTSP/1.0 200 OK\r\nContent-length:%d\r\nContent-type:application/sdp\r\nContent-Base:rtsp://192.168.2.61/\r\nCSeq:%s\nSession:c8d13e72c33931f\r\n\r\n' % (sdpLen ,seq)	
+			rtspString = 'RTSP/1.0 200 OK\r\nContent-length:%d\r\nContent-type:application/sdp\r\nContent-Base:rtsp://192.168.2.61/\r\nCSeq:%s\nSession:%s\r\n\r\n' % (sdpLen ,seq, session)	
 			# Make the reply from the two parts: rtspString and sdpString
 			reply = rtspString + sdpString
 			connSocket = self.clientInfo['rtspSocket']
@@ -444,7 +438,7 @@ class rtspServerWorker:
 			tunerValues2 = ',' + clientsDict[self.clientInfo['addr_IP']]['pol'] + ',' + clientsDict[self.clientInfo['addr_IP']]['msys'] + ',' + clientsDict[self.clientInfo['addr_IP']]['mtype'] + ',' + clientsDict[self.clientInfo['addr_IP']]['plts'] + ',' + clientsDict[self.clientInfo['addr_IP']]['ro'] + ',' + clientsDict[self.clientInfo['addr_IP']]['sr'] + ',' + clientsDict[self.clientInfo['addr_IP']]['fec']
 			sdpString = 'v=0\r\no=- 534863118 534863118 IN IP4 %s\ns=SatIPServer:%d %d\r\nt=0 0\r\nm=video 0 RTP/AVP 33\r\nc=IN IP4 %s\na=control:stream=%d\na=fmtp:33 ver=1.0;scr=1;tuner=%s%s.00%s\na=%s\n' % (ipServer, serverID, serverTunerNr, unicastIp, clientsDict[self.clientInfo['addr_IP']]['stream'], tunerValues, clientsDict[self.clientInfo['addr_IP']]['freq'], tunerValues2, clientsDict[self.clientInfo['addr_IP']]['status'])
 			sdpLen = len(sdpString)
-			rtspString = 'RTSP/1.0 200 OK\r\nContent-length:%d\r\nContent-type:application/sdp\r\nContent-Base:rtsp://192.168.2.61/\r\nCSeq:%s\nSession:c8d13e72c33931f\r\n\r\n' % (sdpLen ,seq)
+			rtspString = 'RTSP/1.0 200 OK\r\nContent-length:%d\r\nContent-type:application/sdp\r\nContent-Base:rtsp://192.168.2.61/\r\nCSeq:%s\nSession:%s\r\n\r\n' % (sdpLen ,seq, session)
 			# Make the reply from the two parts: rtspString and sdpString
 			reply = rtspString + sdpString
 			connSocket = self.clientInfo['rtspSocket']
@@ -456,22 +450,22 @@ class rtspServerWorker:
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0
 		elif code == self.OK_200_SETUP:
-			reply = 'RTSP/1.0 200 OK\r\nSession:c8d13e72c33931f;timeout=30\r\ncom.ses.streamID:%d\r\nTransport: RTP/AVP;unicast;destination=%s;client_port=5000-5001\r\nCSeq:%s\n\r\n' % (clientsDict[self.clientInfo['addr_IP']]['stream'], self.clientInfo['addr_IP'], seq)
+			reply = 'RTSP/1.0 200 OK\r\nSession:%s;timeout=30\r\ncom.ses.streamID:%d\r\nTransport: RTP/AVP;unicast;destination=%s;client_port=5000-5001\r\nCSeq:%s\n\r\n' % (session, clientsDict[self.clientInfo['addr_IP']]['stream'], self.clientInfo['addr_IP'], seq)
 			connSocket = self.clientInfo['rtspSocket']
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0
 		elif code == self.OK_200_SETUP_PIDS:
-			reply = 'RTSP/1.0 200 OK\r\nSession:c8d13e72c33931f;timeout=30\r\ncom.ses.streamID:%d\r\nTransport: RTP/AVP;unicast;destination=%s;client_port=5000-5001\r\nCSeq:%s\r\n\r\n' % (clientsDict[self.clientInfo['addr_IP']]['stream'], self.clientInfo['addr_IP'], seq)
+			reply = 'RTSP/1.0 200 OK\r\nSession:%s;timeout=30\r\ncom.ses.streamID:%d\r\nTransport: RTP/AVP;unicast;destination=%s;client_port=5000-5001\r\nCSeq:%s\r\n\r\n' % (session, clientsDict[self.clientInfo['addr_IP']]['stream'], self.clientInfo['addr_IP'], seq)
 			connSocket = self.clientInfo['rtspSocket']
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 1
 		elif code == self.OK_200_PLAY:
-			reply = 'RTSP/1.0 200 OK\r\nRTP-Info:url=//192.168.2.61/stream=%d;seq=50230\r\nCSeq:%s\nSession:c8d13e72c33931f\r\n\r\n' % (clientsDict[self.clientInfo['addr_IP']]['stream'], seq)
+			reply = 'RTSP/1.0 200 OK\r\nRTP-Info:url=//192.168.2.61/stream=%d;seq=50230\r\nCSeq:%s\nSession:%s\r\n\r\n' % (clientsDict[self.clientInfo['addr_IP']]['stream'], seq, session)
 			connSocket = self.clientInfo['rtspSocket']
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0
 		elif code == self.OK_200_TEARDOWN:
-			reply = 'RTSP/1.0 200 OK\r\nContent-length:0\r\nCSeq:%s\nSession:c8d13e72c33931f\r\n\r\n' % (seq)
+			reply = 'RTSP/1.0 200 OK\r\nContent-length:0\r\nCSeq:%s\nSession:%s\r\n\r\n' % (seq, session)
 			connSocket = self.clientInfo['rtspSocket']
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0			
