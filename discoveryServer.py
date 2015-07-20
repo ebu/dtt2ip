@@ -86,7 +86,7 @@ def callServerReactor():
 	global SSDP_TERMINATE
 
 	# Open a multicast socket
-	print 'first thread : Server'
+	print 'Info: Discovery server started'
 	ssdpMulticastSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 	ssdpMulticastSocket.bind((ssdpAddr, ssdpPort))
 
@@ -123,7 +123,7 @@ def callServerReactor():
 					# informing it that DEVICE ID is ours, else if this is an old DTT2IP / SAT>IP server do not do anything
 					if matchSES.group(1) == int(paramDict['deviceId']):
 						ssdpMulticastSocket.sendto(ms_search(), (address[0], address[1]))
-						print "MS_SEARCH"
+						print "Info: MS_SEARCH"
 		except:
 			print "Something went wrong"
 
@@ -134,7 +134,7 @@ def callClientReactor():
 	global deviceIdOk
 
 	# Open a unicast socket
-	print 'second thread : Client'
+	print 'Info: Device ID negotion started'
 	ssdpUnicastSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 	ssdpUnicastSocket.bind((serverIP, ssdpPort))
 	ssdpUnicastSocket.settimeout(5.0)
@@ -147,7 +147,7 @@ def callClientReactor():
 			for i in range(3):
 				paramDict['bootId'] = int(paramDict['bootId']) + 1
 				ssdpUnicastSocket.sendto(ms_notify_alive(NT[i], USN[i]), (ssdpAddr, ssdpPort))
-				print "MS_NOTIFY_ALIVE"
+				print "Info: MS_NOTIFY_ALIVE"
 			try:
 				# See if DEVICE ID is free, by waiting for a message or a timeout of 5 seconds
 				datagram, address = ssdpUnicastSocket.recvfrom(1024)
@@ -169,26 +169,26 @@ def callClientReactor():
 								paramDict['deviceId'] = int(paramDict['deviceId']) + 1
 								toClient = False
 								ssdpUnicastSocket.sendto(ms_ok(toClient), (address[0], address[1]))
-								print "MS_OK"
+								print "Info: MS_OK"
 
 								for i in range(3):
 									ssdpUnicastSocket.sendto(ms_nofity_byebye(NT[i], USN[i]), (ssdpAddr, ssdpPort))
-									print "MS_NOTIFY_BYEBYE"
+									print "Info: MS_NOTIFY_BYEBYE"
 				except:
-					print 'Something went wrong'
+					print 'Info: Something went wrong'
 			except:
 				# Change deviceIdOk to True only when we timeout (5.0 seconds)
 				deviceIdOk = True
 		# We have obtain out valid DEVICE ID, we have to maintain it valid on the network by sending 
 		# at pseudo random periods 3 MS_NOTIFY_ALIVE messages. The pseudo random interval is between [0, cacheControl/2].
 		# This guarantees that announcement set is repeated at least twice before it expires.
-		print "Sleep and send NOTIFY later"
+		print "Info: Device ID negotiation done. Sleep and send NOTIFY later"
 		time.sleep(random.randint(0, int(paramDict['cacheControl'])/2))
 
 		for i in range(3):
 			paramDict['bootId'] = int(paramDict['bootId']) + 1
 			ssdpUnicastSocket.sendto(ms_notify_alive(NT[i], USN[i]), (ssdpAddr, ssdpPort))
-			print "MS_NOTIFY_ALIVE"
+			print "Info: MS_NOTIFY_ALIVE"
 
 	ssdpUnicastSocket.close()
 

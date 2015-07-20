@@ -8,7 +8,7 @@ def getFrontEnds():
 
 	# List the available adapters
 	cmd = 'ls -l /dev/dvb/'
-	print 'about to do this: ', cmd
+	print 'Info: about to do find all available adapters'
 	outtext = commands.getoutput(cmd)
 	(exitstatus, outtext) = commands.getstatusoutput(cmd)
 	if not exitstatus:
@@ -20,7 +20,7 @@ def getFrontEnds():
 				frontEndDict[adapter] = {}
 				frontEndDict[adapter]['owner'] = '0.0.0.0'
 				frontEndDict[adapter]['freq'] = ''
-		print 'Info: available adapters detected'
+		print 'Info: Available adapters detected'
 	# print frontEndDict
 	else:
 		print 'Info: NO AVAILABLE adapters detected'

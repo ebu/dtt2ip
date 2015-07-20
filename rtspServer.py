@@ -10,14 +10,14 @@ class Server:
 	def main(self):
 		# Make sure that all dvblast sockets are deleted before you start the rtsp state machine
 		cmd = 'rm -rf /tmp/dvblast*'
-		print  'about to do this: ', cmd
+		print  'Info: Cleaning dvblast sockets before starting'
 		outtext = commands.getoutput(cmd)
 		(exitstatus, outtext) = commands.getstatusoutput(cmd)
 		if not exitstatus:
-			print 'Info: dvblast sockets clean'
+			print 'Info: Dvblast sockets clean'
 		# Make sure that all the pidCfgFiles are clean before you start the rtsp state machine
 		cmd = 'ls -l dvb-t/pid*'
-		print 'about to do this: ', cmd
+		print 'Info: Cleaning all pidCfgFiles'
 		outtext = commands.getoutput(cmd)
 		(exitstatus, outtext) = commands.getstatusoutput(cmd)
 		if not exitstatus:
