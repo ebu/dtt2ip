@@ -43,7 +43,7 @@ def rtspServer():
 	rtspSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	ipAddrServer = getServerIP()
 
-	fLog = open('logs/discoveryServer.log', 'a')
+	fLog = open('logs/rtspServer.log', 'a')
 	fLog.write("Info rtspServer: ipAddrServer = " + ipAddrServer + '\n')
 	fLog.close()
 

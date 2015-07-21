@@ -283,7 +283,7 @@ class rtspServerWorker:
 								fLog.write("Info rtspServerWorker: Reloading dvblast configuration 2\n")
 								os.system(cmd)
 								# ALEX : ----- To be checked 
-								# time.sleep(1)
+								time.sleep(1)
 								# Alex : -----
 								# Clear dvblast sockets before creating any other
 								cmdClean = 'rm -rf /tmp/dvblast' + frontEndsDict[frontEnd]['freq'] + frontEnd + '.sock'
@@ -364,7 +364,7 @@ class rtspServerWorker:
 						f.write(line)
 				f.close()
 
-				cmd = 'dvblastctl -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]] + '.sock reload'
+				cmd = 'dvblastctl -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + 'adapter0' + '.sock reload'
 				fLog.write('Info rtspServerWorker: Reloading dvblast configuration 4\n')
 				os.system(cmd)
 			except:

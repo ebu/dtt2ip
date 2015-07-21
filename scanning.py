@@ -1,20 +1,23 @@
 #!/usr/bin/python
 
-import commands, re, os.path
+import commands, re, os.path, time
 global numIter
-global totalNumOfLines
 global valTimer
 global valTimerCheck
+global fLog
 
 # Initialize global variables
 numIter = 0
-totalNumOfLines = 0
 valTimer = 3
 valTimerCheck = 4
 
+# Make sure that "scanning.log" file is clean
+fLog = open('logs/scanning.log', 'w')
+
+
 def getChList():
-	# Open that scaning.log file
-	fLog = open('logs/scanning.log', 'w')
+	# e.g. chList = {'satFreq': ['freq', 'pid']}
+	global fLog
 
 	# Get chList 
 	chList = {}
@@ -27,15 +30,25 @@ def getChList():
 			chList[lineArray[0]] = lineArray[1:-1]
 	f.close()
 	fLog.write('Info: Available channels obtained\n')
-	fLog.close()
 	return chList
 
-def scanning(periodNewScan):
+def scanning(periodNewScan, scanningFlag):
 	global numIter
-	global totalNumOfLines
+	global valTimer
+	global valTimerCheck
+	global fLog
 
 	# Increment number of iteration for scanning
 	numIter = numIter + 1
+
+	# f = open('conf/rtspServer2.config', 'w')
+	# f.write('# Please be carefull when editing this file. \n')
+	# f.write('# The syntax is :\n')
+	# f.write('# fakeFrequency' 'dvbtFrequency' 'bandwidth' 'modulationType' 'pid' ' (for the moment no bandwith or modulation)\n')
+	# f.write('# Use "#' '" to comment line\n')
+	# f.write('\n')
+	# f.close()
+
 	# Statically asigned frequencies from 19.2 degrees E satelite
 	# First value signifies that freq is free "0" or occupied "1"
 	# Second value signifies the timer that the freq is still available. 
@@ -57,113 +70,211 @@ def scanning(periodNewScan):
 				'12460':[0,valTimer], '12480':[0,valTimer], '12515':[0,valTimer], '12545':[0,valTimer], '12552':[0,valTimer], '12574':[0,valTimer], 
 				'12581':[0,valTimer], '12604':[0,valTimer], '12610':[0,valTimer], '12633':[0,valTimer], '12640':[0,valTimer], '12663':[0,valTimer], 
 				'12670':[0,valTimer], '12692':[0,valTimer], '12699':[0,valTimer], '12722':[0,valTimer], '12728':[0,valTimer] }
-	numFreq = len(satFreq)
 
-	# Open that scaning.log file
-	fLog = open('logs/scanning.log', 'a')
-	while scanningFlag:
-
-		# Alex: ---- check if it can adapt it's adapter
-		cmd = 'w_scan > dvb-t/allFrequencies.txt'
-		# Alex: ---- 
+	while scanningFlag < 4:
+		# cmd = 'w_scan > dvb-t/allFrequencies.txt'
 		fLog.write('Info: Scaning all available frequencies from your antenna\n')
+		# outtext = commands.getoutput(cmd)
+		# (exitstatus, outtext) = commands.getstatusoutput(cmd)
+		# if not exitstatus:
 
-		outtext = commands.getoutput(cmd)
-		(exitstatus, outtext) = commands.getstatusoutput(cmd)
-		if not exitstatus:
-			f = open('dvb-t/allFrequencies.txt', 'r')
-			lines = f.readlines()
-			# Get total number of line, representing all the number of programs found
-			totalNumOfLines = totalNumOfLines + len(lines)
-			for line in lines:
-				# Search for the frequencies available from the scan
-				matchFreq = re.search(r':([\w]+)', line)
-				if matchFreq:
-					freq = matchFreq.group(1) + '000'
-				line = line[::-1]
-				# Search for the PID's corresponding to the frequencies detected
-				matchPid = re.search(r'([\w]+):([\w]+):([\w]+):([\w]+):', line)
-				if matchPid:
-					pid = matchPid.group(4)[::-1]
-				
-				# Create all the necesary '.cfg' files
-				if not os.path.isfile('pid' + freq + '.cfg'):
-					cmd = 'touch dvb-t/pid' + freq + '.cfg' 
-					outtext = commands.getoutput(cmd)
-					(exitstatus, outtext) = commands.getstatusoutput(cmd)
-					if not exitstatus:
-						fLog.write('Info: Creating missing pid' + freq + '.cfg file\n')
-
-				# Update the rtspServer2.config file with the new available frequencies
-				if numIter == 1:
-					fLog.write('Info: Create rtspServer2.config file')
-					f = open('conf/rtspServer2.config', 'w')
-					f.write('# Please be carefull when editing this file. \n')
-					f.write('# The syntax is :\n')
-					f.write('# fakeFrequency' 'dvbtFrequency' 'bandwidth' 'modulationType' 'pid' ' (for the moment no bandwith or modulation)\n')
-					f.write('# Use "#' '" to comment line\n')
-					f.write('\n')
+		f = open('dvb-t/allFrequencies.txt', 'r')
+		lines = f.readlines()
+		f.close()
+		for line in lines:
+			# Search for the frequencies available from the scan
+			matchFreq = re.search(r':([\w]+)', line)
+			if matchFreq:
+				freq = matchFreq.group(1) + '000'
+			line = line[::-1]
+			# Search for the PID's corresponding to the frequencies detected
+			matchPid = re.search(r'([\w]+):([\w]+):([\w]+):([\w]+):', line)
+			if matchPid:
+				pid = matchPid.group(4)[::-1]
+			
+			# Create all the necesary '.cfg' files
+			if not os.path.isfile('dvb-t/pid' + freq + '.cfg'):
+				cmd = 'touch dvb-t/pid' + freq + '.cfg' 
+				print 'Info: About to do this = ', cmd
+				outtext = commands.getoutput(cmd)
+				(exitstatus, outtext) = commands.getstatusoutput(cmd)
+				if not exitstatus:
+					print 'Info: Creating missing pid' + freq + '.cfg file'
+					fLog.write('Info: Creating missing pid' + freq + '.cfg file\n')
+			if numIter == 1:
+				print "Info: first iteration"
+				fLog.write('Info: Update rtspServer2.config with new freq= ' + freq + ' and pid= ' + pid + ' found\n')
+				for currentFreq in sorted(satFreq):
+					if satFreq[currentFreq][0] == 0:
+						satFreq[currentFreq][0] = 1
+						f = open('conf/rtspServer2.config', 'a')
+						f.write(currentFreq + ' ' + freq + ' ' + pid + ' \n')
+						f.close()
+						break
+				# Alex TO DO -- what if we ran out of available sat freq
+			else:
+				print "Info: second iteration"
+				newFreqFlag = True
+				fLog.write('Info: Update timer for freq= ' + freq + ' and pid= ' + pid + ' \n')
+				for freqPid in chDict.values():
+					if freq == freqPid[0] and pid == freqPid[1]:
+						newFreqFlag = False
+						# Increase timer (i.e second value from satFreq) mod valTimer
+						satFreq[chDict.keys()[chDict.values().index([freq, pid])]][1] = (satFreq[chDict.keys()[chDict.values().index([freq, pid])]][1] + 1) % (valTimer + 2) 
+						break
+				if newFreqFlag:
+					print "Info: Update rtspServer2.config with new freq = " + freq + ' found'
+					fLog.write('Info: Update rtspServer2.config with new freq = ' + freq + ' found.')
 					for currentFreq in sorted(satFreq):
 						if satFreq[currentFreq][0] == 0:
 							satFreq[currentFreq][0] = 1
+							# satFreq[currentFreq][1] = satFreq[currentFreq][1] - 1
+							f = open('conf/rtspServer2.config', 'a')
 							f.write(currentFreq + ' ' + freq + ' ' + pid + ' \n')
 							f.close()
 							break
 					# Alex TO DO -- what if we ran out of available sat freq
-				elif:
-					chDict = getChList()
-					newFreqFlag = True
-					for freqPid in chDict.values():
-						fLog.write('Info: Check the avalability of our frequencies')
-						if freq == frePid[0] and pid == freqPid[1]:
-							newFreqFlag = False
-							# Increase timer (i.e second value from satFreq) mod valTimer
-							satFreq[chDict.keys()[chDict.values().index([freq, pid])]][1] = (satFreq[chDict.keys()[chDict.values().index([freq, pid])]][1] + 1) % valTimer 
-							# break
-						satFreq[chDict.keys()[chDict.values().index([freq, pid])]][1] = satFreq[chDict.keys()[chDict.values().index([freq, pid])]][1] - 1
-					
-					if newFreqFlag:
-						fLog.write('Info: Update rtspServer2.config with new freq = ' + freq + ' found.')
-						for currentFreq in sorted(satFreq):
-							if satFreq[currentFreq][0] == 0:
-								satFreq[currentFreq][0] = 1
-								satFreq[currentFreq][1] = satFreq[currentFreq][1] - 1
-								f = open('conf/rtspServer2.config', 'a')
-								f.write(currentFreq + ' ' + freq + ' ' + pid + ' \n')
-								f.close()
-								break
-						# Alex TO DO -- what if we ran out of available sat freq
 
-			fLog.write('Info: W_SCAN has finished. All configuration files have been update\n')
-		else:
-			fLog.write('Info: Something went wrong with W_SCAN')
+		# Every iteration decrease valTimer
+		if numIter > 1:
+			for freqPid in chDict.values():
+				satFreq[chDict.keys()[chDict.values().index([freqPid[0], freqPid[1]])]][1] = satFreq[chDict.keys()[chDict.values().index([freqPid[0], freqPid[1]])]][1] - 1
 
 		if numIter == valTimerCheck:
-			fLog.write('Info: clean unavailable frequencies')
+			print "Info: clean unavailable frequencies"
+			fLog.write('Info: clean unavailable frequencies\n')
+			print 'satFreq', satFreq
 			for currentFreq in sorted(satFreq):
-			if satFreq[currentFreq][1] == 0:
-				f = open('conf/rtspServer2.config', 'r')
-				lines = f.readlines()
-				f.close()
+				if satFreq[currentFreq][1] == 0:
+					f = open('conf/rtspServer2.config', 'r')
+					lines = f.readlines()
+					f.close()
 
-				f = open('conf/rtspServer2.config', 'w')
-				f.write('# Please be carefull when editing this file. \n')
-				f.write('# The syntax is :\n')
-				f.write('# fakeFrequency' 'dvbtFrequency' 'bandwidth' 'modulationType' 'pid' ' (for the moment no bandwith or modulation)\n')
-				f.write('# Use "#' '" to comment line\n')
-				f.write('\n')
-				for line in lines:
-					matchFreq = re.search(currentFreq, line)
-					if not matchFreq:
-						f.write(line)
-				f.close()
-		# Check every hour for new frequencies. It can be changed to longer periods from site
-		time.sleep(periodNewScan)
+					f = open('conf/rtspServer2.config', 'w')
+					for line in lines:
+						matchFreq = re.search(currentFreq, line)
+						if not matchFreq:
+							f.write(line)
+					f.close()
+					satFreq[currentFreq][1] = valTimer
+
 		numIter = numIter + 1
+		scanningFlag = scanningFlag + 1
+		fLog.write('Info: W_SCAN has finished. All configuration files have been update\n')
+		chDict = getChList()
+
+		# Check every hour for new frequencies. It can be changed to longer periods from site
+		fLog.write('Info: W_SCAN is enteringn sleeping mode. Will wake up in ' + str(periodNewScan) + ' seconds\n')
+		time.sleep(periodNewScan)
+
 	fLog.close()
+
+	# Open that scaning.log file
+	# fLog = open('logs/scanning.log', 'a')
+	# while scanningFlag < 1:
+
+	# 	# Alex: ---- check if it can adapt it's adapter
+	# 	cmd = 'w_scan > dvb-t/allFrequencies.txt'
+	# 	# Alex: ---- 
+	# 	fLog.write('Info: Scaning all available frequencies from your antenna\n')
+
+	# 	outtext = commands.getoutput(cmd)
+	# 	(exitstatus, outtext) = commands.getstatusoutput(cmd)
+	# 	if not exitstatus:
+	# 		f = open('dvb-t/allFrequencies.txt', 'r')
+	# 		lines = f.readlines()
+	# 		for line in lines:
+	# 			# Search for the frequencies available from the scan
+	# 			matchFreq = re.search(r':([\w]+)', line)
+	# 			if matchFreq:
+	# 				freq = matchFreq.group(1) + '000'
+	# 			line = line[::-1]
+	# 			# Search for the PID's corresponding to the frequencies detected
+	# 			matchPid = re.search(r'([\w]+):([\w]+):([\w]+):([\w]+):', line)
+	# 			if matchPid:
+	# 				pid = matchPid.group(4)[::-1]
+				
+	# 			# Create all the necesary '.cfg' files
+	# 			if not os.path.isfile('dvb-t/pid' + freq + '.cfg'):
+	# 				cmd = 'touch dvb-t/pid' + freq + '.cfg' 
+	# 				outtext = commands.getoutput(cmd)
+	# 				(exitstatus, outtext) = commands.getstatusoutput(cmd)
+	# 				if not exitstatus:
+	# 					fLog.write('Info: Creating missing pid' + freq + '.cfg file\n')
+
+	# 			# Update the rtspServer2.config file with the new available frequencies
+	# 			if numIter == 1:
+	# 				fLog.write('Info: Create rtspServer2.config file')
+	# 				f = open('conf/rtspServer2.config', 'w')
+	# 				f.write('# Please be carefull when editing this file. \n')
+	# 				f.write('# The syntax is :\n')
+	# 				f.write('# fakeFrequency' 'dvbtFrequency' 'bandwidth' 'modulationType' 'pid' ' (for the moment no bandwith or modulation)\n')
+	# 				f.write('# Use "#' '" to comment line\n')
+	# 				f.write('\n')
+	# 				for currentFreq in sorted(satFreq):
+	# 					if satFreq[currentFreq][0] == 0:
+	# 						satFreq[currentFreq][0] = 1
+	# 						f.write(currentFreq + ' ' + freq + ' ' + pid + ' \n')
+	# 						f.close()
+	# 						break
+	# 				# Alex TO DO -- what if we ran out of available sat freq
+	# 			else:
+	# 				chDict = getChList()
+	# 				newFreqFlag = True
+	# 				for freqPid in chDict.values():
+	# 					fLog.write('Info: Check the avalability of our frequencies')
+	# 					if freq == frePid[0] and pid == freqPid[1]:
+	# 						newFreqFlag = False
+	# 						# Increase timer (i.e second value from satFreq) mod valTimer
+	# 						satFreq[chDict.keys()[chDict.values().index([freq, pid])]][1] = (satFreq[chDict.keys()[chDict.values().index([freq, pid])]][1] + 1) % valTimer 
+	# 						# break
+	# 					satFreq[chDict.keys()[chDict.values().index([freqPid[0], freqPid[1]])]][1] = satFreq[chDict.keys()[chDict.values().index([freqPid[0], freqPid[1]])]][1] - 1
+					
+	# 				if newFreqFlag:
+	# 					fLog.write('Info: Update rtspServer2.config with new freq = ' + freq + ' found.')
+	# 					for currentFreq in sorted(satFreq):
+	# 						if satFreq[currentFreq][0] == 0:
+	# 							satFreq[currentFreq][0] = 1
+	# 							satFreq[currentFreq][1] = satFreq[currentFreq][1] - 1
+	# 							f = open('conf/rtspServer2.config', 'a')
+	# 							f.write(currentFreq + ' ' + freq + ' ' + pid + ' \n')
+	# 							f.close()
+	# 							break
+	# 					# Alex TO DO -- what if we ran out of available sat freq
+
+	# 		fLog.write('Info: W_SCAN has finished. All configuration files have been update\n')
+	# 	else:
+	# 		fLog.write('Info: Something went wrong with W_SCAN')
+
+	# 	if numIter == valTimerCheck:
+	# 		fLog.write('Info: clean unavailable frequencies')
+	# 		for currentFreq in sorted(satFreq):
+	# 			if satFreq[currentFreq][1] == 0:
+	# 				f = open('conf/rtspServer2.config', 'r')
+	# 				lines = f.readlines()
+	# 				f.close()
+
+	# 				f = open('conf/rtspServer2.config', 'w')
+	# 				f.write('# Please be carefull when editing this file. \n')
+	# 				f.write('# The syntax is :\n')
+	# 				f.write('# fakeFrequency' 'dvbtFrequency' 'bandwidth' 'modulationType' 'pid' ' (for the moment no bandwith or modulation)\n')
+	# 				f.write('# Use "#' '" to comment line\n')
+	# 				f.write('\n')
+	# 				for line in lines:
+	# 					matchFreq = re.search(currentFreq, line)
+	# 					if not matchFreq:
+	# 						f.write(line)
+	# 				f.close()
+	# 				satFreq[currentFreq][1] = valTimer
+	# 	# Check every hour for new frequencies. It can be changed to longer periods from site
+	# 	time.sleep(periodNewScan)
+	# 	numIter = numIter + 1
+	# 	scanningFlag = scanningFlag + 1 
+	# fLog.close()
 
 if __name__ == '__main__':
 	# Default period for new scan is 3600 seconds.
 	# It can be changed from the site interface
-	periodNewScan = 3600
-	scanning(periodNewScan)
+	periodNewScan = 1
+	scanningFlag = 0
+	scanning(periodNewScan, scanningFlag)
