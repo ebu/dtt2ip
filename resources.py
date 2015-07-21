@@ -3,6 +3,7 @@
 import commands, re
 
 def getFrontEnds():
+	# e.g. frontEndDict = {'adapter0': {'owner': '0.0.0.0', 'freq': ''}} 
 	# Initialize frontEnd dictionary 
 	frontEndDict = {}
 

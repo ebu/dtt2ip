@@ -18,16 +18,17 @@ global frontEndsDict
 global freqDict
 
 # Init global variables
-clientsDict = {}
-chList = {}
-freqDict = {}
-dvblastReload = 0
+clientsDict = {}	# e.g. clientsDict = { 'ip_client_1': {'rtpPort': '', state: 0, 'freq': '', stream: 0, 'src': '', 'pol': '', 'ro': '', 'msys': '', 'mtype': '', 'plts': '', 'sr': '', 'fec': '', 'status': 'sendonly'}}
+chList = {}			# e.g. chList = {'satFreq': ['freq', 'pid']}
+freqDict = {}		# e.g. freqDict = {'freq': 'adapter0'}
+frontEndsDict = {}	# e.g. frontEndDict = {'adapter0': {'owner': '0.0.0.0', 'freq': ''}} 
+dvblastReload = 0   # e.g. Flag to trigger a reload
 session = ''
 state = 0 # INI = 0
 streamID = 0
 
 # Get available frontends
-frontEndsDict = getFrontEnds()
+frontEndsDict = getFrontEnds()	
 
 # Get chList 
 chList = getChList()
@@ -129,7 +130,7 @@ class rtspServerWorker:
 		global streamID
 		global dvblastReload
 		global chList	
-		global clientsDict  # clientsDict = { 'ip_client_1': {'rtpPort': '', state: 0, 'freq': '', stream: 0, 'src': '', 'pol': '', 'ro': '', 'msys': '', 'mtype': '', 'plts': '', 'sr': '', 'fec': '', 'status': 'sendonly'}}
+		global clientsDict  
 		global frontEndsDict
 		global freqDict
 
@@ -281,7 +282,9 @@ class rtspServerWorker:
 								cmd = 'dvblastctl -r /tmp/dvblast' + frontEndsDict[frontEnd]['freq'] + frontEnd + '.sock shutdown'
 								fLog.write("Info rtspServerWorker: Reloading dvblast configuration 2\n")
 								os.system(cmd)
-								time.sleep(1)
+								# ALEX : ----- To be checked 
+								# time.sleep(1)
+								# Alex : -----
 								# Clear dvblast sockets before creating any other
 								cmdClean = 'rm -rf /tmp/dvblast' + frontEndsDict[frontEnd]['freq'] + frontEnd + '.sock'
 								fLog.write("Info rtspServerWorker: Cleaning dvblast sockets, before restarting\n")
@@ -361,7 +364,7 @@ class rtspServerWorker:
 						f.write(line)
 				f.close()
 
-				cmd = 'dvblastctl -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + 'adapter0' + '.sock reload'
+				cmd = 'dvblastctl -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]] + '.sock reload'
 				fLog.write('Info rtspServerWorker: Reloading dvblast configuration 4\n')
 				os.system(cmd)
 			except:

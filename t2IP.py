@@ -19,14 +19,17 @@ def main():
 	t2.start()
 	fLog.write('Info: rtspServer started\n')
 
-	t3 = threading.Thread(target=scanning)
+	# Default period for new scan is 3600 seconds.
+	periodNewScan = 3600 
+	t3 = threading.Thread(target=scanning, args=[periodNewScan])
 	t3.daemon = True
 	t3.start()
 	fLog.write('Info: scanning started\n')
+	fLog.write('Info: period for new scan is ' + str(periodNewScan))
 
 	# Keep threads alive until KeyboardInterrupt
 	try:
-		while t1.is_alive() and t2.is_alive():
+		while t1.is_alive() and t2.is_alive() and t3.is_alive():
 			pass
 	except (KeyboardInterrupt, SystemExit):
 		fLog.close()
