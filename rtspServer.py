@@ -37,15 +37,19 @@ def rtspServer():
 	# Cleaning everything
 	clean()
 
+	fLog = open('logs/rtspServer.log', 'a')
+	fLog.write("Info rtspServer: Started the rtspServer\n")
+	fLog.close()
+
 	# Make sure you have root privileges to run this script
 	# it is necesary that we can open the "554" port
 	serverPort = 554
 	rtspSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	ipAddrServer = getServerIP()
 
-	fLog = open('logs/rtspServer.log', 'a')
-	fLog.write("Info rtspServer: ipAddrServer = " + ipAddrServer + '\n')
-	fLog.close()
+	# fLog = open('logs/discoveryServer.log', 'a')
+	# fLog.write("Info rtspServer: ipAddrServer = " + ipAddrServer + '\n')
+	# fLog.close()
 
 	rtspSocket.bind((ipAddrServer, serverPort))
 	while (1):

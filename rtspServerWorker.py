@@ -16,22 +16,22 @@ global streamID
 global dvblastReload
 global frontEndsDict
 global freqDict
+global firstBootFlag
 
 # Init global variables
-clientsDict = {}	# e.g. clientsDict = { 'ip_client_1': {'rtpPort': '', state: 0, 'freq': '', stream: 0, 'src': '', 'pol': '', 'ro': '', 'msys': '', 'mtype': '', 'plts': '', 'sr': '', 'fec': '', 'status': 'sendonly'}}
-chList = {}			# e.g. chList = {'satFreq': ['freq', 'pid']}
+clientsDict = {}	# e.g. clientsDict = { 'ip_client_1': {'rtpPort': '', state: 0, 'satFreq': '', stream: 0, 'src': '', 'pol': '', 'ro': '', 'msys': '', 'mtype': '', 'plts': '', 'sr': '', 'fec': '', 'status': 'sendonly'}}
 freqDict = {}		# e.g. freqDict = {'freq': 'adapter0'}
-frontEndsDict = {}	# e.g. frontEndDict = {'adapter0': {'owner': '0.0.0.0', 'freq': ''}} 
 dvblastReload = 0   # e.g. Flag to trigger a reload
 session = ''
 state = 0 # INI = 0
 streamID = 0
+firstBootFlag = True
 
 # Get available frontends
-frontEndsDict = getFrontEnds()	
+frontEndsDict = getFrontEnds()	# e.g. frontEndDict = {'adapter0': {'owner': '0.0.0.0', 'freq': ''}} 
 
 # Get chList 
-chList = getChList()
+chList = getChList()	# e.g. chList = {'satFreq': ['freq', 'pid']}
 
 class rtspServerWorker:
 	# Events
@@ -265,57 +265,95 @@ class rtspServerWorker:
 
 				# START/RELOAD configuration for dvblast only if we have a streamID, the configuration file has been update and the PLAY URI is not a delete pid
 				if clientsDict[self.clientInfo['addr_IP']]['stream'] and dvblastReload and delPids == 0:
-					# Search for any configured tuner with the frequency that we want to tune to
-					for frontEnd in frontEndsDict:
-						if frontEndsDict[frontEnd]['freq'] == chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]:
-							cmd = 'dvblastctl -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + frontEnd + '.sock reload'
-							fLog.write('Info rtspServerWorker: Reloading dvblast configuration 1\n')
-							os.system(cmd)
-							dvblastReload = 0
-							if  frontEndsDict[frontEnd]['owner'] != self.clientInfo['addr_IP']:
-								frontEndsDict[frontEnd]['owner'] = '255.255.255.255'  # '255.255.255.255' the IP address for specifying multiple owners
-					# If we did not find any tuner that has that frequency configured,then search for any owned tuners
-					if dvblastReload:
-						for frontEnd in frontEndsDict:
-							if frontEndsDict[frontEnd]['owner'] == self.clientInfo['addr_IP']:
-								# Shutdown socket 
-								cmd = 'dvblastctl -r /tmp/dvblast' + frontEndsDict[frontEnd]['freq'] + frontEnd + '.sock shutdown'
-								fLog.write("Info rtspServerWorker: Reloading dvblast configuration 2\n")
-								os.system(cmd)
-								# ALEX : ----- To be checked 
-								time.sleep(1)
-								# Alex : -----
-								# Clear dvblast sockets before creating any other
-								cmdClean = 'rm -rf /tmp/dvblast' + frontEndsDict[frontEnd]['freq'] + frontEnd + '.sock'
-								fLog.write("Info rtspServerWorker: Cleaning dvblast sockets, before restarting\n")
-								os.system(cmdClean)
-								# Start dvblast on specified freq
-								cmd = 'dvblast -a ' + frontEnd[-1] + ' -c dvb-t/pid' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + '.cfg -f ' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + ' -b 8 -C -u -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + frontEnd + '.sock'
-								dvblastReload = 0
-								frontEndsDict[frontEnd]['freq'] = chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]
-								frontEndsDict[frontEnd]['owner'] = self.clientInfo['addr_IP']
-								freqDict[frontEndsDict[frontEnd]['freq']] = frontEnd
-								# Start dvblast in a separate thread
-								fLog.write('Info rtspServerWorker: Starting dvblast 1\n')
-								t3 = threading.Thread(target=self.run_dvblast, args=[cmd, fLog])
-								t3.daemon = True
-								t3.start()
-					# If we did not fine any owned tuners, then give it one more search before giving up. Search for nonused available tuners. 
-					if dvblastReload:
+					
+					# If firstBootFlag is true this means that no frontend has been configured, so stop wasting time with searching for particular frontends
+					if firstBootFlag:
+						firstBootFlag = False
 						for frontEnd in frontEndsDict:
 							if frontEndsDict[frontEnd]['freq'] == '':
 								# Start dvblast on specified freq
+								print 'ALEX --- 1'
 								cmd = 'dvblast -a ' + frontEnd[-1] + ' -c dvb-t/pid' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + '.cfg -f ' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + ' -b 8 -C -u -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + frontEnd + '.sock'
 								dvblastReload = 0
 								frontEndsDict[frontEnd]['freq'] = chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]
 								frontEndsDict[frontEnd]['owner'] = self.clientInfo['addr_IP']
 								freqDict[frontEndsDict[frontEnd]['freq']] = frontEnd
+								
 								# Start dvblast in a separate thread
 								fLog.write('Info rtspServerWorker: Starting dvblast 2\n')
-								t2 = threading.Thread(target=self.run_dvblast, args=[cmd, fLog])
-								t2.daemon = True
-								t2.start()
-
+								run_dvblast(cmd, fLog)
+								# t2 = threading.Thread(target=self.run_dvblast, args=[cmd, fLog])
+								# t2.daemon = True
+								# t2.start()
+								print 'ALEX --- 2'
+								break
+					# No more first boot, the search for available and preconfigured/unconfigured frontends
+					else:
+						# Search for any configured tuner with the frequency that we want to tune to
+						for frontEnd in frontEndsDict:
+							if frontEndsDict[frontEnd]['freq'] == chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]:
+								print 'ALEX --- 3'
+								cmd = 'dvblastctl -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + frontEnd + '.sock reload'
+								fLog.write('Info rtspServerWorker: Reloading dvblast configuration 1\n')
+								os.system(cmd)
+								dvblastReload = 0
+								if  frontEndsDict[frontEnd]['owner'] != self.clientInfo['addr_IP']:
+									frontEndsDict[frontEnd]['owner'] = '255.255.255.255'  # '255.255.255.255' the IP address for specifying multiple owners
+								print 'ALEX --- 4'
+								break
+						# If we did not find any tuner that has that frequency configured,then search for any owned tuners
+						if dvblastReload:
+							for frontEnd in frontEndsDict:
+								if frontEndsDict[frontEnd]['owner'] == self.clientInfo['addr_IP']:
+									# Shutdown socket 
+									print 'ALEX --- 5'
+									cmd = 'dvblastctl -r /tmp/dvblast' + frontEndsDict[frontEnd]['freq'] + frontEnd + '.sock shutdown'
+									fLog.write("Info rtspServerWorker: Reloading dvblast configuration 2\n")
+									os.system(cmd)
+									print 'ALEX --- 6'
+									# ALEX : ----- To be checked 
+									# time.sleep(1)
+									# Alex : -----
+									# Clear dvblast sockets before creating any other
+									print 'ALEX --- 7'
+									cmdClean = 'rm -rf /tmp/dvblast' + frontEndsDict[frontEnd]['freq'] + frontEnd + '.sock'
+									fLog.write("Info rtspServerWorker: Cleaning dvblast sockets, before restarting\n")
+									os.system(cmdClean)
+									print 'ALEX --- 8'
+									# Start dvblast on specified freq
+									cmd = 'dvblast -a ' + frontEnd[-1] + ' -c dvb-t/pid' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + '.cfg -f ' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + ' -b 8 -C -u -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + frontEnd + '.sock'
+									dvblastReload = 0
+									frontEndsDict[frontEnd]['freq'] = chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]
+									frontEndsDict[frontEnd]['owner'] = self.clientInfo['addr_IP']
+									freqDict[frontEndsDict[frontEnd]['freq']] = frontEnd
+									# Start dvblast in a separate thread
+									fLog.write('Info rtspServerWorker: Starting dvblast 1\n')
+									run_dvblast(cmd, fLog)
+									# t3 = threading.Thread(target=self.run_dvblast, args=[cmd, fLog])
+									# t3.daemon = True
+									# t3.start()
+									print 'ALEX --- 9'
+									break
+						# If we did not fine any owned tuners, then give it one more search before giving up. Search for nonused available tuners. 
+						if dvblastReload:
+							for frontEnd in frontEndsDict:
+								if frontEndsDict[frontEnd]['freq'] == '':
+									# Start dvblast on specified freq
+									print 'ALEX --- 10'
+									cmd = 'dvblast -a ' + frontEnd[-1] + ' -c dvb-t/pid' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + '.cfg -f ' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + ' -b 8 -C -u -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + frontEnd + '.sock'
+									dvblastReload = 0
+									frontEndsDict[frontEnd]['freq'] = chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]
+									frontEndsDict[frontEnd]['owner'] = self.clientInfo['addr_IP']
+									freqDict[frontEndsDict[frontEnd]['freq']] = frontEnd
+									
+									# Start dvblast in a separate thread
+									fLog.write('Info rtspServerWorker: Starting dvblast 2\n')
+									run_dvblast(cmd, fLog)
+									# t2 = threading.Thread(target=self.run_dvblast, args=[cmd, fLog])
+									# t2.daemon = True
+									# t2.start()
+									print 'ALEX --- 11'
+									break
 
 				# Remove corresponding pid from config file and reload for sat>ip app
 				if clientsDict[self.clientInfo['addr_IP']]['stream'] and delPids and delPid:
@@ -332,9 +370,11 @@ class rtspServerWorker:
 								f.write(line)
 						f.close()
 
+						print 'ALEX --- 12'
 						cmd = 'dvblastctl -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]] + '.sock reload'
 						fLog.write('Info rtspServerWorker: Reloading dvblast configuration 3\n')
 						os.system(cmd)
+						print 'ALEX --- 13'
 					except:
 						fLog.write("Info rtspServerWorker: Processing PLAY DELETE PIDS\n")
 				
@@ -364,7 +404,7 @@ class rtspServerWorker:
 						f.write(line)
 				f.close()
 
-				cmd = 'dvblastctl -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + 'adapter0' + '.sock reload'
+				cmd = 'dvblastctl -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]] + '.sock reload'
 				fLog.write('Info rtspServerWorker: Reloading dvblast configuration 4\n')
 				os.system(cmd)
 			except:
@@ -404,7 +444,7 @@ class rtspServerWorker:
 		"""Send RTSP reply to the client."""
 		if code == self.OK_200_OPTIONS:
 			reply = 'RTSP/1.0 200 OK\r\nPublic:OPTIONS,SETUP,PLAY,TEARDOWN,DESCRIBE\r\nCSeq:1\r\n\r\n'
-			connSocket = self.clientInfo['rtspSocket']# object does not support indexing [0]
+			connSocket = self.clientInfo['rtspSocket']
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0
 		
@@ -429,6 +469,7 @@ class rtspServerWorker:
 			connSocket = self.clientInfo['rtspSocket']
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0
+			fLog.write("Info rtspServerWorker: 200 DESCRIBE")
 		elif code == self.OK_200_DESCRIBE_NOSIGNAL:
 			ipServer = getServerIP()
 			unicastIp = '0.0.0.0'
@@ -445,28 +486,34 @@ class rtspServerWorker:
 			connSocket = self.clientInfo['rtspSocket']
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0
+			fLog.write("Info rtspServerWorker: 200 DESCRIBE NOSIGNAL")
 		elif code == self.OK_404_DESCRIBE:
 			reply = 'RTSP/1.0 404 Not Found\r\nCSeq:%s\n\r\n' % (seq)
 			connSocket = self.clientInfo['rtspSocket']
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0
+			fLog.write("Info rtspServerWorker: 404 DESCRIBE")
 		elif code == self.OK_200_SETUP:
 			reply = 'RTSP/1.0 200 OK\r\nSession:%s;timeout=30\r\ncom.ses.streamID:%d\r\nTransport: RTP/AVP;unicast;destination=%s;client_port=5000-5001\r\nCSeq:%s\n\r\n' % (session, clientsDict[self.clientInfo['addr_IP']]['stream'], self.clientInfo['addr_IP'], seq)
 			connSocket = self.clientInfo['rtspSocket']
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0
+			fLog.write("Info rtspServerWorker: 200 SETUP")
 		elif code == self.OK_200_SETUP_PIDS:
 			reply = 'RTSP/1.0 200 OK\r\nSession:%s;timeout=30\r\ncom.ses.streamID:%d\r\nTransport: RTP/AVP;unicast;destination=%s;client_port=5000-5001\r\nCSeq:%s\r\n\r\n' % (session, clientsDict[self.clientInfo['addr_IP']]['stream'], self.clientInfo['addr_IP'], seq)
 			connSocket = self.clientInfo['rtspSocket']
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 1
+			fLog.write("Info rtspServerWorker: 200 SETUP PID")
 		elif code == self.OK_200_PLAY:
 			reply = 'RTSP/1.0 200 OK\r\nRTP-Info:url=//192.168.2.61/stream=%d;seq=50230\r\nCSeq:%s\nSession:%s\r\n\r\n' % (clientsDict[self.clientInfo['addr_IP']]['stream'], seq, session)
 			connSocket = self.clientInfo['rtspSocket']
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0
+			fLog.write("Info rtspServerWorker: 200 PLAY")
 		elif code == self.OK_200_TEARDOWN:
 			reply = 'RTSP/1.0 200 OK\r\nContent-length:0\r\nCSeq:%s\nSession:%s\r\n\r\n' % (seq, session)
 			connSocket = self.clientInfo['rtspSocket']
 			connSocket.send(reply)
-			self.SERVER_RUNNING = 0			
+			self.SERVER_RUNNING = 0	
+			fLog.write("Info rtspServerWorker: 200 TEARDOWN")		
