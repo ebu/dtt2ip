@@ -101,9 +101,9 @@ class rtspServerWorker:
 		
 	def run(self):
 		# Opening log file
-		fLog = open('logs/rtspServer.log', 'a')
+		# fLog = open('logs/rtspServer.log', 'a')
 		
-		t = threading.Thread(target=self.recvRtspRequest, args =[fLog])
+		t = threading.Thread(target=self.recvRtspRequest)
 		t.daemon = True
 		t.start()
 
@@ -111,19 +111,19 @@ class rtspServerWorker:
 			while t.is_alive():
 				t.join(timeout=1.0)
 		except (KeyboardInterrupt, SystemExit):
-			fLog.close()
+			# fLog.close()
 			self.SERVER_RUNNING = 0
 
 	
-	def recvRtspRequest(self, fLog):
+	def recvRtspRequest(self):
 		"""Receive RTSP request from the client."""
-		connSocket = self.clientInfo['rtspSocket']#[0]
+		connSocket = self.clientInfo['rtspSocket']
 		while self.SERVER_RUNNING:            
 			data = connSocket.recv(1024)
 			if data:
-				self.processRtspRequest(data, fLog)
+				self.processRtspRequest(data)
 	
-	def processRtspRequest(self, data, fLog):
+	def processRtspRequest(self, data):
 		"""Process RTSP request sent from the client."""
 		global session
 		global state
@@ -133,6 +133,7 @@ class rtspServerWorker:
 		global clientsDict  
 		global frontEndsDict
 		global freqDict
+		global firstBootFlag
 
 		# Initialize local variables
 		freq = ''
@@ -207,7 +208,7 @@ class rtspServerWorker:
 
 			# Process SETUP request If STATE is INI
 			if clientsDict[self.clientInfo['addr_IP']]['state'] == self.INI:
-				fLog.write("Info rtspServerWorker: Processing SETUP, New State: READY") 
+				# fLog.write("Info rtspServerWorker: Processing SETUP, New State: READY") 
 				clientsDict[self.clientInfo['addr_IP']]['state'] = self.READY
 
 				# Generate a randomized RTSP session ID
@@ -223,22 +224,22 @@ class rtspServerWorker:
 					dvblastReload = 1
 
 				if pids == 'none' or pids == '':
-					self.replyRtsp(self.OK_200_SETUP, seq[1], fLog)
+					self.replyRtsp(self.OK_200_SETUP, seq[1])
 					if pids == 'none':
 						clientsDict[self.clientInfo['addr_IP']]['status'] = 'inactive'
 				else:
-					self.replyRtsp(self.OK_200_SETUP_PIDS, seq[1], fLog)
+					self.replyRtsp(self.OK_200_SETUP_PIDS, seq[1])
 
 			# Process SETUP request If STATE is READY
 			elif clientsDict[self.clientInfo['addr_IP']]['state'] == self.READY:
-				fLog.write("Info rtspServerWorker: Processing SETUP, State: READY\n") 
+				# fLog.write("Info rtspServerWorker: Processing SETUP, State: READY\n") 
 
 				# Send RTSP reply
-				self.replyRtsp(self.OK_200_SETUP, seq[1], fLog)
+				self.replyRtsp(self.OK_200_SETUP, seq[1])
 
 			# Process SETUP request If STATE is PLAYING
 			elif clientsDict[self.clientInfo['addr_IP']]['state'] == self.PLAYING:
-				fLog.write("Info rtspServerWorker: Processing SETUP, State: PLAYING\n")
+				# fLog.write("Info rtspServerWorker: Processing SETUP, State: PLAYING\n")
 				
 				if freq in chList:
 					f = open('dvb-t/pid' + chList[freq][0] + '.cfg', 'r')
@@ -256,7 +257,7 @@ class rtspServerWorker:
 					f.write(self.clientInfo['addr_IP'] + ':' + clientsDict[self.clientInfo['addr_IP']]['rtpPort'] + '\t1\t' + chList[freq][1] + '\n')
 					f.close()
 					dvblastReload = 1
-				self.replyRtsp(self.OK_200_SETUP, seq[1], fLog)
+				self.replyRtsp(self.OK_200_SETUP, seq[1])
 				
 		# Process PLAY request 		
 		elif requestType == self.PLAY:
@@ -280,9 +281,9 @@ class rtspServerWorker:
 								freqDict[frontEndsDict[frontEnd]['freq']] = frontEnd
 								
 								# Start dvblast in a separate thread
-								fLog.write('Info rtspServerWorker: Starting dvblast 2\n')
-								run_dvblast(cmd, fLog)
-								# t2 = threading.Thread(target=self.run_dvblast, args=[cmd, fLog])
+								# fLog.write('Info rtspServerWorker: Starting dvblast 2\n')
+								self.run_dvblast(cmd)
+								# t2 = threading.Thread(target=self.run_dvblast, args=[cmd, # fLog])
 								# t2.daemon = True
 								# t2.start()
 								print 'ALEX --- 2'
@@ -294,7 +295,7 @@ class rtspServerWorker:
 							if frontEndsDict[frontEnd]['freq'] == chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]:
 								print 'ALEX --- 3'
 								cmd = 'dvblastctl -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + frontEnd + '.sock reload'
-								fLog.write('Info rtspServerWorker: Reloading dvblast configuration 1\n')
+								# fLog.write('Info rtspServerWorker: Reloading dvblast configuration 1\n')
 								os.system(cmd)
 								dvblastReload = 0
 								if  frontEndsDict[frontEnd]['owner'] != self.clientInfo['addr_IP']:
@@ -308,16 +309,16 @@ class rtspServerWorker:
 									# Shutdown socket 
 									print 'ALEX --- 5'
 									cmd = 'dvblastctl -r /tmp/dvblast' + frontEndsDict[frontEnd]['freq'] + frontEnd + '.sock shutdown'
-									fLog.write("Info rtspServerWorker: Reloading dvblast configuration 2\n")
+									# fLog.write("Info rtspServerWorker: Reloading dvblast configuration 2\n")
 									os.system(cmd)
 									print 'ALEX --- 6'
 									# ALEX : ----- To be checked 
-									# time.sleep(1)
+									time.sleep(1)
 									# Alex : -----
 									# Clear dvblast sockets before creating any other
 									print 'ALEX --- 7'
 									cmdClean = 'rm -rf /tmp/dvblast' + frontEndsDict[frontEnd]['freq'] + frontEnd + '.sock'
-									fLog.write("Info rtspServerWorker: Cleaning dvblast sockets, before restarting\n")
+									# fLog.write("Info rtspServerWorker: Cleaning dvblast sockets, before restarting\n")
 									os.system(cmdClean)
 									print 'ALEX --- 8'
 									# Start dvblast on specified freq
@@ -327,9 +328,9 @@ class rtspServerWorker:
 									frontEndsDict[frontEnd]['owner'] = self.clientInfo['addr_IP']
 									freqDict[frontEndsDict[frontEnd]['freq']] = frontEnd
 									# Start dvblast in a separate thread
-									fLog.write('Info rtspServerWorker: Starting dvblast 1\n')
-									run_dvblast(cmd, fLog)
-									# t3 = threading.Thread(target=self.run_dvblast, args=[cmd, fLog])
+									# fLog.write('Info rtspServerWorker: Starting dvblast 1\n')
+									self.run_dvblast(cmd)
+									# t3 = threading.Thread(target=self.run_dvblast, args=[cmd, # fLog])
 									# t3.daemon = True
 									# t3.start()
 									print 'ALEX --- 9'
@@ -347,9 +348,9 @@ class rtspServerWorker:
 									freqDict[frontEndsDict[frontEnd]['freq']] = frontEnd
 									
 									# Start dvblast in a separate thread
-									fLog.write('Info rtspServerWorker: Starting dvblast 2\n')
-									run_dvblast(cmd, fLog)
-									# t2 = threading.Thread(target=self.run_dvblast, args=[cmd, fLog])
+									# fLog.write('Info rtspServerWorker: Starting dvblast 2\n')
+									run_dvblast(cmd)
+									# t2 = threading.Thread(target=self.run_dvblast, args=[cmd, # fLog])
 									# t2.daemon = True
 									# t2.start()
 									print 'ALEX --- 11'
@@ -372,23 +373,25 @@ class rtspServerWorker:
 
 						print 'ALEX --- 12'
 						cmd = 'dvblastctl -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]] + '.sock reload'
-						fLog.write('Info rtspServerWorker: Reloading dvblast configuration 3\n')
+						# fLog.write('Info rtspServerWorker: Reloading dvblast configuration 3\n')
 						os.system(cmd)
 						print 'ALEX --- 13'
 					except:
-						fLog.write("Info rtspServerWorker: Processing PLAY DELETE PIDS\n")
+						print "Info rtspServerWorker: Processing PLAY DELETE PIDS\n"
+						# fLog.write("Info rtspServerWorker: Processing PLAY DELETE PIDS\n")
 				
 				# Send response after processing and starting dvblast
 				if clientsDict[self.clientInfo['addr_IP']]['state'] == self.READY:
-					fLog.write("Info rtspServerWorker: Processing PLAY, New State: PLAYING\n")
+					# fLog.write("Info rtspServerWorker: Processing PLAY, New State: PLAYING\n")
 					clientsDict[self.clientInfo['addr_IP']]['state'] = self.PLAYING
 				else:
-					fLog.write("Info rtspServerWorker: Processing PLAY, State: PLAYING\n")
-				self.replyRtsp(self.OK_200_PLAY, seq[1], fLog)
+					print "Info rtspServerWorker: Processing PLAY, State: PLAYING\n"
+					# fLog.write("Info rtspServerWorker: Processing PLAY, State: PLAYING\n")
+				self.replyRtsp(self.OK_200_PLAY, seq[1])
 		
 		# Process TEARDOWN request
 		elif requestType == self.TEARDOWN:
-			fLog.write("Info rtspServerWorker: Processing TEARDOWN, New State: INI\n")
+			# fLog.write("Info rtspServerWorker: Processing TEARDOWN, New State: INI\n")
 			# clientsDict[self.clientInfo['addr_IP']]['state'] = self.INI
 			session = ''
 			try:
@@ -405,42 +408,43 @@ class rtspServerWorker:
 				f.close()
 
 				cmd = 'dvblastctl -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]] + '.sock reload'
-				fLog.write('Info rtspServerWorker: Reloading dvblast configuration 4\n')
+				# fLog.write('Info rtspServerWorker: Reloading dvblast configuration 4\n')
 				os.system(cmd)
 			except:
-				fLog.write("Info rtspServerWorker: processing TEARDOWN NONE\n")
+				print "Info rtspServerWorker: processing TEARDOWN NONE\n"
+				# fLog.write("Info rtspServerWorker: processing TEARDOWN NONE\n")
 			del clientsDict[self.clientInfo['addr_IP']]
-			self.replyRtsp(self.OK_200_TEARDOWN, seq[1], fLog)
+			self.replyRtsp(self.OK_200_TEARDOWN, seq[1])
 			
 		# Process OPTIONS request 		
 		elif requestType == self.OPTIONS:
-			fLog.write("Info rtspServerWorker: Processing OPTIONS\n")
-			self.replyRtsp(self.OK_200_OPTIONS, seq[1], fLog)
+			# fLog.write("Info rtspServerWorker: Processing OPTIONS\n")
+			self.replyRtsp(self.OK_200_OPTIONS, seq[1])
 
 		# Process DESCRIBE request 		
 		elif requestType == self.DESCRIBE:
 			if session == '':
-				fLog.write("Info rtspServerWorker: Processing DESCRIBE NONE\n")
-				self.replyRtsp(self.OK_404_DESCRIBE, seq[1], fLog)
+				# fLog.write("Info rtspServerWorker: Processing DESCRIBE NONE\n")
+				self.replyRtsp(self.OK_404_DESCRIBE, seq[1])
 			else:
 				if dvblastReload:
-					fLog.write("Info rtspServerWorker: Processing DESCRIBE SIGNAL\n")
-					self.replyRtsp(self.OK_200_DESCRIBE, seq[1], fLog)
+					# fLog.write("Info rtspServerWorker: Processing DESCRIBE SIGNAL\n")
+					self.replyRtsp(self.OK_200_DESCRIBE, seq[1])
 				else:
-					fLog.write("Info rtspServerWorker: Processing DESCRIBE NO SIGNAL\n")
-					self.replyRtsp(self.OK_200_DESCRIBE_NOSIGNAL, seq[1], fLog)
+					# fLog.write("Info rtspServerWorker: Processing DESCRIBE NO SIGNAL\n")
+					self.replyRtsp(self.OK_200_DESCRIBE_NOSIGNAL, seq[1])
 
 		# Process CLOSE_CONNETION request 		
 		elif requestType == self.CLOSE_CONNETION:
-			fLog.write("Info rtspServerWorker: Processing CLOSE_CONNETION\n")
+			# fLog.write("Info rtspServerWorker: Processing CLOSE_CONNETION\n")
 			self.SERVER_RUNNING = 0
-			self.replyRtsp(self.CLOSING_CONNECTION, seq[1], fLog)
+			self.replyRtsp(self.CLOSING_CONNECTION, seq[1])
 
-	def run_dvblast(self, cmd, fLog):
-		proc = Popen([cmd], stdout=fLog, stderr=fLog, shell=True)
+	def run_dvblast(self, cmd):
+		proc = Popen([cmd], shell=True)
 		
 
-	def replyRtsp(self, code, seq, fLog):
+	def replyRtsp(self, code, seq):
 		"""Send RTSP reply to the client."""
 		if code == self.OK_200_OPTIONS:
 			reply = 'RTSP/1.0 200 OK\r\nPublic:OPTIONS,SETUP,PLAY,TEARDOWN,DESCRIBE\r\nCSeq:1\r\n\r\n'
@@ -450,9 +454,11 @@ class rtspServerWorker:
 		
 		# Error messages
 		elif code == self.FILE_NOT_FOUND_404:
-			fLog.write("Info rtspServerWorker: 404 NOT FOUND\n")
+			print "Info rtspServerWorker: 404 NOT FOUND\n"
+			# fLog.write("Info rtspServerWorker: 404 NOT FOUND\n")
 		elif code == self.CON_ERR_500:
-			fLog.write("Info rtspServerWorker: 500 CONNECTION ERROR\n")
+			print "Info rtspServerWorker: 500 CONNECTION ERROR\n"
+			# fLog.write("Info rtspServerWorker: 500 CONNECTION ERROR\n")
 		elif code == self.OK_200_DESCRIBE:
 			ipServer = getServerIP()
 			unicastIp = '0.0.0.0'
@@ -469,7 +475,7 @@ class rtspServerWorker:
 			connSocket = self.clientInfo['rtspSocket']
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0
-			fLog.write("Info rtspServerWorker: 200 DESCRIBE")
+			# fLog.write("Info rtspServerWorker: 200 DESCRIBE")
 		elif code == self.OK_200_DESCRIBE_NOSIGNAL:
 			ipServer = getServerIP()
 			unicastIp = '0.0.0.0'
@@ -486,34 +492,34 @@ class rtspServerWorker:
 			connSocket = self.clientInfo['rtspSocket']
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0
-			fLog.write("Info rtspServerWorker: 200 DESCRIBE NOSIGNAL")
+			# fLog.write("Info rtspServerWorker: 200 DESCRIBE NOSIGNAL")
 		elif code == self.OK_404_DESCRIBE:
 			reply = 'RTSP/1.0 404 Not Found\r\nCSeq:%s\n\r\n' % (seq)
 			connSocket = self.clientInfo['rtspSocket']
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0
-			fLog.write("Info rtspServerWorker: 404 DESCRIBE")
+			# fLog.write("Info rtspServerWorker: 404 DESCRIBE")
 		elif code == self.OK_200_SETUP:
 			reply = 'RTSP/1.0 200 OK\r\nSession:%s;timeout=30\r\ncom.ses.streamID:%d\r\nTransport: RTP/AVP;unicast;destination=%s;client_port=5000-5001\r\nCSeq:%s\n\r\n' % (session, clientsDict[self.clientInfo['addr_IP']]['stream'], self.clientInfo['addr_IP'], seq)
 			connSocket = self.clientInfo['rtspSocket']
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0
-			fLog.write("Info rtspServerWorker: 200 SETUP")
+			# fLog.write("Info rtspServerWorker: 200 SETUP")
 		elif code == self.OK_200_SETUP_PIDS:
 			reply = 'RTSP/1.0 200 OK\r\nSession:%s;timeout=30\r\ncom.ses.streamID:%d\r\nTransport: RTP/AVP;unicast;destination=%s;client_port=5000-5001\r\nCSeq:%s\r\n\r\n' % (session, clientsDict[self.clientInfo['addr_IP']]['stream'], self.clientInfo['addr_IP'], seq)
 			connSocket = self.clientInfo['rtspSocket']
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 1
-			fLog.write("Info rtspServerWorker: 200 SETUP PID")
+			# fLog.write("Info rtspServerWorker: 200 SETUP PID")
 		elif code == self.OK_200_PLAY:
 			reply = 'RTSP/1.0 200 OK\r\nRTP-Info:url=//192.168.2.61/stream=%d;seq=50230\r\nCSeq:%s\nSession:%s\r\n\r\n' % (clientsDict[self.clientInfo['addr_IP']]['stream'], seq, session)
 			connSocket = self.clientInfo['rtspSocket']
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0
-			fLog.write("Info rtspServerWorker: 200 PLAY")
+			# fLog.write("Info rtspServerWorker: 200 PLAY")
 		elif code == self.OK_200_TEARDOWN:
 			reply = 'RTSP/1.0 200 OK\r\nContent-length:0\r\nCSeq:%s\nSession:%s\r\n\r\n' % (seq, session)
 			connSocket = self.clientInfo['rtspSocket']
 			connSocket.send(reply)
 			self.SERVER_RUNNING = 0	
-			fLog.write("Info rtspServerWorker: 200 TEARDOWN")		
+			# fLog.write("Info rtspServerWorker: 200 TEARDOWN")		
