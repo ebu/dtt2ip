@@ -2,13 +2,21 @@
 
 import commands, re
 
-def getFrontEnds():
-	# e.g. frontEndDict = {'adapter0': {'owner': '0.0.0.0', 'freq': ''}} 
-	# Initialize frontEnd dictionary 
-	frontEndDict = {}
+# Make sure that resources.log file is clean
+fLog = open('logs/resources.log', 'w')
+fLog.close()
 
-	# Make sure that resources.log file is clean
-	fLog = open('logs/resources.log', 'w')
+def getFrontEnds(frontEndDict):
+	# e.g. frontEndDict = {'adapter0': {'owner': '0.0.0.0', 'freq': '', 'numOwners': 0}} 
+	# Initialize frontEnd dictionary 
+	# frontEndDict = {}
+	fLog = open('logs/resources.log', 'a')
+
+	# Update the frontEndDict values (i.e number of owners, owners)
+	if frontEndDict:
+		for frontEnd in frontEndDict:
+			if frontEndDict[frontEnd]['numOwners'] == 0:
+				frontEndDict[frontEnd]['owner'] = '0.0.0.0'
 
 	# List the available adapters
 	cmd = 'ls -l /dev/dvb/'
@@ -21,14 +29,20 @@ def getFrontEnds():
 			matchAdapter = re.search(r'adapter([\w]+)', line)
 			if matchAdapter:
 				adapter = 'adapter' + matchAdapter.group(1)
-				frontEndDict[adapter] = {}
-				frontEndDict[adapter]['owner'] = '0.0.0.0'
-				frontEndDict[adapter]['freq'] = ''
-				fLog.write('Info: Available ' + adapter + ' detected\n')
+				if not frontEndDict.has_key(adapter):
+					print "Info resources: new adapter"
+					frontEndDict[adapter] = {}
+					frontEndDict[adapter]['owner'] = '0.0.0.0'
+					frontEndDict[adapter]['freq'] = ''
+					frontEndDict[adapter]['numOwners'] = 0
+					fLog.write('Info: Available ' + adapter + ' detected\n')
 	else:
+		frontEndDict = {}
 		fLog.write('Info: NO AVAILABLE adapters detected\n')
 	fLog.close()
 	return frontEndDict
 	
 if __name__ == '__main__':
-	getFrontEnds()
+	frontEndDict = {}
+	frontEndDict = getFrontEnds(frontEndDict)
+	print frontEndDict

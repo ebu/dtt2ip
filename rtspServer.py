@@ -8,10 +8,10 @@ from netInterfaceStatus import getServerIP
 # class rtspServer:
 def clean():
 	# Make sure that rtspServer.log file is clean
-	# fLog = open('logs/rtspServer.log', 'w')
+	fLog = open('logs/rtspServer.log', 'w')
 	# Make sure that all dvblast sockets are deleted before you start the rtsp state machine
 	cmd = 'rm -rf /tmp/dvblast*'
-	# fLog.write('Info rtspServer: Cleaning dvblast sockets before starting\n')
+	fLog.write('Info rtspServer: Cleaning dvblast sockets before starting\n')
 	outtext = commands.getoutput(cmd)
 	(exitstatus, outtext) = commands.getstatusoutput(cmd)
 	# if not exitstatus:
@@ -19,7 +19,7 @@ def clean():
 	
 	# Make sure that all the pidCfgFiles are clean before you start the rtsp state machine
 	cmd = 'ls -l dvb-t/pid*'
-	# fLog.write('Info rtspServer: Cleaning all pidCfgFiles\n')
+	fLog.write('Info rtspServer: Cleaning all pidCfgFiles\n')
 	outtext = commands.getoutput(cmd)
 	(exitstatus, outtext) = commands.getstatusoutput(cmd)
 	if not exitstatus:
@@ -29,8 +29,8 @@ def clean():
 			if matchPidCfgFile:
 				f = open('dvb-t/pid' + matchPidCfgFile.group(1) + '.cfg', 'w')
 				f.close()
-		# fLog.write('Info rtspServer: pidCfgFiles clean\n')
-	# fLog.close()
+		fLog.write('Info rtspServer: pidCfgFiles clean\n')
+	fLog.close()
 
 	# def main(self):
 def rtspServer():
