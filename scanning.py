@@ -13,11 +13,11 @@ valTimerCheck = 4
 
 # Make sure that "scanning.log" file is clean
 fLog = open('logs/scanning.log', 'w')
-
+fLog.close()
 
 def getChList():
 	global fLog
-
+	fLog = open('logs/scanning.log', 'a')
 	# e.g. chList = {'satFreq': ['freq', 'pid']}
 	# Initialize chList 
 	chList = {}
@@ -30,6 +30,7 @@ def getChList():
 			chList[lineArray[0]] = lineArray[1:-1]
 	f.close()
 	fLog.write('Info: Available channels obtained\n')
+	fLog.close()
 	return chList
 
 def scanning(periodNewScan, scanningFlag):
@@ -41,6 +42,7 @@ def scanning(periodNewScan, scanningFlag):
 	# Increment number of iteration for scanning
 	numIter = numIter + 1
 
+	fLog = open('logs/scanning.log', 'a')
 	# f = open('conf/rtspServer.config', 'w')
 	# f.write('# Please be carefull when editing this file. \n')
 	# f.write('# The syntax is :\n')
