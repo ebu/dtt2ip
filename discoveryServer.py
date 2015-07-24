@@ -38,7 +38,6 @@ serverIP = getServerIP()
 # Make sure that rtspServer.log file is clean
 fLog = open('logs/discoveryServer.log', 'w')
 fLog.write("Info discoveryServer: ipAddrServer = " + serverIP + '\n')
-fLog.close()
 
 nt1 = 'upnp:' + paramDict['upnp']
 nt2 = 'uuid:' + paramDict['uuid']
@@ -91,6 +90,9 @@ def callServerReactor():
 	global SSDP_TERMINATE
 	global fLog
 
+	# Open a multicast socket
+	fLog.write('Info: Discovery server started\n')
+
 	ssdpMulticastSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 	ssdpMulticastSocket.bind((ssdpAddr, ssdpPort))
 
@@ -101,10 +103,6 @@ def callServerReactor():
 	
 	# While look until script is terminated
 	while (not SSDP_TERMINATE):
-		# Open a multicast socket
-		fLog = open('logs/discoveryServer.log', 'a')
-		fLog.write('Info: Discovery server started\n')
-
 		# Wait to receive multicast messages either from client or from new servers that have joined the network
 		datagram, address = ssdpMulticastSocket.recvfrom(1024)
 		datagram_array = datagram.rsplit('\r\n')
@@ -136,10 +134,6 @@ def callServerReactor():
 						fLog.write("Info: MS_SEARCH\n")
 		except:
 			fLog.write("Info: Something went wrong\n")
-	
-	fLog.close()
-
-
 	ssdpMulticastSocket.close()
 
 def callClientReactor():
@@ -147,16 +141,15 @@ def callClientReactor():
 	global deviceIdOk
 	global fLog
 
+	# Open a unicast socket
+	fLog.write('Info: Device ID negotion started\n')
+
 	ssdpUnicastSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 	ssdpUnicastSocket.bind((serverIP, ssdpPort))
 	ssdpUnicastSocket.settimeout(5.0)
 
 	# While look until script is terminated
 	while (not SSDP_TERMINATE):
-		# Open a unicast socket
-		fLog = open('logs/discoveryServer.log', 'a')
-		fLog.write('Info: Device ID negotion started\n')
-
 		# DEVICE ID negotiation loop, escape only when we have valid DEVICE ID
 		while (not deviceIdOk):
 			# Send the first 3 SSDP NOTIFY messages
@@ -206,11 +199,10 @@ def callClientReactor():
 			paramDict['bootId'] = int(paramDict['bootId']) + 1
 			ssdpUnicastSocket.sendto(ms_notify_alive(NT[i], USN[i]), (ssdpAddr, ssdpPort))
 			fLog.write("Info: MS_NOTIFY_ALIVE\n")
-
-		fLog.close()
 	ssdpUnicastSocket.close()
 
 def discoveryServer():
+	global fLog
 
 	# DEVICE ID negotiation thread ( server <---> server communications )
 	t1 = threading.Thread(target=callClientReactor)
@@ -231,6 +223,7 @@ def discoveryServer():
 		while t1.is_alive() and t2.is_alive():
 			pass
 	except (KeyboardInterrupt, SystemExit):
+		fLog.close()
 		SSDP_TERMINATE = 1
 
  
