@@ -30,7 +30,7 @@ def getFrontEnds(frontEndDict):
 			if matchAdapter:
 				adapter = 'adapter' + matchAdapter.group(1)
 				if not frontEndDict.has_key(adapter):
-					print "Info resources: new adapter"
+					# print "Info resources: new adapter"
 					frontEndDict[adapter] = {}
 					frontEndDict[adapter]['owner'] = '0.0.0.0'
 					frontEndDict[adapter]['freq'] = ''

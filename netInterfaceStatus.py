@@ -11,7 +11,7 @@ def getServerIP():
 		if ipAddr["name"] != "lo" and ipAddr["status"] == "up":
 			ipAddrServer = ipAddr["ip"]
 
-	print "Info netInterfaceStatus: ipAddrServer = " + ipAddrServer + '\n'
+	# print "Info netInterfaceStatus: ipAddrServer = " + ipAddrServer + '\n'
 	return ipAddrServer
 
 def getNetworkInt():
