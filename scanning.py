@@ -43,13 +43,15 @@ def scanning(periodNewScan, scanningFlag):
 	numIter = numIter + 1
 
 	fLog = open('logs/scanning.log', 'a')
-	# f = open('conf/rtspServer.config', 'w')
-	# f.write('# Please be carefull when editing this file. \n')
-	# f.write('# The syntax is :\n')
-	# f.write('# fakeFrequency' 'dvbtFrequency' 'bandwidth' 'modulationType' 'pid' ' (for the moment no bandwith or modulation)\n')
-	# f.write('# Use "#' '" to comment line\n')
-	# f.write('\n')
-	# f.close()
+
+	# Make sure that rtspServer.config file is clean
+	f = open('conf/rtspServer.config', 'w')
+	f.write('# Please be carefull when editing this file. \n')
+	f.write('# The syntax is :\n')
+	f.write('# fakeFrequency' 'dvbtFrequency' 'bandwidth' 'modulationType' 'pid' ' (for the moment no bandwith or modulation)\n')
+	f.write('# Use "#' '" to comment line\n')
+	f.write('\n')
+	f.close()
 
 	# Statically asigned frequencies from 19.2 degrees E satelite
 	# First value signifies that freq is free "0" or occupied "1"
@@ -115,7 +117,7 @@ def scanning(periodNewScan, scanningFlag):
 						break
 				# Alex TO DO -- what if we ran out of available sat freq
 			else:
-				print "Info: second iteration"
+				print "Info: second/other iteration"
 				newFreqFlag = True
 				fLog.write('Info: Update timer for freq= ' + freq + ' and pid= ' + pid + ' \n')
 				for freqPid in chDict.values():
@@ -142,10 +144,11 @@ def scanning(periodNewScan, scanningFlag):
 			for freqPid in chDict.values():
 				satFreq[chDict.keys()[chDict.values().index([freqPid[0], freqPid[1]])]][1] = satFreq[chDict.keys()[chDict.values().index([freqPid[0], freqPid[1]])]][1] - 1
 
-		if numIter == valTimerCheck:
+		# Clean unavailable frequencies every period (multiples of valTimerCheck)
+		if numIter % valTimerCheck == 0:
 			print "Info: clean unavailable frequencies"
 			fLog.write('Info: clean unavailable frequencies\n')
-			print 'satFreq', satFreq
+			print "satFreq", satFreq
 			for currentFreq in sorted(satFreq):
 				if satFreq[currentFreq][1] == 0:
 					f = open('conf/rtspServer.config', 'r')
@@ -166,6 +169,7 @@ def scanning(periodNewScan, scanningFlag):
 		chDict = getChList()
 
 		# Check every hour for new frequencies. It can be changed to longer periods from site
+		fLog = open('logs/scanning.log', 'a')
 		fLog.write('Info: W_SCAN is enteringn sleeping mode. Will wake up in ' + str(periodNewScan) + ' seconds\n')
 		time.sleep(periodNewScan)
 
@@ -174,6 +178,6 @@ def scanning(periodNewScan, scanningFlag):
 if __name__ == '__main__':
 	# Default period for new scan is 3600 seconds.
 	# It can be changed from the site interface
-	periodNewScan = 1
+	periodNewScan = 10
 	scanningFlag = 0
 	scanning(periodNewScan, scanningFlag)

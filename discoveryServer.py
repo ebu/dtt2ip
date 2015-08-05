@@ -119,7 +119,6 @@ def callServerReactor():
 				if match2:
 					# fLog.write("Info: client = ip " + address[0] + ", port " + address[1] + "\n")
 					fLog.write("Info: client \n")
-					print 'Info: client = ip', address[0], 'port', address[1]
 					toClient = True
 					ssdpMulticastSocket.sendto(ms_ok(toClient), (address[0], address[1]))
 

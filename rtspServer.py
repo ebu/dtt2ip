@@ -42,7 +42,6 @@ def rtspServer():
 	serverPort = 554
 	rtspSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	ipAddrServer = getServerIP()
-
 	rtspSocket.bind((ipAddrServer, serverPort))
 	while (1):
 		# Listen for incoming connections
