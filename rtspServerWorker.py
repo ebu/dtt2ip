@@ -314,12 +314,14 @@ class rtspServerWorker:
 									frontEndsDict[frontEnd]['owner'] = self.clientInfo['addr_IP']
 									frontEndsDict[frontEnd]['numOwners'] = frontEndsDict[frontEnd]['numOwners'] + 1	# increase the number of owner
 									clientsDict[self.clientInfo['addr_IP']]['owner'] = True
+									print "Info Alex --------------- 1"
 
 								# Check if multiple owners ('255.255.255.255' broadcast IP address) and you have ownership capabilities, 
 								# then increase the number of owners by one and remove your ownership capabilities.
 								if frontEndsDict[frontEnd]['owner'] == '255.255.255.255' and clientsDict[self.clientInfo['addr_IP']]['owner']:
 									frontEndsDict[frontEnd]['numOwners'] = frontEndsDict[frontEnd]['numOwners'] + 1	# increase the number of owner
 									clientsDict[self.clientInfo['addr_IP']]['owner'] = False	# remove the ownership capability from the client
+									print "Info Alex --------------- 2"
 
 								# Check if somebody else owne's it and you have ownership capabilities, 
 								# then make the tuner for multiple owners, increase the number of owners and remove your ownership capabilities
@@ -328,6 +330,8 @@ class rtspServerWorker:
 									frontEndsDict[frontEnd]['owner'] = '255.255.255.255'  # '255.255.255.255' the IP address for specifying multiple owners
 									frontEndsDict[frontEnd]['numOwners'] = frontEndsDict[frontEnd]['numOwners'] + 1	# increase the number of owner
 									clientsDict[self.clientInfo['addr_IP']]['owner'] = False # Remove the ownership capabilties of yourself
+									print "Info Alex --------------- 3"
+
 								print " frontEndsDict2", frontEndsDict
 								break
 						# If we did not find any tuner that has that frequency configured,then search for any owned tuners
@@ -401,7 +405,6 @@ class rtspServerWorker:
 							match_line = re.search(lineToCompare, line)
 							if not match_line:
 								f.write(line)
-							else:
 								lineToGet = line.split('\t')
 								print "Info rtspServerWorker: lineToGet", lineToGet
 						f.close()
@@ -413,14 +416,19 @@ class rtspServerWorker:
 			
 						try:
 							# Update the number of owners of frontEnd
-							frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['numOwners'] = frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['numOwners'] - 1
+							if frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['owner'] == '255.255.255.255' or frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['owner'] == self.clientInfo['addr_IP']:
+								frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['numOwners'] = frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['numOwners'] - 1
+							
+							# We do not support negative numbers
+							if frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['numOwners'] < 0:
+								frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['numOwners'] = 0
 							clientsDict[self.clientInfo['addr_IP']]['owner'] = True # Make sure that the client has ownership capabilties
 						except:
 							print "Info rtspServerWorker: No adapters configured with that freq 3 "
 						try:
 							# If we have only one client connected left, then the last client takes the ownership of the tuner 
-							if frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['numOwners'] == 1 and frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['owners'] == '255.255.255.255' :
-								frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['owner'] = lineToGet[0] # The last client that will remain in the clientsDict has to take ownership
+							if frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['numOwners'] == 1 and frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['owner'] == '255.255.255.255' :
+								frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['owner'] = lineToGet[0][:-(len(clientsDict[self.clientInfo['addr_IP']]['rtpPort'])+1)] # The last client that will remain in the clientsDict has to take ownership (lineToGet[0] = ip_add:port_num)
 
 							print " frontEndsDict8", frontEndsDict
 						except:
@@ -462,6 +470,10 @@ class rtspServerWorker:
 			try:
 				# Update the number of owners of frontEnd
 				frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['numOwners'] = frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['numOwners'] - 1
+				
+				# We do not support negative numbers
+				if frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['numOwners'] < 0:
+					frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['numOwners'] = 0
 			except:
 				print "Info rtspServerWorker: No adapters configured with that freq 1 "
 			try:
