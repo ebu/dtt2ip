@@ -7,7 +7,7 @@ fLog = open('logs/resources.log', 'w')
 fLog.close()
 
 def getFrontEnds(frontEndDict):
-	# e.g. frontEndDict = {'adapter0': {'owner': '0.0.0.0', 'freq': '', 'numOwners': 0}} 
+	# e.g. frontEndDict = {'adapter0': {'owner': '0.0.0.0', 'freq': '', 'numOwners': 0, 'valid': True}} 
 	# Initialize frontEnd dictionary 
 	# frontEndDict = {}
 	fLog = open('logs/resources.log', 'a')
@@ -25,6 +25,12 @@ def getFrontEnds(frontEndDict):
 	(exitstatus, outtext) = commands.getstatusoutput(cmd)
 	if not exitstatus:
 		linesArray = outtext.split('\n')
+
+		# Verify is adapter are still valid, and not removed. 
+		for frontEnd in frontEndDict:
+			frontEndDict[frontEnd]['valid'] = False
+
+		# Update the adapters
 		for line in linesArray:
 			matchAdapter = re.search(r'adapter([\w]+)', line)
 			if matchAdapter:
@@ -35,7 +41,15 @@ def getFrontEnds(frontEndDict):
 					frontEndDict[adapter]['owner'] = '0.0.0.0'
 					frontEndDict[adapter]['freq'] = ''
 					frontEndDict[adapter]['numOwners'] = 0
+					frontEndDict[adapter]['valid'] = True
 					fLog.write('Info: Available ' + adapter + ' detected\n')
+				else:
+					frontEndDict[adapter]['valid'] = True
+
+		# Remove not valid adapters from the dictionary
+		for frontEnd in frontEndDict:
+			if frontEndDict[frontEnd]['valid'] == False:
+				del frontEndDict[frontEnd]
 	else:
 		frontEndDict = {}
 		fLog.write('Info: NO AVAILABLE adapters detected\n')

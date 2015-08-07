@@ -337,7 +337,7 @@ class rtspServerWorker:
 								print " frontEndsDict2", frontEndsDict
 								break
 						# If we did not find any tuner that has that frequency configured,then search for any owned tuners
-						if clientsDict[self.clientInfo['addr_IP']]['dvblastReload']
+						if clientsDict[self.clientInfo['addr_IP']]['dvblastReload']:
 							for frontEnd in frontEndsDict:
 								if frontEndsDict[frontEnd]['owner'] == self.clientInfo['addr_IP'] or frontEndsDict[frontEnd]['owner'] == '0.0.0.0':
 									# Shutdown socket if used 
@@ -347,7 +347,7 @@ class rtspServerWorker:
 										self.run_dvblast(cmd)
 										# print 'ALEX --- 6'
 										# ALEX : ----- To be checked 
-										# time.sleep(1)
+										time.sleep(1)
 										# Alex : -----
 									except:
 										print "Info rtspServerWorker: Tried to shut down tuner, however the tuner was not used"
