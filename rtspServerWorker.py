@@ -7,8 +7,8 @@ from netInterfaceStatus import getServerIP
 from scanning import getChList
 from subprocess import Popen, PIPE
 
-global session
-global dvblastReload
+# global session
+# global dvblastReload
 
 global clientsDict
 global chList
@@ -23,8 +23,8 @@ clientsDict = {}	# e.g. clientsDict = { 'ip_client_1': {'rtpPort': '', state: 0,
 freqDict = {}		# e.g. freqDict = {'freq': 'adapter0'}
 frontEndsDict = {}	# e.g. frontEndsDict = {'adapter0': {'owner': '0.0.0.0', 'freq': '', 'numOwners': 0}} 
 chList = {}		# e.g. chList = {'satFreq': ['freq', 'pid']}
-session = ''	# For THEARDOWN reply
-dvblastReload = 0   # e.g. Flag to trigger a reload
+# session = ''	# For THEARDOWN reply
+# dvblastReload = False   # e.g. Flag to trigger a reload
 firstBootFlag = True # First bootup of the device
 
 
@@ -81,7 +81,9 @@ class rtspServerWorker:
 		sr = ''
 		fec = ''
 		status = 'inactive'
+		ownerCapabilties = True # Owner capabilties flag, in order to know if we can increase the number of owners of a tuner or not. If false that means that we are coowners, otherwise we are the only owner of a tuner or did not requested any at all.
 		session = ''
+		dvblastReload = False # DvblastReload flag, in order to know if we need to reload
 
 		self.clientInfo = clientInfo
 	
@@ -100,8 +102,9 @@ class rtspServerWorker:
 			clientsDict[self.clientInfo['addr_IP']]['sr'] = sr
 			clientsDict[self.clientInfo['addr_IP']]['fec'] = fec
 			clientsDict[self.clientInfo['addr_IP']]['status'] = status
-			clientsDict[self.clientInfo['addr_IP']]['owner'] = True
-			clientsDict[self.clientInfo['addr_IP']]['session'] = session			
+			clientsDict[self.clientInfo['addr_IP']]['ownerCapabilties'] = ownerCapabilties
+			clientsDict[self.clientInfo['addr_IP']]['session'] = session		
+			clientsDict[self.clientInfo['addr_IP']]['dvblastReload'] = dvblastReload	
 	
 	def run(self):		
 		t = threading.Thread(target=self.recvRtspRequest)
@@ -126,8 +129,8 @@ class rtspServerWorker:
 	
 	def processRtspRequest(self, data):
 		"""Process RTSP request sent from the client."""
-		global session
-		global dvblastReload
+		# global session
+		# global dvblastReload
 
 		global chList	
 		global clientsDict  
@@ -224,7 +227,7 @@ class rtspServerWorker:
 					f = open('dvb-t/pid' + chList[freq][0] + '.cfg', 'a')
 					f.write(self.clientInfo['addr_IP'] + ':' + clientsDict[self.clientInfo['addr_IP']]['rtpPort'] + '\t1\t' + chList[freq][1] + '\n')
 					f.close()
-					dvblastReload = 1
+					clientsDict[self.clientInfo['addr_IP']]['dvblastReload'] = True
 
 				if pids == 'none' or pids == '':
 					self.replyRtsp(self.OK_200_SETUP, seq[1])
@@ -259,7 +262,7 @@ class rtspServerWorker:
 					
 					f.write(self.clientInfo['addr_IP'] + ':' + clientsDict[self.clientInfo['addr_IP']]['rtpPort'] + '\t1\t' + chList[freq][1] + '\n')
 					f.close()
-					dvblastReload = 1
+					clientsDict[self.clientInfo['addr_IP']]['dvblastReload'] = True
 				self.replyRtsp(self.OK_200_SETUP, seq[1])
 				
 		# Process PLAY request 		
@@ -277,7 +280,7 @@ class rtspServerWorker:
 				self.replyRtsp(self.OK_200_PLAY, seq[1])
 
 				# START/RELOAD configuration for dvblast only if we have a streamID, the configuration file has been update and the PLAY URI is not a delete pid
-				if clientsDict[self.clientInfo['addr_IP']]['stream'] and dvblastReload and delPids == 0:				
+				if clientsDict[self.clientInfo['addr_IP']]['stream'] and clientsDict[self.clientInfo['addr_IP']]['dvblastReload'] and delPids == 0:				
 					# If firstBootFlag is true this means that no frontend has been configured, so stop wasting time with searching for particular frontends
 					if firstBootFlag:
 						firstBootFlag = False
@@ -287,13 +290,13 @@ class rtspServerWorker:
 								cmd = 'dvblast -a ' + frontEnd[-1] + ' -c dvb-t/pid' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + '.cfg -f ' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + ' -b 8 -C -u -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + frontEnd + '.sock'
 								fLog.write('Info rtspServerWorker: Starting dvblast 1\n')
 								self.run_dvblast(cmd)
-								dvblastReload = 0
+								clientsDict[self.clientInfo['addr_IP']]['dvblastReload'] = False
 
 								frontEndsDict[frontEnd]['freq'] = chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]
 								frontEndsDict[frontEnd]['owner'] = self.clientInfo['addr_IP']
 								frontEndsDict[frontEnd]['numOwners'] = frontEndsDict[frontEnd]['numOwners'] + 1	# increase the number of owners
 								freqDict[frontEndsDict[frontEnd]['freq']] = frontEnd
-								clientsDict[self.clientInfo['addr_IP']]['owner'] = True
+								clientsDict[self.clientInfo['addr_IP']]['ownerCapabilties'] = True
 								print " frontEndsDict0", frontEndsDict
 								break
 					# No more first boot, the search for available and preconfigured/unconfigured frontends
@@ -305,44 +308,42 @@ class rtspServerWorker:
 							if frontEndsDict[frontEnd]['freq'] == chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]:
 								cmd = 'dvblastctl -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + frontEnd + '.sock reload'
 								fLog.write('Info rtspServerWorker: Reloading dvblast configuration 1\n')
-								# os.system(cmd)
 								self.run_dvblast(cmd)
-								dvblastReload = 0
+								clientsDict[self.clientInfo['addr_IP']]['dvblastReload'] = False
 
 								# Check if this was an abandoned tuner ('0.0.0.0' abandonded IP address) and take ownership if it was
 								if frontEndsDict[frontEnd]['owner'] == '0.0.0.0':
 									frontEndsDict[frontEnd]['owner'] = self.clientInfo['addr_IP']
 									frontEndsDict[frontEnd]['numOwners'] = frontEndsDict[frontEnd]['numOwners'] + 1	# increase the number of owner
-									clientsDict[self.clientInfo['addr_IP']]['owner'] = True
+									clientsDict[self.clientInfo['addr_IP']]['ownerCapabilties'] = True
 									print "Info Alex --------------- 1"
 
 								# Check if multiple owners ('255.255.255.255' broadcast IP address) and you have ownership capabilities, 
 								# then increase the number of owners by one and remove your ownership capabilities.
-								if frontEndsDict[frontEnd]['owner'] == '255.255.255.255' and clientsDict[self.clientInfo['addr_IP']]['owner']:
+								if frontEndsDict[frontEnd]['owner'] == '255.255.255.255' and clientsDict[self.clientInfo['addr_IP']]['ownerCapabilties']:
 									frontEndsDict[frontEnd]['numOwners'] = frontEndsDict[frontEnd]['numOwners'] + 1	# increase the number of owner
-									clientsDict[self.clientInfo['addr_IP']]['owner'] = False	# remove the ownership capability from the client
+									clientsDict[self.clientInfo['addr_IP']]['ownerCapabilties'] = False	# remove the ownership capability from the client
 									print "Info Alex --------------- 2"
 
 								# Check if somebody else owne's it and you have ownership capabilities, 
 								# then make the tuner for multiple owners, increase the number of owners and remove your ownership capabilities
-								elif frontEndsDict[frontEnd]['owner'] != self.clientInfo['addr_IP'] and clientsDict[self.clientInfo['addr_IP']]['owner']:
+								elif frontEndsDict[frontEnd]['owner'] != self.clientInfo['addr_IP'] and clientsDict[self.clientInfo['addr_IP']]['ownerCapabilties']:
 									clientsDict[frontEndsDict[frontEnd]['owner']]['owner'] = False # Remove the ownership capabilities of the previous owner
 									frontEndsDict[frontEnd]['owner'] = '255.255.255.255'  # '255.255.255.255' the IP address for specifying multiple owners
 									frontEndsDict[frontEnd]['numOwners'] = frontEndsDict[frontEnd]['numOwners'] + 1	# increase the number of owner
-									clientsDict[self.clientInfo['addr_IP']]['owner'] = False # Remove the ownership capabilties of yourself
+									clientsDict[self.clientInfo['addr_IP']]['ownerCapabilties'] = False # Remove the ownership capabilties of yourself
 									print "Info Alex --------------- 3"
 
 								print " frontEndsDict2", frontEndsDict
 								break
 						# If we did not find any tuner that has that frequency configured,then search for any owned tuners
-						if dvblastReload:
+						if clientsDict[self.clientInfo['addr_IP']]['dvblastReload']
 							for frontEnd in frontEndsDict:
 								if frontEndsDict[frontEnd]['owner'] == self.clientInfo['addr_IP'] or frontEndsDict[frontEnd]['owner'] == '0.0.0.0':
 									# Shutdown socket if used 
 									try:
 										cmd = 'dvblastctl -r /tmp/dvblast' + frontEndsDict[frontEnd]['freq'] + frontEnd + '.sock shutdown'
 										fLog.write("Info rtspServerWorker: Shutting down dvblast for this tuner\n")
-										# os.system(cmd)
 										self.run_dvblast(cmd)
 										# print 'ALEX --- 6'
 										# ALEX : ----- To be checked 
@@ -363,7 +364,7 @@ class rtspServerWorker:
 									cmd = 'dvblast -a ' + frontEnd[-1] + ' -c dvb-t/pid' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + '.cfg -f ' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + ' -b 8 -C -u -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + frontEnd + '.sock'
 									fLog.write('Info rtspServerWorker: Starting dvblast 2\n')
 									self.run_dvblast(cmd)
-									dvblastReload = 0
+									clientsDict[self.clientInfo['addr_IP']]['dvblastReload'] = False
 									
 									# Assume ownership
 									if frontEndsDict[frontEnd]['owner'] == '0.0.0.0':
@@ -371,16 +372,16 @@ class rtspServerWorker:
 										frontEndsDict[frontEnd]['numOwners'] = frontEndsDict[frontEnd]['numOwners'] + 1	# increase the number of owners
 									frontEndsDict[frontEnd]['freq'] = chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]	
 									freqDict[frontEndsDict[frontEnd]['freq']] = frontEnd
-									clientsDict[self.clientInfo['addr_IP']]['owner'] = True
+									clientsDict[self.clientInfo['addr_IP']]['ownerCapabilties'] = True
 									print " frontEndsDict3", frontEndsDict
 									break
 						# If we did not fine any owned tuners, then give it one more search before giving up. Search for nonused available tuners. 
-						if dvblastReload:
+						if clientsDict[self.clientInfo['addr_IP']]['dvblastReload']:
 							for frontEnd in frontEndsDict:
 								if frontEndsDict[frontEnd]['freq'] == '':
 									# Start dvblast on specified freq
 									cmd = 'dvblast -a ' + frontEnd[-1] + ' -c dvb-t/pid' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + '.cfg -f ' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + ' -b 8 -C -u -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + frontEnd + '.sock'
-									dvblastReload = 0
+									clientsDict[self.clientInfo['addr_IP']]['dvblastReload']= False
 									fLog.write('Info rtspServerWorker: Starting dvblast 3\n')
 									self.run_dvblast(cmd)
 
@@ -388,7 +389,7 @@ class rtspServerWorker:
 									frontEndsDict[frontEnd]['owner'] = self.clientInfo['addr_IP']
 									frontEndsDict[frontEnd]['numOwners'] = frontEndsDict[frontEnd]['numOwners'] + 1	# increase the number of owner
 									freqDict[frontEndsDict[frontEnd]['freq']] = frontEnd
-									clientsDict[self.clientInfo['addr_IP']]['owner'] = True	
+									clientsDict[self.clientInfo['addr_IP']]['ownerCapabilties'] = True	
 									print " frontEndsDict4", frontEndsDict
 									break
 
@@ -411,38 +412,29 @@ class rtspServerWorker:
 
 						cmd = 'dvblastctl -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]] + '.sock reload'
 						fLog.write('Info rtspServerWorker: Reloading dvblast configuration 3\n')
-						# os.system(cmd)
 						self.run_dvblast(cmd)
 			
 						try:
 							# Update the number of owners of frontEnd
-							if frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['owner'] == '255.255.255.255' or frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['owner'] == self.clientInfo['addr_IP']:
+							if (frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['owner'] == '255.255.255.255' or frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['owner'] == self.clientInfo['addr_IP']) and frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['numOwners'] >= 1:
 								frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['numOwners'] = frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['numOwners'] - 1
-							
-							# We do not support negative numbers
-							if frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['numOwners'] < 0:
-								frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['numOwners'] = 0
-							clientsDict[self.clientInfo['addr_IP']]['owner'] = True # Make sure that the client has ownership capabilties
+							clientsDict[self.clientInfo['addr_IP']]['ownerCapabilties'] = True # Make sure that the client has ownership capabilties
 						except:
 							print "Info rtspServerWorker: No adapters configured with that freq 3 "
 						try:
 							# If we have only one client connected left, then the last client takes the ownership of the tuner 
 							if frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['numOwners'] == 1 and frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['owner'] == '255.255.255.255' :
 								frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['owner'] = lineToGet[0][:-(len(clientsDict[self.clientInfo['addr_IP']]['rtpPort'])+1)] # The last client that will remain in the clientsDict has to take ownership (lineToGet[0] = ip_add:port_num)
-
 							print " frontEndsDict8", frontEndsDict
 						except:
 							print "Info rtspServerWorker: No adapters configured with that freq 4 "
-
 						print " frontEndsDict9", frontEndsDict
-
 					except:
 						# print "Info rtspServerWorker: Processing PLAY DELETE PIDS\n"
 						fLog.write("Info rtspServerWorker: Processing PLAY DELETE PIDS\n")
 		
 		# Process TEARDOWN request
 		elif requestType == self.TEARDOWN:
-			global session
 
 			fLog.write("Info rtspServerWorker: Processing TEARDOWN, New State: INI\n")
 			try:
@@ -460,7 +452,6 @@ class rtspServerWorker:
 
 				cmd = 'dvblastctl -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]] + '.sock reload'
 				fLog.write('Info rtspServerWorker: Reloading dvblast configuration 4\n')
-				# os.system(cmd)
 				self.run_dvblast(cmd)
 			except:
 				# print "Info rtspServerWorker: processing TEARDOWN NONE\n"
@@ -469,11 +460,8 @@ class rtspServerWorker:
 
 			try:
 				# Update the number of owners of frontEnd
-				frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['numOwners'] = frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['numOwners'] - 1
-				
-				# We do not support negative numbers
-				if frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['numOwners'] < 0:
-					frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['numOwners'] = 0
+				if frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['numOwners'] >= 1:
+					frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['numOwners'] = frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['numOwners'] - 1
 			except:
 				print "Info rtspServerWorker: No adapters configured with that freq 1 "
 			try:
@@ -486,10 +474,12 @@ class rtspServerWorker:
 				print " frontEndsDict6", frontEndsDict
 			except:
 				print "Info rtspServerWorker: No adapters configured with that freq 2 "
-			# Get the session value before deleting the client entry
-			session = clientsDict[self.clientInfo['addr_IP']]['session']
+			
+			# Get the session value before deleting the client entry, for replay purpose
+			# session = clientsDict[self.clientInfo['addr_IP']]['session']
+			
 			# Remove client from dictinary
-			del clientsDict[self.clientInfo['addr_IP']]
+			# del clientsDict[self.clientInfo['addr_IP']]
 			self.replyRtsp(self.OK_200_TEARDOWN, seq[1])
 			
 		# Process OPTIONS request 		
@@ -503,7 +493,7 @@ class rtspServerWorker:
 				fLog.write("Info rtspServerWorker: Processing DESCRIBE NONE\n")
 				self.replyRtsp(self.OK_404_DESCRIBE, seq[1])
 			else:
-				if dvblastReload:
+				if clientsDict[self.clientInfo['addr_IP']]['dvblastReload']:
 					fLog.write("Info rtspServerWorker: Processing DESCRIBE SIGNAL\n")
 					self.replyRtsp(self.OK_200_DESCRIBE, seq[1])
 				else:
@@ -529,7 +519,7 @@ class rtspServerWorker:
 		
 	def replyRtsp(self, code, seq):
 		"""Send RTSP reply to the client."""
-		global session
+		# global session
 		global fLog
 
 		if code == self.OK_200_OPTIONS:
@@ -604,9 +594,12 @@ class rtspServerWorker:
 			fLog.write("Info rtspServerWorker: 200 PLAY\n")
 			self.SERVER_RUNNING = 0
 		elif code == self.OK_200_TEARDOWN:
-			reply = 'RTSP/1.0 200 OK\r\nContent-length:0\r\nCSeq:%s\nSession:%s\r\n\r\n' % (seq, session)
+			reply = 'RTSP/1.0 200 OK\r\nContent-length:0\r\nCSeq:%s\nSession:%s\r\n\r\n' % (seq, clientsDict[self.clientInfo['addr_IP']]['session'])
 			connSocket = self.clientInfo['rtspSocket']
 			connSocket.send(reply)
+
+			# Remove client from dictinary
+			del clientsDict[self.clientInfo['addr_IP']]
 			fLog.write("Info rtspServerWorker: 200 TEARDOWN\n")	
 			self.SERVER_RUNNING = 0	
 
