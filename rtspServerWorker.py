@@ -346,7 +346,7 @@ class rtspServerWorker:
 										self.run_dvblast(cmd)
 										# print 'ALEX --- 6'
 										# ALEX : ----- To be checked 
-										time.sleep(1)
+										# time.sleep(1)
 										# Alex : -----
 									except:
 										print "Info rtspServerWorker: Tried to shut down tuner, however the tuner was not used"
