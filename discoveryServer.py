@@ -128,7 +128,7 @@ def callServerReactor():
 				if matchSES:
 					# If new DTT2IP / SAT>IP server that has join the network then respond to it with a unicast message
 					# informing it that DEVICE ID is ours, else if this is an old DTT2IP / SAT>IP server do not do anything
-					if matchSES.group(1) == int(paramDict['deviceId']):
+					if int(matchSES.group(1)) == int(paramDict['deviceId']):
 						ssdpMulticastSocket.sendto(ms_search(), (address[0], address[1]))
 						fLog.write("Info: MS_SEARCH\n")
 		except:
@@ -170,11 +170,10 @@ def callClientReactor():
 						# See if somebody else is using this ID
 						matchSES = re.search(r'DEVICEID.SES.COM:([\w]+)',datagram)
 						if matchSES:
-							if matchSES.group(1) == int(paramDict['deviceId']):
+							if int(matchSES.group(1)) == int(paramDict['deviceId']):
 								# This DEVICE ID is used an we have to annouce that we are letting it go
 								# by sending a MS_OK message to the other server (i.e toClient = False)
-								# and to the hole network MS_NOTIFY_BYEBYE mesasge. We have to increase the DEVICE ID
-								paramDict['deviceId'] = int(paramDict['deviceId']) + 1
+								# and to the hole network MS_NOTIFY_BYEBYE mesasge. 
 								toClient = False
 								ssdpUnicastSocket.sendto(ms_ok(toClient), (address[0], address[1]))
 								fLog.write("Info: MS_OK\n")
@@ -182,11 +181,14 @@ def callClientReactor():
 								for i in range(3):
 									ssdpUnicastSocket.sendto(ms_nofity_byebye(NT[i], USN[i]), (ssdpAddr, ssdpPort))
 									fLog.write("Info: MS_NOTIFY_BYEBYE\n")
+								# We have to increase the DEVICE ID	
+								paramDict['deviceId'] = int(paramDict['deviceId']) + 1
 				except:
 					fLog.write('Info: Something went wrong\n')
 
 			except:
 				# Change deviceIdOk to True only when we timeout (5.0 seconds)
+				fLog.write("Info: DEVICE ID\n")
 				deviceIdOk = True
 		# We have obtain out valid DEVICE ID, we have to maintain it valid on the network by sending 
 		# at pseudo random periods 3 MS_NOTIFY_ALIVE messages. The pseudo random interval is between [0, cacheControl/2].
@@ -202,16 +204,15 @@ def callClientReactor():
 
 def discoveryServer():
 	global fLog
+	global deviceIdOk
 
 	# DEVICE ID negotiation thread ( server <---> server communications )
 	t1 = threading.Thread(target=callClientReactor)
 	t1.daemon = True
 	t1.start()
-	
 	# Wait for DEVICE negotiation to finish then start the Discovery protocol in order for the clients to connect to
 	while not deviceIdOk:
 		time.sleep(1)
-	
 	# DISCOVERY thread for the client applications ( server <---> client communications)
 	t2 = threading.Thread(target=callServerReactor)
 	t2.daemon = True
