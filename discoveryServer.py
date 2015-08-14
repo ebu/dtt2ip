@@ -210,7 +210,7 @@ def discoveryServer():
 	
 	# Wait for DEVICE negotiation to finish then start the Discovery protocol in order for the clients to connect to
 	while not deviceIdOk:
-		pass
+		time.sleep(1)
 	
 	# DISCOVERY thread for the client applications ( server <---> client communications)
 	t2 = threading.Thread(target=callServerReactor)
@@ -220,7 +220,8 @@ def discoveryServer():
 	# Keep threads alive until KeyboardInterrupt
 	try:
 		while t1.is_alive() and t2.is_alive():
-			t.join(timeout=1.0)
+			t1.join(timeout=1.0)
+			t2.join(timeout=1.0)
 	except (KeyboardInterrupt, SystemExit):
 		fLog.close()
 		SSDP_TERMINATE = 1

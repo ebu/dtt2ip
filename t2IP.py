@@ -38,7 +38,8 @@ def main():
 	# Keep threads alive until KeyboardInterrupt
 	try:
 		while t1.is_alive() and t2.is_alive():
-			t.join(timeout=1.0)
+			t1.join(timeout=1.0)
+			t2.join(timeout=1.0)
 	except (KeyboardInterrupt, SystemExit):
 		print "Info: t2IP server stoped"
 
