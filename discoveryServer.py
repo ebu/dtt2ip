@@ -220,7 +220,7 @@ def discoveryServer():
 	# Keep threads alive until KeyboardInterrupt
 	try:
 		while t1.is_alive() and t2.is_alive():
-			pass
+			t.join(timeout=1.0)
 	except (KeyboardInterrupt, SystemExit):
 		fLog.close()
 		SSDP_TERMINATE = 1
