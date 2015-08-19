@@ -29,25 +29,25 @@ dtt2IP/
 │   ├── __main__.py
 ```
 ```│   ├──``` [t2IP.py](https://github.com/ebu/dtt2ip/blob/develop/t2IP.py)
+```│   ├──``` [discoveryServer.py]()
+```│   ├── ```[rtspServer.py]()
+```│   ├──``` [rtspServerWorker.py]()
+```│   ├──``` [scanning.py]()
+```│   ├──``` [resources.py]()
+```│   ├──``` [netInterfaceStatus.py]()
+```│   ├──``` [conf/]()
+```│   │   ├──``` [discoveryServer.conf]()
+```│   │   ├──``` [rtspServer.conf]()
+```│   ├──``` [dvb-t/]()
+```│   │   ├──``` [allFrequencies.txt]()
+```│   └──``` [logs/]()
+```│   │   ├──``` [discoveryServer.log]()
+```│   │   ├──``` [rtspServer.log]()
+```│   │   ├──``` [rtspServerWorker.log]()
+```│   │   ├──``` [scanning.log]()
+```│   │   ├──``` [resources.log]()
+```│   │   ├──``` [t2IP.log]()
 ```
-│   ├── discoveryServer.py
-│   ├── rtspServer.py
-│   ├── rtspServerWorker.py
-│   ├── scanning.py
-│   ├── resources.py
-│   ├── netInterfaceStatus.py
-│   ├── conf/
-│   │   ├── discoveryServer.conf
-│   │   ├── rtspServer.conf
-│   ├── dvb-t/
-│   │   ├── allFrequencies.txt
-│   └── logs/
-│   │   ├── discoveryServer.log
-│   │   ├── rtspServer.log
-│   │   ├── rtspServerWorker.log
-│   │   ├── scanning.log
-│   │   ├── resources.log
-│   │   ├── t2IP.log
 ├── t2IP-runner.py
 ├── LICENSE
 ├── MANIFEST.in
