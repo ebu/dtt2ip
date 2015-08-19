@@ -2,7 +2,7 @@
 
 ## Table of content
 
-1. [Introduction](#Introduction)
+1. [Introduction](#introduction)
 2. [Goal](#Goal)
 3. [Sat>IP overview](sat2ip-overview.md)
 
