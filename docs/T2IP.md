@@ -20,9 +20,7 @@ The application being developed in python and because we have used a Linux distr
 ### Software code explanations
 
 The software code directory is as follows:
-```
-dtt2IP/
-```
+[dtt2IP/]()<br>
 ```├──``` [docs]()<br>
 ```├──``` [test]()<br>
 ```├──``` [t2IP]()<br>
