@@ -27,7 +27,7 @@ dtt2IP/
 ├── t2IP
 │   ├── __init__.py
 │   ├── __main__.py
-│   ├── t2IP.py
+``````│   ├──``` [t2IP.py](https://github.com/ebu/dtt2ip/blob/develop/t2IP.py)
 │   ├── discoveryServer.py
 │   ├── rtspServer.py
 │   ├── rtspServerWorker.py
@@ -70,4 +70,3 @@ The “resources.py” file will handle the USB tuners that are plugged into the
 The “netInterfaceStatus.py” file will handle the IP of the connected interfaces, so that we do not need to specify any IP of our t2IP server. However this requires an additional python package (netifaces) that needs to be installed prior our application. This code is [Appendix G](https://github.com/ebu/dtt2ip/blob/develop/netInterfacesStatus.py).
 
 
-[`this is code`](https://this_is_url/)
