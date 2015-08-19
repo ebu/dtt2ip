@@ -1,6 +1,6 @@
 # T2IP server implementation
 ### Index
-1. [T2IP server implementation](#t2ip-server-implementation)
+1. [T2IP server implementation](#t2ip-server)
 2. [Software code explanations](#software-code-explanations)
 
 ### T2IP server diagram
