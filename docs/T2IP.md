@@ -1,5 +1,5 @@
 #Table of content
-1. [T2IP server implementation](#T2IP server implementation)
+1. [T2IP server implementation](#t2IP server implementation)
 2. [Software code explanations](#code)
 
 ##T2IP server implementation
