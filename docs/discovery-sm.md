@@ -1,4 +1,4 @@
-#Discovery state machine
+# Discovery state machine
 
 During the discovery phase SAT>IP servers advertise their presence to other SAT>IP servers and clients. When joining a network, SAT>IP clients search the network for available SAT>IP servers.
 Discovery in SAT>IP relies on the Simple Service Description Protocol (SSDP) [11] as specified in the UPnP Device Architecture 1.1 [1]. 
