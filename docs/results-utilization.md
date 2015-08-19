@@ -6,10 +6,11 @@ Depending on the platform that you want to run our application you must follow t
 
 Raspberry Pi:
 Install Raspian image on the SD flash card, by following these steps:
-1. Download the Raspian image “2015-05-05-raspbian-wheezy.img” to your computer. Add links
-2. Insert the SD flash into your computer (Mac).
-3. Open a terminal window.
-4. Execute:
+
+1.Download the Raspian image “2015-05-05-raspbian-wheezy.img” to your computer. Add links
+2.Insert the SD flash into your computer (Mac).
+3.Open a terminal window.
+4.Execute:
 	- “# diskutil list” to list the available disk, and to get the name of the SD flash on which we will pe loading the image (“2015-05-05-raspbian-wheezy.img”)
 	- “# diskutil unmountDisk /dev/disk<disk# from diskutil> “ to unmounts the SD flash, where <disk# from diskutil> must be replace with the number corresponding to your SD flash.
 	- “# sudo dd bs=1m if=<path to place where you downloaded the image>/2015-05-05-raspbian-wheezy.img of=/dev/rdisk<disk# from diskutil>” to load the image, where <path to place where you downloaded the image> must be replaced with the path to place where you downloaded the Raspian image.
