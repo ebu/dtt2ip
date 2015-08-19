@@ -27,12 +27,12 @@ The software code directory is as follows:
 ```│   ├──``` [__init__.py]()<br>
 ```│   ├──``` [__main__.py]()<br>
 ```│   ├──``` [t2IP.py](https://github.com/ebu/dtt2ip/blob/develop/t2IP.py)<br>
-```│   ├──``` [discoveryServer.py]()<br>
-```│   ├── ```[rtspServer.py]()<br>
-```│   ├──``` [rtspServerWorker.py]()<br>
-```│   ├──``` [scanning.py]()<br>
-```│   ├──``` [resources.py]()<br>
-```│   ├──``` [netInterfaceStatus.py]()<br>
+```│   ├──``` [discoveryServer.py](https://github.com/ebu/dtt2ip/blob/develop/discoveryServer.py)<br>
+```│   ├── ```[rtspServer.py](https://github.com/ebu/dtt2ip/blob/develop/rtspServer.py)<br>
+```│   ├──``` [rtspServerWorker.py](https://github.com/ebu/dtt2ip/blob/develop/rtspServerWorker.py)<br>
+```│   ├──``` [scanning.py](https://github.com/ebu/dtt2ip/blob/develop/scanning.py)<br>
+```│   ├──``` [resources.py](https://github.com/ebu/dtt2ip/blob/develop/resources.py)<br>
+```│   ├──``` [netInterfaceStatus.py](https://github.com/ebu/dtt2ip/blob/develop/netInterfaceStatus.py)<br>
 ```│   ├──``` [conf/]()<br>
 ```│   │   ├──``` [discoveryServer.conf]()<br>
 ```│   │   ├──``` [rtspServer.conf]()<br>
