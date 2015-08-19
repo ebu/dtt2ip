@@ -1,4 +1,4 @@
-#RTSP state machine
+# RTSP state machine
 
 Control provides the functionality necessary for SAT>IP clients to request the delivery of media streams from SAT>IP servers. Device Control in SAT>IP can be handled through the use of RTSP or HTTP protocol mechanisms. 
 SAT>IP servers shall fully implement all protocol mechanisms specified in the current specification. Clients only need to implement those SAT>IP protocols important to their own proper operation. 
