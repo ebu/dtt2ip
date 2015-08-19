@@ -1,7 +1,7 @@
 # Results and utilizations
 
 ### Index
-1. [Raspberry Pi installation](#raspberrypi)
+1. [Raspberry Pi installation](#raspberry-pi)
 2. [Synology installation](#synology-nas)
 3. [Synology installation easy](#synology-nas-easy)
 
