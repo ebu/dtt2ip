@@ -20,7 +20,7 @@ The application being developed in python and because we have used a Linux distr
 ### Software code explanations
 
 The software code directory is as follows:
-[dtt2IP/](https://github.com/ebu/dtt2ip/blob/develop/)<br>
+[dtt2IP/](https://github.com/ebu/dtt2ip/tree/develop)<br>
 ```
 ├── docs
 ├── test
