@@ -28,7 +28,7 @@ dtt2IP/
 │   ├── __init__.py
 │   ├── __main__.py
 ```
-```│   ├──``` [t2IP.py](https://github.com/ebu/dtt2ip/blob/develop/t2IP.py)```<br>```
+```│   ├──``` [t2IP.py](https://github.com/ebu/dtt2ip/blob/develop/t2IP.py)<br>
 ```│   ├──``` [discoveryServer.py]()<br>
 ```│   ├── ```[rtspServer.py]()<br>
 ```│   ├──``` [rtspServerWorker.py]()<br>
