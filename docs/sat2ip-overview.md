@@ -24,8 +24,6 @@ The SAT>IP protocol makes use of:
 		-  RTP or HTTP for Media Transport.  
 
 SAT>IP uses a subset of the UPnP/DLNA architecture and protocols [1] [2] and SAT>IP devices can be extended to also become DLNA devices. As an example a SAT>IP client could access live media streams through the SAT>IP protocol and access recorded media streams through DLNA. 
-
 ![alt text][figure2]
 [figure2]:https://github.com/ebu/dtt2ip/blob/documentation/docs/images/figure2.png
-
 SAT>IP devices successively go through the following phases: Addressing, Discovery, Description, Control and finally Media Transport. 
