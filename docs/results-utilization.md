@@ -7,7 +7,7 @@ Depending on the platform that you want to run our application you must follow t
 Raspberry Pi:
 Install Raspian image on the SD flash card, by following these steps:
 
-1.Download the Raspian image from to your computer from [here]:https://www.raspberrypi.org/downloads/raspbian/ (e.g. “2015-05-05-raspbian-wheezy.img”)
+1.Download the Raspian image from to your computer from [here](https://www.raspberrypi.org/downloads/raspbian/) (e.g. “2015-05-05-raspbian-wheezy.img”)
 2.Insert the SD flash into your computer (Mac).
 3.Open a terminal window.
 4.Execute:
