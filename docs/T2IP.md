@@ -20,15 +20,15 @@ The application being developed in python and because we have used a Linux distr
 ### Software code explanations
 
 The software code directory is as follows:
+
+```dtt2IP/
 ```
-dtt2IP/
-├── docs
-├── test
-├── t2IP
-│   ├── __init__.py
-│   ├── __main__.py
-```
-```│                   ├──``` [t2IP.py](https://github.com/ebu/dtt2ip/blob/develop/t2IP.py)<br>
+```├──``` docs
+```├──``` test
+```├──``` t2IP
+```│   ├──``` __init__.py
+```│   ├──``` __main__.py
+```│   ├──``` [t2IP.py](https://github.com/ebu/dtt2ip/blob/develop/t2IP.py)<br>
 ```│   ├──``` [discoveryServer.py]()<br>
 ```│   ├── ```[rtspServer.py]()<br>
 ```│   ├──``` [rtspServerWorker.py]()<br>
