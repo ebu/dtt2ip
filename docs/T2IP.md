@@ -19,6 +19,7 @@ The application being developed in python and because we have used a Linux distr
 ##Software code explanations
 
 The software code directory is as follows:
+```
 dtt2IP/
 ├── docs
 ├── test
@@ -49,6 +50,7 @@ dtt2IP/
 ├── MANIFEST.in
 ├── README.rst
 └── setup.py
+```
 
 
 The “t2IP.py” file is the main script from your application. In this we will run 3 threads, the first is the discovery server, the second runs the rtsp server, and the third on is to used to scan the broadcast available channels. The code is Appendix A.
