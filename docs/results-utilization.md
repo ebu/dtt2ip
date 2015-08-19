@@ -3,7 +3,7 @@
 ### Index
 1. [Raspberry Pi installation](#raspberrypi)
 2. [Synology installation](#synology-nas)
-3. [Synology installation easy[(#synology-nas-easy)
+3. [Synology installation easy](#synology-nas-easy)
 
 We have implemented the application to run on Raspberry Pi and Synology NAS with good results. The real-time scanning of the available frequencies was managed for multiple users, as well as tuning to different channels at the same time. The image quality was depending most of the time on the received RF signal, occupying only 4Mbps of the bandwidth. From our observations the multicasting one channel to the network was possible, however with poor playback quality, this problem being related to the concept of multicast. In order for every connected client in the network receive the multicast packets; the channel must have a low transmission rate., which does not satisfies the our minimum transmission rate per channel.
 Regarding the HD channels, we can receive them as well, with some playback degradation. The only client application, being able to display HD channel is “tivizen”. Another interesting remark concerning the client software, is that “Sat>IP” does support only one server per WiFi, where as with “tivizen” you could switch between them. “Sat>IP” offers a better user experience, with more features like: EPG, subtitles, and Teletext, whereas “tivizen” can only decode the EPG. 
