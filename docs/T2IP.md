@@ -20,32 +20,32 @@ The application being developed in python and because we have used a Linux distr
 ### Software code explanations
 
 The software code directory is as follows:
-[dtt2IP/]()<br>
-```├──``` [docs]()<br>
-```├──``` [test]()<br>
-```├──``` [t2IP]()<br>
-```│   ├──``` [__init__.py]()<br>
-```│   ├──``` [__main__.py]()<br>
-```│   ├──``` [t2IP.py](https://github.com/ebu/dtt2ip/blob/develop/t2IP.py)<br>
-```│   ├──``` [discoveryServer.py](https://github.com/ebu/dtt2ip/blob/develop/discoveryServer.py)<br>
-```│   ├── ```[rtspServer.py](https://github.com/ebu/dtt2ip/blob/develop/rtspServer.py)<br>
-```│   ├──``` [rtspServerWorker.py](https://github.com/ebu/dtt2ip/blob/develop/rtspServerWorker.py)<br>
-```│   ├──``` [scanning.py](https://github.com/ebu/dtt2ip/blob/develop/scanning.py)<br>
-```│   ├──``` [resources.py](https://github.com/ebu/dtt2ip/blob/develop/resources.py)<br>
-```│   ├──``` [netInterfaceStatus.py](https://github.com/ebu/dtt2ip/blob/develop/netInterfaceStatus.py)<br>
-```│   ├──``` [conf/]()<br>
-```│   │   ├──``` [discoveryServer.conf]()<br>
-```│   │   ├──``` [rtspServer.conf]()<br>
-```│   ├──``` [dvb-t/]()<br>
-```│   │   ├──``` [allFrequencies.txt]()<br>
-```│   └──``` [logs/]()<br>
-```│   │   ├──``` [discoveryServer.log]()<br>
-```│   │   ├──``` [rtspServer.log]()<br>
-```│   │   ├──``` [rtspServerWorker.log]()<br>
-```│   │   ├──``` [scanning.log]()<br>
-```│   │   ├──``` [resources.log]()<br>
-```│   │   ├──``` [t2IP.log]()<br>
+[dtt2IP/](https://github.com/ebu/dtt2ip/blob/develop/)<br>
 ```
+├── docs
+├── test
+├── t2IP
+│   ├── __init__.py
+│   ├── __main__.py
+│   ├── t2IP.py
+│   ├── discoveryServer.py
+│   ├── rtspServer.py
+│   ├── rtspServerWorker.py
+│   ├── scanning.py
+│   ├── resources.py
+│   ├── netInterfaceStatus.py
+│   ├── conf/
+│   │   ├── discoveryServer.conf
+│   │   ├── rtspServer.conf
+│   ├── dvb-t/
+│   │   ├── allFrequencies.txt
+│   └── logs/
+│   │   ├── discoveryServer.log
+│   │   ├── rtspServer.log
+│   │   ├── rtspServerWorker.log
+│   │   ├── scanning.log
+│   │   ├── resources.log
+│   │   ├── t2IP.log
 ├── t2IP-runner.py
 ├── LICENSE
 ├── MANIFEST.in
