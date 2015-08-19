@@ -5,6 +5,7 @@
 1. [Introduction](#introduction)
 2. [Goal](#goal)
 3. [Sat>IP overview](sat2ip-overview.md)
+4. [Discovery state machine](discovery-sm.md)
 
 
 ## Introduction
