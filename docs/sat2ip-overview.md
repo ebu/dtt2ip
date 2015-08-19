@@ -5,3 +5,6 @@ In order to have a standardized communication protocol between clients and serve
 
 SAT>IP specifies a communication protocol. SAT>IP is not a device specification. The SAT>IP protocol may be applied in different devices. Industry is left to come up with new and innovative devices using the SAT>IP protocol. 
 The SAT>IP protocol distinguishes between SAT>IP clients and SAT>IP servers. Actual devices may be clients or servers or both depending on their feature set. 
+
+![alt text][logo]
+[logo]:https://github.com/ebu/dtt2ip/blob/documentation/docs/images/figure1.png
