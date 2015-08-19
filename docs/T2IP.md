@@ -1,6 +1,6 @@
 # Table of content
-1. [T2IP server implementation](T2IP server implementation)
-2. [Software code explanations](Software code explanations)
+1. [T2IP server implementation](t2ip-server-implementation)
+2. [Software code explanations](software-code-explanations)
 
 ## T2IP server implementation
 
