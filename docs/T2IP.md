@@ -23,11 +23,11 @@ The software code directory is as follows:
 
 ```dtt2IP/
 ```
-```├──``` docs
-```├──``` test
-```├──``` t2IP
-```│   ├──``` __init__.py
-```│   ├──``` __main__.py
+```├──``` docs<br>
+```├──``` test<br>
+```├──``` t2IP<br>
+```│   ├──``` __init__.py<br>
+```│   ├──``` __main__.py<br>
 ```│   ├──``` [t2IP.py](https://github.com/ebu/dtt2ip/blob/develop/t2IP.py)<br>
 ```│   ├──``` [discoveryServer.py]()<br>
 ```│   ├── ```[rtspServer.py]()<br>
