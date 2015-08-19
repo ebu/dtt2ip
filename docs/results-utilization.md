@@ -9,7 +9,7 @@ We have implemented the application to run on Raspberry Pi and Synology NAS with
 Regarding the HD channels, we can receive them as well, with some playback degradation. The only client application, being able to display HD channel is “tivizen”. Another interesting remark concerning the client software, is that “Sat>IP” does support only one server per WiFi, where as with “tivizen” you could switch between them. “Sat>IP” offers a better user experience, with more features like: EPG, subtitles, and Teletext, whereas “tivizen” can only decode the EPG. 
 Depending on the platform that you want to run our application you must follow the next steps.
 
-Raspberry Pi
+### Raspberry Pi
 Install Raspian image on the SD flash card, by following these steps:
 
 1. Download the Raspian image from to your computer from [here](https://www.raspberrypi.org/downloads/raspbian/) (e.g. “2015-05-05-raspbian-wheezy.img”)
@@ -34,7 +34,7 @@ Restart the Raspberry Pi and wait for 15-20 min in order for the first scan to f
 “$ sudo reboot” to restart the Raspberry Pi
 
 
-Synology NAS:
+### Synology NAS
 Install on your Synology from the Package Center application, Debian Chroot by following the steps:
 1.	Go to Package Center and in the Community tab add the following URL:
 https://synocommunity.com/packages 
@@ -54,3 +54,6 @@ server application.
 
 This will take care of all the packages need, and make all the necessary changes in order to have a fully working t2IP server, the next time you start the Debian Chroot application from Synology.
 Stop and Start the Debian Chroot application from the Package Center app, and wait for 15-20 min for the first scan to finish before connecting any mobile client.
+
+### Synology NAS easy
+
