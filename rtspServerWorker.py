@@ -436,6 +436,7 @@ class rtspServerWorker:
 		# Process TEARDOWN request
 		elif requestType == self.TEARDOWN:
 
+			print "=========freqDict 1=======", freqDict
 			fLog.write("Info rtspServerWorker: Processing TEARDOWN, New State: INI\n")
 			try:
 				f = open('dvb-t/pid' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + '.cfg', 'r')
@@ -475,11 +476,24 @@ class rtspServerWorker:
 			except:
 				print "Info rtspServerWorker: No adapters configured with that freq 2 "
 			
+			try:
+				# If we do not have anymore clients connected, then remove the entry from the freqDict
+				if frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['numOwners'] == 0:
+					print "removed freqDict"
+					del freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]
+			except:
+				fLog.write("Info rtspServerWorker: entry in the freqDict already removed\n")
+
 			# Get the session value before deleting the client entry, for replay purpose
 			# session = clientsDict[self.clientInfo['addr_IP']]['session']
 			
+			# try:
+			# 	del freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]
+			# except:
+			# 	fLog.write("Info rtspServerWorker: entry in the freqDict already removed\n")	
 			# Remove client from dictinary
 			# del clientsDict[self.clientInfo['addr_IP']]
+			print "=========freqDict 2=======", freqDict
 			self.replyRtsp(self.OK_200_TEARDOWN, seq[1])
 			
 		# Process OPTIONS request 		
