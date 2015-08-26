@@ -1,2 +1,4 @@
 Info: discoveryServer started
 Info: rtspServer started
+Info: scanning started
+Info: period for new scan is 10 and scanningFlag is 0

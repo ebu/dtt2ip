@@ -106,7 +106,10 @@ class rtspServerWorker:
 			clientsDict[self.clientInfo['addr_IP']]['session'] = session		
 			clientsDict[self.clientInfo['addr_IP']]['dvblastReload'] = dvblastReload	
 	
-	def run(self):		
+	def run(self):
+		global chList
+		chList = getChList()
+		
 		t = threading.Thread(target=self.recvRtspRequest)
 		t.daemon = True
 		t.start()
@@ -297,12 +300,12 @@ class rtspServerWorker:
 								frontEndsDict[frontEnd]['numOwners'] = frontEndsDict[frontEnd]['numOwners'] + 1	# increase the number of owners
 								freqDict[frontEndsDict[frontEnd]['freq']] = frontEnd
 								clientsDict[self.clientInfo['addr_IP']]['ownerCapabilties'] = True
-								print " frontEndsDict0", frontEndsDict
+								# print " frontEndsDict0", frontEndsDict
 								break
 					# No more first boot, the search for available and preconfigured/unconfigured frontends
 					else:
-						print " frontEndsDict1", frontEndsDict
-						print " clientsDict", clientsDict
+						# print " frontEndsDict1", frontEndsDict
+						# print " clientsDict", clientsDict
 						# Search for any configured tuner with the frequency that we want to tune to
 						for frontEnd in frontEndsDict:
 							if frontEndsDict[frontEnd]['freq'] == chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]:
@@ -316,14 +319,14 @@ class rtspServerWorker:
 									frontEndsDict[frontEnd]['owner'] = self.clientInfo['addr_IP']
 									frontEndsDict[frontEnd]['numOwners'] = frontEndsDict[frontEnd]['numOwners'] + 1	# increase the number of owner
 									clientsDict[self.clientInfo['addr_IP']]['ownerCapabilties'] = True
-									print "Info Alex --------------- 1"
+									# print "Info Alex --------------- 1"
 
 								# Check if multiple owners ('255.255.255.255' broadcast IP address) and you have ownership capabilities, 
 								# then increase the number of owners by one and remove your ownership capabilities.
 								if frontEndsDict[frontEnd]['owner'] == '255.255.255.255' and clientsDict[self.clientInfo['addr_IP']]['ownerCapabilties']:
 									frontEndsDict[frontEnd]['numOwners'] = frontEndsDict[frontEnd]['numOwners'] + 1	# increase the number of owner
 									clientsDict[self.clientInfo['addr_IP']]['ownerCapabilties'] = False	# remove the ownership capability from the client
-									print "Info Alex --------------- 2"
+									# print "Info Alex --------------- 2"
 
 								# Check if somebody else owne's it and you have ownership capabilities, 
 								# then make the tuner for multiple owners, increase the number of owners and remove your ownership capabilities
@@ -332,9 +335,9 @@ class rtspServerWorker:
 									frontEndsDict[frontEnd]['owner'] = '255.255.255.255'  # '255.255.255.255' the IP address for specifying multiple owners
 									frontEndsDict[frontEnd]['numOwners'] = frontEndsDict[frontEnd]['numOwners'] + 1	# increase the number of owner
 									clientsDict[self.clientInfo['addr_IP']]['ownerCapabilties'] = False # Remove the ownership capabilties of yourself
-									print "Info Alex --------------- 3"
+									# print "Info Alex --------------- 3"
 
-								print " frontEndsDict2", frontEndsDict
+								# print " frontEndsDict2", frontEndsDict
 								break
 						# If we did not find any tuner that has that frequency configured,then search for any owned tuners
 						if clientsDict[self.clientInfo['addr_IP']]['dvblastReload']:
@@ -373,7 +376,7 @@ class rtspServerWorker:
 									frontEndsDict[frontEnd]['freq'] = chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]	
 									freqDict[frontEndsDict[frontEnd]['freq']] = frontEnd
 									clientsDict[self.clientInfo['addr_IP']]['ownerCapabilties'] = True
-									print " frontEndsDict3", frontEndsDict
+									# print " frontEndsDict3", frontEndsDict
 									break
 						# If we did not fine any owned tuners, then give it one more search before giving up. Search for nonused available tuners. 
 						if clientsDict[self.clientInfo['addr_IP']]['dvblastReload']:
@@ -390,7 +393,7 @@ class rtspServerWorker:
 									frontEndsDict[frontEnd]['numOwners'] = frontEndsDict[frontEnd]['numOwners'] + 1	# increase the number of owner
 									freqDict[frontEndsDict[frontEnd]['freq']] = frontEnd
 									clientsDict[self.clientInfo['addr_IP']]['ownerCapabilties'] = True	
-									print " frontEndsDict4", frontEndsDict
+									# print " frontEndsDict4", frontEndsDict
 									break
 
 				# Remove corresponding pid from config file and reload for sat>ip app
@@ -407,7 +410,7 @@ class rtspServerWorker:
 							if not match_line:
 								f.write(line)
 								lineToGet = line.split('\t')
-								print "Info rtspServerWorker: lineToGet", lineToGet
+								# print "Info rtspServerWorker: lineToGet", lineToGet
 						f.close()
 
 						cmd = 'dvblastctl -r /tmp/dvblast' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]] + '.sock reload'
@@ -425,10 +428,10 @@ class rtspServerWorker:
 							# If we have only one client connected left, then the last client takes the ownership of the tuner 
 							if frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['numOwners'] == 1 and frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['owner'] == '255.255.255.255' :
 								frontEndsDict[freqDict[chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0]]]['owner'] = lineToGet[0][:-(len(clientsDict[self.clientInfo['addr_IP']]['rtpPort'])+1)] # The last client that will remain in the clientsDict has to take ownership (lineToGet[0] = ip_add:port_num)
-							print " frontEndsDict8", frontEndsDict
+							# print " frontEndsDict8", frontEndsDict
 						except:
 							print "Info rtspServerWorker: No adapters configured with that freq 4 "
-						print " frontEndsDict9", frontEndsDict
+						# print " frontEndsDict9", frontEndsDict
 					except:
 						# print "Info rtspServerWorker: Processing PLAY DELETE PIDS\n"
 						fLog.write("Info rtspServerWorker: Processing PLAY DELETE PIDS\n")
@@ -436,7 +439,7 @@ class rtspServerWorker:
 		# Process TEARDOWN request
 		elif requestType == self.TEARDOWN:
 
-			print "=========freqDict 1=======", freqDict
+			# print "=========freqDict 1=======", freqDict
 			fLog.write("Info rtspServerWorker: Processing TEARDOWN, New State: INI\n")
 			try:
 				f = open('dvb-t/pid' + chList[clientsDict[self.clientInfo['addr_IP']]['freq']][0] + '.cfg', 'r')
@@ -456,7 +459,7 @@ class rtspServerWorker:
 				self.run_dvblast(cmd)
 			except:
 				# print "Info rtspServerWorker: processing TEARDOWN NONE\n"
-				print " frontEndsDict7", frontEndsDict
+				# print " frontEndsDict7", frontEndsDict
 				fLog.write("Info rtspServerWorker: processing TEARDOWN NONE\n")
 
 			try:
@@ -493,7 +496,7 @@ class rtspServerWorker:
 			# 	fLog.write("Info rtspServerWorker: entry in the freqDict already removed\n")	
 			# Remove client from dictinary
 			# del clientsDict[self.clientInfo['addr_IP']]
-			print "=========freqDict 2=======", freqDict
+			# print "=========freqDict 2=======", freqDict
 			self.replyRtsp(self.OK_200_TEARDOWN, seq[1])
 			
 		# Process OPTIONS request 		
@@ -526,7 +529,7 @@ class rtspServerWorker:
 		global fLog
 		proc = Popen([cmd], stdout=fLog, stderr=fLog, shell=True)
 
-	def updateChList():
+	def updateChList(self):
 		global chList
 		# Get chList 
 		chList = getChList()
@@ -558,7 +561,7 @@ class rtspServerWorker:
 			tunerValues2 = ',' + clientsDict[self.clientInfo['addr_IP']]['pol'] + ',' + clientsDict[self.clientInfo['addr_IP']]['msys'] + ',' + clientsDict[self.clientInfo['addr_IP']]['mtype'] + ',' + clientsDict[self.clientInfo['addr_IP']]['plts'] + ',' + clientsDict[self.clientInfo['addr_IP']]['ro'] + ',' + clientsDict[self.clientInfo['addr_IP']]['sr'] + ',' + clientsDict[self.clientInfo['addr_IP']]['fec']
 			sdpString = 'v=0\r\no=- 534863118 534863118 IN IP4 %s\ns=SatIPServer:%d %d\r\nt=0 0\r\nm=video 0 RTP/AVP 33\r\nc=IN IP4 %s\na=control:stream=%d\na=fmtp:33 ver=1.0;scr=1;tuner=%s%s.00%s\na=%s\n' % (ipServer, serverID, serverTunerNr, unicastIp, clientsDict[self.clientInfo['addr_IP']]['stream'], tunerValues, clientsDict[self.clientInfo['addr_IP']]['freq'], tunerValues2, clientsDict[self.clientInfo['addr_IP']]['status'])
 			sdpLen = len(sdpString)
-			rtspString = 'RTSP/1.0 200 OK\r\nContent-length:%d\r\nContent-type:application/sdp\r\nContent-Base:rtsp://192.168.2.61/\r\nCSeq:%s\nSession:%s\r\n\r\n' % (sdpLen ,seq, clientsDict[self.clientInfo['addr_IP']]['session'])	
+			rtspString = 'RTSP/1.0 200 OK\r\nContent-length:%d\r\nContent-type:application/sdp\r\nContent-Base:rtsp://%s/\nCSeq:%s\nSession:%s\r\n\r\n' % (sdpLen, self.clientInfo['addr_IP'], seq, clientsDict[self.clientInfo['addr_IP']]['session'])	
 			
 			# Make the reply from the two parts: rtspString and sdpString
 			reply = rtspString + sdpString
@@ -575,7 +578,7 @@ class rtspServerWorker:
 			tunerValues2 = ',' + clientsDict[self.clientInfo['addr_IP']]['pol'] + ',' + clientsDict[self.clientInfo['addr_IP']]['msys'] + ',' + clientsDict[self.clientInfo['addr_IP']]['mtype'] + ',' + clientsDict[self.clientInfo['addr_IP']]['plts'] + ',' + clientsDict[self.clientInfo['addr_IP']]['ro'] + ',' + clientsDict[self.clientInfo['addr_IP']]['sr'] + ',' + clientsDict[self.clientInfo['addr_IP']]['fec']
 			sdpString = 'v=0\r\no=- 534863118 534863118 IN IP4 %s\ns=SatIPServer:%d %d\r\nt=0 0\r\nm=video 0 RTP/AVP 33\r\nc=IN IP4 %s\na=control:stream=%d\na=fmtp:33 ver=1.0;scr=1;tuner=%s%s.00%s\na=%s\n' % (ipServer, serverID, serverTunerNr, unicastIp, clientsDict[self.clientInfo['addr_IP']]['stream'], tunerValues, clientsDict[self.clientInfo['addr_IP']]['freq'], tunerValues2, clientsDict[self.clientInfo['addr_IP']]['status'])
 			sdpLen = len(sdpString)
-			rtspString = 'RTSP/1.0 200 OK\r\nContent-length:%d\r\nContent-type:application/sdp\r\nContent-Base:rtsp://192.168.2.61/\r\nCSeq:%s\nSession:%s\r\n\r\n' % (sdpLen ,seq, clientsDict[self.clientInfo['addr_IP']]['session'])
+			rtspString = 'RTSP/1.0 200 OK\r\nContent-length:%d\r\nContent-type:application/sdp\r\nContent-Base:rtsp://%s/\nCSeq:%s\nSession:%s\r\n\r\n' % (sdpLen, self.clientInfo['addr_IP'], seq, clientsDict[self.clientInfo['addr_IP']]['session'])
 			
 			# Make the reply from the two parts: rtspString and sdpString
 			reply = rtspString + sdpString
@@ -590,19 +593,19 @@ class rtspServerWorker:
 			fLog.write("Info rtspServerWorker: 404 DESCRIBE\n")
 			self.SERVER_RUNNING = 0
 		elif code == self.OK_200_SETUP:
-			reply = 'RTSP/1.0 200 OK\r\nSession:%s;timeout=30\r\ncom.ses.streamID:%d\r\nTransport: RTP/AVP;unicast;destination=%s;client_port=5000-5001\r\nCSeq:%s\n\r\n' % (clientsDict[self.clientInfo['addr_IP']]['session'], clientsDict[self.clientInfo['addr_IP']]['stream'], self.clientInfo['addr_IP'], seq)
+			reply = 'RTSP/1.0 200 OK\r\nSession:%s;timeout=30\r\ncom.ses.streamID:%d\r\nTransport: RTP/AVP;unicast;destination=%s;client_port=5004-5005\r\nCSeq:%s\n\r\n' % (clientsDict[self.clientInfo['addr_IP']]['session'], clientsDict[self.clientInfo['addr_IP']]['stream'], self.clientInfo['addr_IP'], seq)
 			connSocket = self.clientInfo['rtspSocket']
 			connSocket.send(reply)
 			fLog.write("Info rtspServerWorker: 200 SETUP\n")
 			self.SERVER_RUNNING = 0
 		elif code == self.OK_200_SETUP_PIDS:
-			reply = 'RTSP/1.0 200 OK\r\nSession:%s;timeout=30\r\ncom.ses.streamID:%d\r\nTransport: RTP/AVP;unicast;destination=%s;client_port=5000-5001\r\nCSeq:%s\r\n\r\n' % (clientsDict[self.clientInfo['addr_IP']]['session'], clientsDict[self.clientInfo['addr_IP']]['stream'], self.clientInfo['addr_IP'], seq)
+			reply = 'RTSP/1.0 200 OK\r\nSession:%s;timeout=30\r\ncom.ses.streamID:%d\r\nTransport: RTP/AVP;unicast;destination=%s;client_port=5004-5005\r\nCSeq:%s\r\n\r\n' % (clientsDict[self.clientInfo['addr_IP']]['session'], clientsDict[self.clientInfo['addr_IP']]['stream'], self.clientInfo['addr_IP'], seq)
 			connSocket = self.clientInfo['rtspSocket']
 			connSocket.send(reply)
 			fLog.write("Info rtspServerWorker: 200 SETUP PID\n")
 			self.SERVER_RUNNING = 1
 		elif code == self.OK_200_PLAY:
-			reply = 'RTSP/1.0 200 OK\r\nRTP-Info:url=//192.168.2.61/stream=%d;seq=50230\r\nCSeq:%s\nSession:%s\r\n\r\n' % (clientsDict[self.clientInfo['addr_IP']]['stream'], seq, clientsDict[self.clientInfo['addr_IP']]['session'])
+			reply = 'RTSP/1.0 200 OK\r\nRTP-Info:url=//%s/stream=%d;seq=50230\r\nCSeq:%s\nSession:%s\r\n\r\n' % (self.clientInfo['addr_IP'], clientsDict[self.clientInfo['addr_IP']]['stream'], seq, clientsDict[self.clientInfo['addr_IP']]['session'])
 			connSocket = self.clientInfo['rtspSocket']
 			connSocket.send(reply)
 			fLog.write("Info rtspServerWorker: 200 PLAY\n")

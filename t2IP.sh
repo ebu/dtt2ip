@@ -11,7 +11,7 @@
 ### END INIT INFO
 
 # Change the next 3 lines to suit where you install your script and what you want to call it
-DIR=/home/pi/ddt2ip
+DIR=/home/pi/dtt2ip
 DAEMON=$DIR/t2IP.py
 DAEMON_NAME=t2IP
 
