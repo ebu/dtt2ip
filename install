@@ -86,3 +86,7 @@ service apache2 restart
 
 # Get the source code from github
 git clone -b develop https://$USERNAME:$PASSWORD@github.com/ebu/dtt2ip.git
+
+# Copy firmware to /lib/firmware
+cp dvb-usb-af9015.fw /lib/firmware/
+cp dvb-usb-dib0700-1.20.fw /lib/firmware/
