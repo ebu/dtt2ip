@@ -20,70 +20,69 @@ if [[ ! -n "$PASSWORD" ]]; then
 fi
 
 # Update command
-# echo ALEX -------------------------- update
-# sleep 1
-# apt-get update -y
+echo ALEX -------------------------- update
+sleep 1
+apt-get update -y
 
 # Upgrade command
-# echo ALEX -------------------------- upgrade
-# sleep 1
-# apt-get upgrade -y
+echo ALEX -------------------------- upgrade
+sleep 1
+apt-get upgrade -y
 
 # FTP command
-# echo ALEX -------------------------- ftp
-# sleep 1
-# apt-get install ftp -y
+echo ALEX -------------------------- ftp
+sleep 1
+apt-get install ftp -y
 
 # Python command
-# echo ALEX -------------------------- python
-# sleep 1
-# apt-get install python -y 
+echo ALEX -------------------------- python
+sleep 1
+apt-get install python -y 
 
 # Python-netifaces command
-# echo ALEX -------------------------- python-netifaces
-# sleep 1
-# apt-get install python-netifaces -y 
+echo ALEX -------------------------- python-netifaces
+sleep 1
+apt-get install python-netifaces -y 
 
 # Dvblast command
-# echo ALEX -------------------------- dvblast
-# sleep 1
-# apt-get install dvblast -y 
+echo ALEX -------------------------- dvblast
+sleep 1
+apt-get install dvblast -y 
 
 # W-SCAN command
-# echo ALEX -------------------------- w-scan
-# sleep 1
-# apt-get install w-scan -y
+echo ALEX -------------------------- w-scan
+sleep 1
+apt-get install w-scan -y
 
 # Apache2 command
-# echo ALEX -------------------------- apache2
-# sleep 1
-# apt-get install apache2 -y
+echo ALEX -------------------------- apache2
+sleep 1
+apt-get install apache2 -y
 
 # Avahi-daemon command
-# echo ALEX -------------------------- avahi-daemon
-# sleep 1
-# apt-get install avahi-daemon -y
+echo ALEX -------------------------- avahi-daemon
+sleep 1
+apt-get install avahi-daemon -y
 
 # Gi command
-# echo ALEX -------------------------- git
-# sleep 1
-# apt-get install git -y
+echo ALEX -------------------------- git
+sleep 1
+apt-get install git -y
 
 # Edit port.conf file so that the apache server will use
 # port 8081 instead of 80 (default)
-# PORTS=/etc/apache2/ports.conf
-
-# echo $PORTS
-# sed "s/80/8081/g"  $PORTS > /etc/apache2/ports.new.conf
-# mv /etc/apache2/ports.new.conf $PORTS
-# service apache2 restart
-# {
-# 	echo ALEX ------------------------- old_index
-# 	mv /var/www/html/index.html /var/www/html/old_index.html
-# } || {
-# 	echo ALEX -------------------------- old_index2
-# 	mv /var/www/index.html /var/www/old_index2.html
-# }
+PORTS=/etc/apache2/ports.conf
+echo $PORTS
+sed "s/80/8081/g"  $PORTS > /etc/apache2/ports.new.conf
+mv /etc/apache2/ports.new.conf $PORTS
+service apache2 restart
+{
+	echo ALEX ------------------------- old_index
+	mv /var/www/html/index.html /var/www/html/old_index.html
+} || {
+	echo ALEX -------------------------- old_index2
+	mv /var/www/index.html /var/www/old_index2.html
+}
 
 # Get the source code from github
 git clone -b develop https://$USERNAME:$PASSWORD@github.com/ebu/dtt2ip.git
