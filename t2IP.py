@@ -25,15 +25,16 @@ def main():
 	fLog.close()
 
 	# Thread 3 scanning (w_scan)
+	fLog = open('logs/t2IP.log', 'a')
 	# Default period for new scan is 3600 seconds.
-	# periodNewScan = 3600 
-	# scanningFlag = 0
-	# t3 = threading.Thread(target=scanning, args=[periodNewScan, scanningFlag])
-	# t3.daemon = True
-	# t3.start()
-	# fLog.write('Info: scanning started\n')
-	# fLog.write('Info: period for new scan is ' + str(periodNewScan) + ' and scanningFlag is ' + str(scanningFlag))
-	# fLog.close()
+	periodNewScan = 1
+	scanningFlag = 0
+	t3 = threading.Thread(target=scanning, args=[periodNewScan, scanningFlag])
+	t3.daemon = True
+	t3.start()
+	fLog.write('Info: scanning started\n')
+	fLog.write('Info: period for new scan is ' + str(periodNewScan) + ' and scanningFlag is ' + str(scanningFlag))
+	fLog.close()
 
 	# Keep threads alive until KeyboardInterrupt
 	try:
