@@ -1,0 +1,3 @@
+Info rtspServer: Cleaning dvblast sockets before starting
+Info rtspServer: Cleaning all pidCfgFiles
+Info rtspServer: pidCfgFiles clean
