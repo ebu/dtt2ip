@@ -56,4 +56,4 @@ This will take care of all the packages need, and make all the necessary changes
 Stop and Start the Debian Chroot application from the Package Center app, and wait for 15-20 min for the first scan to finish before connecting any mobile client.
 
 ###### Synology NAS easy
-####### [Back to Table of content](README.md)
+###### [Back to Table of content](README.md)
