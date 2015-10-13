@@ -29,4 +29,4 @@ SAT>IP uses a subset of the UPnP/DLNA architecture and protocols [1] [2] and SAT
 [figure2]:https://github.com/ebu/dtt2ip/blob/master/docs/images/figure2.png
 
 SAT>IP devices successively go through the following phases: Addressing, Discovery, Description, Control and finally Media Transport. 
-[Back to Table of content](README.md)
+## [Back to Table of content](README.md)
