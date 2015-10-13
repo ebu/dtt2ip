@@ -10,7 +10,7 @@ Actual stream play-out is started in a session by invoking a PLAY message contai
 In order to keep sessions with a server alive, clients need to issue regular RTSP messages within the timeout period (announced by the server in the original reply to the SETUP message). In SAT>IP RTSP OPTIONS messages shall be used as the default keep alive messages. 
 
 ![alt text][figure1]
-[figure1]:https://github.com/ebu/dtt2ip/blob/documentation/docs/images/figure3.png
+[figure1]:https://github.com/ebu/dtt2ip/tree/master/docs/images/figure3.png
 
 Clients and servers shall support RTSP version 1.0 as described by Appendix D of RFC 2326 [6]. 
 RTSP is a text-based protocol and uses the ISO 10646 character set in UTF-8 encoding. Header field names are case-insensitive and header field values are case-sensitive in RTSP. Lines are terminated by CRLF. 
