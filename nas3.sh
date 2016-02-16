@@ -3,11 +3,12 @@
 # Kill the Discovery server from NAS
 echo "Killing NAS Discovery server..."
 #pids=`ps -aux | grep -wF 1900 | grep -v grep | awk '{print $2}'`
+pids=`netstat -lptu | grep 1900 | grep -v grep | awk '{print $6}' | cut -d / -f 1 `
 for i in "${pids[@]}"
 do
   :
   echo "Killing pid= ${pids[$i]}"
-   kill -9 ${pids[$i]}
+   # kill -9 ${pids[$i]}
 done
 
 # Update and upgrade
