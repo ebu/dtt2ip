@@ -38,3 +38,11 @@ echo "Make..."
 make
 echo "Make install..."
 make install
+
+
+# Install V4L-DVB Device Drivers
+echo "Build, Install V4L-DVB Device Drivers..."
+cd ../
+git clone --depth=1 git://linuxtv.org/media_build.git
+cd media_build 
+./build
