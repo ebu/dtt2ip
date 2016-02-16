@@ -20,6 +20,7 @@ apt-get -y --force-yes upgrade
 echo "Install mumudvb dependencie..."
 apt-get install -y --force-yes git devscripts pgpgpg debhelper 
 apt-get install -y --force-yes autoconf
+apt-get install -y --force-yes libproc-processtable-perl
 
 # Clone mumudvb
 echo "Clone mumudvb..."
@@ -42,7 +43,19 @@ make install
 
 # Install V4L-DVB Device Drivers
 echo "Build, Install V4L-DVB Device Drivers..."
+apt-get install -y --force-yes debhelper dh-autoreconf autotools-dev doxygen graphviz libasound2-dev libtool libjpeg-dev libqt4-dev libqt4-opengl-dev libudev-dev libx11-dev pkg-config udev
+
+echo "Getting V4L-DVB..."
 cd ../
-git clone --depth=1 git://linuxtv.org/media_build.git
-cd media_build 
-./build
+git clone https://github.com/gjasny/v4l-utils.git
+echo "Boostrap..."
+./bootstrap.sh
+echo "Configure..."
+./configure
+echo "Make..."
+make
+echo "Make install..."
+make install
+
+
+
