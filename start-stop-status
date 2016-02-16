@@ -3,6 +3,10 @@
 # Arguments
 INPUT_DIR=`pwd`
 echo "Instalation directory is: $INPUT_DIR"
+FILE="$INPUT_DIR + /tmp.txt"
+# Save the Instalation path
+echo $FILE
+echo $INPUT_DIR > FILE
 
 # Package
 PACKAGE="debian-chroot"
