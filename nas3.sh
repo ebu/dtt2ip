@@ -18,7 +18,7 @@ apt-get -y --force-yes upgrade
 
 # Install mumudvb dependencie
 echo "Install mumudvb dependencie..."
-apt-get install git devscripts pgpgpg debhelper 
+apt-get install -y --focer-yes git devscripts pgpgpg debhelper 
 
 # Clone mumudvb
 echo "Clone mumudvb..."
