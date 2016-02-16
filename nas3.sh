@@ -8,7 +8,7 @@ pids=`netstat -lptu | grep 1900 | grep -v grep | awk '{print $6}' | cut -d / -f 
 for i in "${pids[@]}"
 do
   :
-  echo "Killing pid=$i"
+  echo $i
    # kill -9 ${pids[$i]}
 done
 # Update and upgrade
