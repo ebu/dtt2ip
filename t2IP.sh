@@ -1,4 +1,4 @@
-#!/bin/sh
+:q#!/bin/sh
 
 ### BEGIN INIT INFO
 # Provides:          myservice

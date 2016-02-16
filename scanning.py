@@ -53,7 +53,7 @@ def scanning(periodNewScan, scanningFlag):
 	f.write('\n')
 	f.close()
 
-	# Statically asigned frequencies from 19.2 degrees E satelite
+	# Statically asigned frequencies from 19.2/19.0 degrees E satelite
 	# First value signifies that freq is free "0" or occupied "1"
 	# Second value signifies the timer that the freq is still available. 
 	# Starts from valTimer and gets decremented everytime and gets incremented mod valTimer 
