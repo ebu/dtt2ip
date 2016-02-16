@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Kill the Discovery server from NAS
 echo "Killing NAS Discovery server..."
@@ -16,6 +16,7 @@ echo "Update the packages..."
 # apt-get update
 # apt-get -y --force-yes upgrade
 
+# Install git
 # Install mumudvb dependencie
 echo "Install mumudvb dependencie..."
 # apt-get install git devscripts pgpgpg debhelper 
