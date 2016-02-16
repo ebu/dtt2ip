@@ -1,0 +1,183 @@
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+<s:Body><u:BrowseResponse xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1"><Result>&lt;DIDL-Lite xmlns:dc=&quot;http://purl.org/dc/elements/1.1/&quot; xmlns:upnp=&quot;urn:schemas-upnp-org:metadata-1-0/upnp/&quot; xmlns=&quot;urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/&quot; xmlns:dlna=&quot;urn:schemas-dlna-org:metadata-1-0/&quot; xmlns:pns=&quot;http://www.philips.com/streamiumns/&quot; &gt;
+&lt;item id=&quot;0\TVChannels\10330000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;DATASYSTEM R7&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/1013/byfreq/522000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10340000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;D17&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/517/byfreq/474000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10350000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;M6&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/1025/byfreq/746000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10360000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;6ter&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/2817/byfreq/618000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10370000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;France 2&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/257/byfreq/666000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10380000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;France 5&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/260/byfreq/666000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10390000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;France 4&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/519/byfreq/474000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10400000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;L'Equipe 21&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/2562/byfreq/730000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10410000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;BFM TV&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/515/byfreq/474000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10420000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;France 2 HD&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/1282/byfreq/770000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10430000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;TF1&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/1537/byfreq/498000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10440000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;PARIS PREMIERE&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/1028/byfreq/746000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10450000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;M6HD&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/1283/byfreq/770000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10460000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;RMC DECOUVERTE&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/2819/byfreq/618000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10470000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;NT1&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/1027/byfreq/746000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10480000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;NRJ12&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/1538/byfreq/498000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10490000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;ARTE&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/1543/byfreq/498000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10500000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;i>TELE&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/516/byfreq/474000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10510000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;NUMERO 23&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/2818/byfreq/618000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10520000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;CANAL+ SPORT&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/771/byfreq/522000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10530000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;Fr3 Alpes&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/324/byfreq/666000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10540000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;W9&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/1026/byfreq/746000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10550000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;France O&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/261/byfreq/666000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10560000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;ARTE HD&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/1031/byfreq/746000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10570000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;LemanBleu&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/257/byfreq/706000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10580000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;RTS Un&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/257/byfreq/578000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10590000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;Chérie 25&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/2563/byfreq/730000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10600000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;PLANETE+&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/772/byfreq/522000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10610000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;Fr3 Rhone&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/282/byfreq/666000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10620000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;CANAL+&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/769/byfreq/522000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10630000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;HD1&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/2561/byfreq/730000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10640000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;LCP&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/262/byfreq/666000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10650000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;CANAL+ CINEMA&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/770/byfreq/522000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10660000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;SRF 1&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/1/byfreq/578000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10670000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;RTS Deux&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/258/byfreq/578000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10680000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;TF1 HD&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/1281/byfreq/770000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10690000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;TMC&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/1542/byfreq/498000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10700000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;Gulli&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/518/byfreq/474000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10710000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;RSI LA 1&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/513/byfreq/578000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10720000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;D8&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/513/byfreq/474000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10730000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;#1014&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/1014/byfreq/522000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10740000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;LCI&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/1539/byfreq/498000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10750000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;#1012&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/1012/byfreq/522000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10760000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;#1010&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/1010/byfreq/522000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10770000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;#1011&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4029/bysid/1011/byfreq/522000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;/DIDL-Lite&gt;</Result><NumberReturned>45</NumberReturned><TotalMatches>45</TotalMatches><UpdateID>0</UpdateID></u:BrowseResponse></s:Body></s:Envelope>

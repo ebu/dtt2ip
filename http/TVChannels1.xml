@@ -1,0 +1,7 @@
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+<s:Body><u:BrowseResponse xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1"><Result>&lt;DIDL-Lite xmlns:dc=&quot;http://purl.org/dc/elements/1.1/&quot; xmlns:upnp=&quot;urn:schemas-upnp-org:metadata-1-0/upnp/&quot; xmlns=&quot;urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/&quot; xmlns:dlna=&quot;urn:schemas-dlna-org:metadata-1-0/&quot; xmlns:pns=&quot;http://www.philips.com/streamiumns/&quot; &gt;
+&lt;item id=&quot;0\TVChannels\10330000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;DATASYSTEM R7&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:4028/bysid/1013/byfreq/522000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;/DIDL-Lite&gt;</Result><NumberReturned>1</NumberReturned><TotalMatches>45</TotalMatches><UpdateID>0</UpdateID></u:BrowseResponse></s:Body></s:Envelope>
