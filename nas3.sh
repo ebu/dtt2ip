@@ -4,13 +4,13 @@
 echo "Killing NAS Discovery server...for later(Python)"
 # #pids=`ps -aux | grep -wF 1900 | grep -v grep | awk '{print $2}'`
 # pids=`netstat -lptu | grep 1900 | grep -v grep | awk '{print $6}' | cut -d / -f 1 `
-pids=`netstat -lptu | grep 1900 | grep -v grep | awk '{print $6}' | cut -d / -f 1 `
-for i in "${pids[@]}"
-do
-  :
-  echo $i
+# pids=`netstat -lptu | grep 1900 | grep -v grep | awk '{print $6}' | cut -d / -f 1 `
+# for i in "${pids[@]}"
+# do
+  # :
+  # echo $i
    # kill -9 ${pids[$i]}
-done
+# done
 # Update and upgrade
 echo "Update the packages..."
 apt-get update
@@ -19,9 +19,6 @@ apt-get -y --force-yes upgrade
 # Install mumudvb dependencie
 echo "Install mumudvb dependencie..."
 apt-get install git devscripts pgpgpg debhelper 
-
-# Change directory to the one selected
-echo "Chaning directory..."
 
 # Clone mumudvb
 echo "Clone mumudvb..."
