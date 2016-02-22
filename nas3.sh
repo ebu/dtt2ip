@@ -26,15 +26,14 @@ apt-get install -y --force-yes python-netifaces
 # Clone mumudvb
 echo "Clone mumudvb..."
 git clone git://github.com/braice/MuMuDVB.git mumudvb
-
 # Changing directory
 echo "Changing directory..."
 cd mumudvb
-
 # Installing mumudvb
 echo "Installing mumudvb...autoreconf"
 autoreconf -i -f
-echo "Configure..."
+echo "Add patch..."
+cp ../mumu_src/* src/
 ./configure
 echo "Make..."
 make

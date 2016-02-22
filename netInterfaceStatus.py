@@ -8,7 +8,7 @@ def getServerIP():
 	ipAddrServer = '127.0.0.1'
 	ipAddrArray = getNetworkInt()
 	for ipAddr in ipAddrArray:
-		if ipAddr["name"] != "lo" and ipAddr["status"] == "up":
+		if ipAddr["name"] != "lo" and ipAddr["status"] == "up" and ipAddr["ip"][:3] != "169":
 			ipAddrServer = ipAddr["ip"]
 
 	# print "Info netInterfaceStatus: ipAddrServer = " + ipAddrServer + '\n'
