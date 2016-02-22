@@ -21,6 +21,7 @@ echo "Install mumudvb dependencie..."
 apt-get install -y --force-yes git devscripts pgpgpg debhelper 
 apt-get install -y --force-yes autoconf
 apt-get install -y --force-yes libproc-processtable-perl
+apt-get install -y --force-yes apt-get python-netifaces
 
 # Clone mumudvb
 echo "Clone mumudvb..."
@@ -57,6 +58,37 @@ echo "Make..."
 make
 echo "Make install..."
 make install
+
+# Installing plogserver
+cd ../
+cd plog
+echo "Installing plog daemon..."
+make
+make install
+plogsrvd -v
+cd ../
+
+# Running discovery...
+cd http/
+echo "Running discovery"
+python discoveryServer.py &
+PID_DISCOVERY=`ps -ef | grep discoveryServer.py | grep -v grep | awk '{print $2}'`
+echo "Addding logging for discovery..."
+plog -p ${PID_DISCOVERY} -i 5
+
+# Running configManagement
+echo "Running configManagement..."
+python startConfigManagement.py &
+PID_CONFIMG=`ps -ef | grep startConfigManagement.py | grep -v grep | awk '{print $2}'`
+echo "Adding logging for configManagement..."
+plog -p ${PID_CONFIMG} -i 5
+
+# Running MUMUDVB
+echo "Running MuMuDVB..."
+mumudvb -d -c mumu.conf
+
+
+
 
 
 
