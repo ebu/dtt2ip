@@ -21,7 +21,7 @@ echo "Install mumudvb dependencie..."
 apt-get install -y --force-yes git devscripts pgpgpg debhelper 
 apt-get install -y --force-yes autoconf
 apt-get install -y --force-yes libproc-processtable-perl
-apt-get install -y --force-yes apt-get python-netifaces
+apt-get install -y --force-yes python-netifaces
 
 # Clone mumudvb
 echo "Clone mumudvb..."
@@ -85,7 +85,10 @@ plog -p ${PID_CONFIMG} -i 5
 
 # Running MUMUDVB
 echo "Running MuMuDVB..."
-mumudvb -d -c mumu.conf
+mumudvb -d -c mumu.conf &
+PID_MUMU=`ps -ef | grep mumudvb | grep -v grep | awk '{print $2}'`
+echo "Adding logging for MuMuDVB..."
+plog -p ${PID_MUMU} -i 5
 
 
 
