@@ -5,7 +5,7 @@
  
 import sys, re, os, random
 import threading, socket, struct, time, calendar
-# from netInterfaceStatus import getServerIP
+from netInterfaceStatus import getServerIP
 
 from datetime import date, datetime
 
@@ -34,9 +34,8 @@ deviceIdOk = False
 ssdpAddr = '239.255.255.250'
 ssdpPort = 1900
 
-# serverIP = getServerIP()
-serverIP = '192.168.1.115'
-
+serverIP = getServerIP()
+httpPort = 8080
 
 # nt1 = 'upnp:' + paramDict['upnp']
 # nt2 = 'uuid:' + paramDict['uuid']
@@ -59,17 +58,17 @@ def ms_ok(counter):
 	# MS_OK = 'HTTP/1.1 200 OK\r\nLOCATION: http://192.168.1.115:8080/alexDescription.xml\r\nCACHE-CONTROL: max-age=1800\r\nServer: UPnp/1.0 DLNADOC/1.50 Platinum/1.0.4.11\r\nEXT:\r\nUSN: uuid:b7531642-0123-3210-bbbb-0016406436F6::urn:schemas-upnp-org:device:MediaServer:1\r\nST: urn:schemas-upnp-org:device:MediaServer:1\r\nDate: Sat, 01 Jan 2000 00:03:17 GMT\r\n\r\n'
 
 	if counter == 0:
-		MS_OK = 'HTTP/1.1 200 OK\r\nCACHE-CONTROL: max-age=90\r\nDATE: Wed, 06 Jan 2016 13:45:21 GMT\r\nEXT:\r\nLOCATION: http://192.168.1.115:8080/alexDescription.xml\r\nServer: BaseHTTP/0.3 Python/2.7.10\r\nX-User-Agent: redsonic\r\nST: upnp:rootdevice\r\nUSN: uuid:C0A80173-0000-5687-83E3-00000000001F::upnp:rootdevice\r\nCONTENT-LENGTH: 0\r\n\r\n'
+		MS_OK = 'HTTP/1.1 200 OK\r\nCACHE-CONTROL: max-age=90\r\nDATE: Wed, 06 Jan 2016 13:45:21 GMT\r\nEXT:\r\nLOCATION: http://' + serverIP + ':' + str(httpPort) + '/alexDescription.xml\r\nServer: BaseHTTP/0.3 Python/2.7.10\r\nX-User-Agent: redsonic\r\nST: upnp:rootdevice\r\nUSN: uuid:C0A80173-0000-5687-83E3-00000000001F::upnp:rootdevice\r\nCONTENT-LENGTH: 0\r\n\r\n'
 	if counter == 1:
-		MS_OK = 'HTTP/1.1 200 OK\r\nCACHE-CONTROL: max-age=90\r\nDATE: Wed, 06 Jan 2016 13:45:21 GMT\r\nEXT:\r\nLOCATION: http://192.168.1.115:8080/alexDescription.xml\r\nServer: BaseHTTP/0.3 Python/2.7.10\r\nX-User-Agent: redsonic\r\nST: uuid:C0A80173-0000-5687-83E3-00000000001F\r\nUSN: uuid:C0A80173-0000-5687-83E3-00000000001F\r\nCONTENT-LENGTH: 0\r\n\r\n'
+		MS_OK = 'HTTP/1.1 200 OK\r\nCACHE-CONTROL: max-age=90\r\nDATE: Wed, 06 Jan 2016 13:45:21 GMT\r\nEXT:\r\nLOCATION: http://' + serverIP + ':' + str(httpPort) + '/alexDescription.xml\r\nServer: BaseHTTP/0.3 Python/2.7.10\r\nX-User-Agent: redsonic\r\nST: uuid:C0A80173-0000-5687-83E3-00000000001F\r\nUSN: uuid:C0A80173-0000-5687-83E3-00000000001F\r\nCONTENT-LENGTH: 0\r\n\r\n'
 	if counter == 2:
-		MS_OK = 'HTTP/1.1 200 OK\r\nCACHE-CONTROL: max-age=90\r\nDATE: Wed, 06 Jan 2016 13:45:21 GMT\r\nEXT:\r\nLOCATION: http://192.168.1.115:8080/alexDescription.xml\r\nServer: BaseHTTP/0.3 Python/2.7.10\r\nX-User-Agent: redsonic\r\nST: urn:schemas-upnp-org:device:MediaServer:1\r\nUSN: uuid:C0A80173-0000-5687-83E3-00000000001F::urn:schemas-upnp-org:device:MediaServer:1\r\nCONTENT-LENGTH: 0\r\n\r\n'
+		MS_OK = 'HTTP/1.1 200 OK\r\nCACHE-CONTROL: max-age=90\r\nDATE: Wed, 06 Jan 2016 13:45:21 GMT\r\nEXT:\r\nLOCATION: http://' + serverIP + ':' + str(httpPort) + '/alexDescription.xml\r\nServer: BaseHTTP/0.3 Python/2.7.10\r\nX-User-Agent: redsonic\r\nST: urn:schemas-upnp-org:device:MediaServer:1\r\nUSN: uuid:C0A80173-0000-5687-83E3-00000000001F::urn:schemas-upnp-org:device:MediaServer:1\r\nCONTENT-LENGTH: 0\r\n\r\n'
 	if counter == 3:
-		MS_OK = 'HTTP/1.1 200 OK\r\nCACHE-CONTROL: max-age=90\r\nDATE: Wed, 06 Jan 2016 13:45:21 GMT\r\nEXT:\r\nLOCATION: http://192.168.1.115:8080/alexDescription.xml\r\nServer: BaseHTTP/0.3 Python/2.7.10\r\nX-User-Agent: redsonic\r\nST: urn:schemas-upnp-org:service:ContentDirectory:1\r\nUSN: uuid:C0A80173-0000-5687-83E3-00000000001F::urn:schemas-upnp-org:service:ContentDirectory:1\r\nCONTENT-LENGTH: 0\r\n\r\n'
+		MS_OK = 'HTTP/1.1 200 OK\r\nCACHE-CONTROL: max-age=90\r\nDATE: Wed, 06 Jan 2016 13:45:21 GMT\r\nEXT:\r\nLOCATION: http://' + serverIP + ':' + str(httpPort) + '/alexDescription.xml\r\nServer: BaseHTTP/0.3 Python/2.7.10\r\nX-User-Agent: redsonic\r\nST: urn:schemas-upnp-org:service:ContentDirectory:1\r\nUSN: uuid:C0A80173-0000-5687-83E3-00000000001F::urn:schemas-upnp-org:service:ContentDirectory:1\r\nCONTENT-LENGTH: 0\r\n\r\n'
 	if counter == 4:
-		MS_OK = 'HTTP/1.1 200 OK\r\nCACHE-CONTROL: max-age=90\r\nDATE: Wed, 06 Jan 2016 13:45:21 GMT\r\nEXT:\r\nLOCATION: http://192.168.1.115:8080/alexDescription.xml\r\nServer: BaseHTTP/0.3 Python/2.7.10\r\nX-User-Agent: redsonic\r\nST: urn:schemas-upnp-org:service:ConnectionManager:1\r\nUSN: uuid:C0A80173-0000-5687-83E3-00000000001F::urn:schemas-upnp-org:service:ConnectionManager:1\r\nCONTENT-LENGTH: 0\r\n\r\n'
+		MS_OK = 'HTTP/1.1 200 OK\r\nCACHE-CONTROL: max-age=90\r\nDATE: Wed, 06 Jan 2016 13:45:21 GMT\r\nEXT:\r\nLOCATION: http://' + serverIP + ':' + str(httpPort) + '/alexDescription.xml\r\nServer: BaseHTTP/0.3 Python/2.7.10\r\nX-User-Agent: redsonic\r\nST: urn:schemas-upnp-org:service:ConnectionManager:1\r\nUSN: uuid:C0A80173-0000-5687-83E3-00000000001F::urn:schemas-upnp-org:service:ConnectionManager:1\r\nCONTENT-LENGTH: 0\r\n\r\n'
 	if counter == 5:
-		MS_OK = 'HTTP/1.1 200 OK\r\nCACHE-CONTROL: max-age=90\r\nDATE: Wed, 06 Jan 2016 13:45:22 GMT\r\nEXT:\r\nLOCATION: http://192.168.1.115:8080/alexDescription.xml\r\nServer: BaseHTTP/0.3 Python/2.7.10\r\nX-User-Agent: redsonic\r\nST: urn:schemas-upnp-org:device:MediaServer:1\r\nUSN: uuid:C0A80173-0000-5687-83E3-00000000001F::urn:schemas-upnp-org:device:MediaServer:1\r\nCONTENT-LENGTH: 0\r\n\r\n'
+		MS_OK = 'HTTP/1.1 200 OK\r\nCACHE-CONTROL: max-age=90\r\nDATE: Wed, 06 Jan 2016 13:45:22 GMT\r\nEXT:\r\nLOCATION: http://' + serverIP + ':' + str(httpPort) + '/alexDescription.xml\r\nServer: BaseHTTP/0.3 Python/2.7.10\r\nX-User-Agent: redsonic\r\nST: urn:schemas-upnp-org:device:MediaServer:1\r\nUSN: uuid:C0A80173-0000-5687-83E3-00000000001F::urn:schemas-upnp-org:device:MediaServer:1\r\nCONTENT-LENGTH: 0\r\n\r\n'
 	return MS_OK
 
 def ms_notify_alive(counter):	
@@ -79,11 +78,11 @@ def ms_notify_alive(counter):
 	
 	# MS_NOTIFY_ALIVE = 'NOTIFY * HTTP/1.1\r\nHOST: 239.255.255.250:1900\r\nCACHE-CONTROL: max-age=90\r\nLOCATION: http://192.168.1.115:80/nmsDescription.xml\r\nNT: upnp:rootdevice\r\n NTS: ssdp:alive\r\n Server: BaseHTTP/0.3 Python/2.7.10\r\nX-User-Agent: redsonic\r\nUSN: uuid:5AFEF00D-BABE-DADA-FA5A-0023549E9B13::upnp:rootdevice\r\nCONTENT-LENGTH: 0\r\n\r\n'
 	if counter == 0:
-		MS_NOTIFY_ALIVE = 'NOTIFY * HTTP/1.1\r\nHOST: 239.255.255.250:1900\r\nCACHE-CONTROL: max-age=90\r\nLOCATION: http://192.168.1.115:8080/alexDescription.xml\r\nNT: upnp:rootdevice\r\n NTS: ssdp:alive\r\n Server: BaseHTTP/0.3 Python/2.7.10\r\nX-User-Agent: redsonic\r\nUSN: uuid:C0A80173-0000-5687-83E3-00000000001F::upnp:rootdevice\r\nCONTENT-LENGTH: 0\r\n\r\n'
+		MS_NOTIFY_ALIVE = 'NOTIFY * HTTP/1.1\r\nHOST: 239.255.255.250:1900\r\nCACHE-CONTROL: max-age=90\r\nLOCATION: http://' + serverIP + ':' + str(httpPort) + '/alexDescription.xml\r\nNT: upnp:rootdevice\r\n NTS: ssdp:alive\r\n Server: BaseHTTP/0.3 Python/2.7.10\r\nX-User-Agent: redsonic\r\nUSN: uuid:C0A80173-0000-5687-83E3-00000000001F::upnp:rootdevice\r\nCONTENT-LENGTH: 0\r\n\r\n'
 	if counter == 1:
-		MS_NOTIFY_ALIVE = 'NOTIFY * HTTP/1.1\r\nHOST: 239.255.255.250:1900\r\nCACHE-CONTROL: max-age=90\r\nLOCATION: http://192.168.1.115:8080/alexDescription.xml\r\nNT: uuid:C0A80173-0000-5687-83E3-00000000001F\r\nNTS: ssdp:alive\r\nServer: BaseHTTP/0.3 Python/2.7.10\r\nX-User-Agent: redsonic\r\nUSN: uuid:C0A80173-0000-5687-83E3-00000000001F\r\nCONTENT-LENGTH: 0\r\n\r\n'
+		MS_NOTIFY_ALIVE = 'NOTIFY * HTTP/1.1\r\nHOST: 239.255.255.250:1900\r\nCACHE-CONTROL: max-age=90\r\nLOCATION: http://' + serverIP + ':' + str(httpPort) + '/alexDescription.xml\r\nNT: uuid:C0A80173-0000-5687-83E3-00000000001F\r\nNTS: ssdp:alive\r\nServer: BaseHTTP/0.3 Python/2.7.10\r\nX-User-Agent: redsonic\r\nUSN: uuid:C0A80173-0000-5687-83E3-00000000001F\r\nCONTENT-LENGTH: 0\r\n\r\n'
 	if counter == 2:
-		MS_NOTIFY_ALIVE = 'NOTIFY * HTTP/1.1\r\nHOST: 239.255.255.250:1900\r\nCACHE-CONTROL: max-age=90\r\nLOCATION: http://192.168.1.115:8080/alexDescription.xml\r\nNT: urn:schemas-upnp-org:device:MediaServer:1\r\nNTS: ssdp:alive\r\nServer: BaseHTTP/0.3 Python/2.7.10\r\nX-User-Agent: redsonic\r\nUSN: uuid:C0A80173-0000-5687-83E3-00000000001F::urn:schemas-upnp-org:device:MediaServer:1\r\nCONTENT-LENGTH: 0\r\n\r\n'
+		MS_NOTIFY_ALIVE = 'NOTIFY * HTTP/1.1\r\nHOST: 239.255.255.250:1900\r\nCACHE-CONTROL: max-age=90\r\nLOCATION: http://' + serverIP + ':' + str(httpPort) + '/alexDescription.xml\r\nNT: urn:schemas-upnp-org:device:MediaServer:1\r\nNTS: ssdp:alive\r\nServer: BaseHTTP/0.3 Python/2.7.10\r\nX-User-Agent: redsonic\r\nUSN: uuid:C0A80173-0000-5687-83E3-00000000001F::urn:schemas-upnp-org:device:MediaServer:1\r\nCONTENT-LENGTH: 0\r\n\r\n'
 	return MS_NOTIFY_ALIVE
 
 def ms_nofity_byebye(nt, usn):
@@ -128,24 +127,9 @@ def callServerReactor():
 
 			if matchMSearch:
 				print 'Recv: M-SEARCH'
-				# If M-SEARCH message from client, then process it and respond to it with a unicast message
-				# match2 = re.search(r'ses-com',datagram)
-				# if match2:
-				# 	# fLog.write("Info: client = ip " + address[0] + ", port " + address[1] + "\n")
-				# 	# fLog.write("Info: client \n")
-				# 	toClient = True
 				for i in range(6):
 					ssdpUnicastSocket.sendto(ms_ok(i), (address[0], address[1]))
 				ssdpUnicastSocket.close()
-			# if matchNotify:
-			# 	# If NOTIFY message from server, then process it and see it is another DTT2IP / SAT>IP server
-			# 	matchSES = re.search(r'DEVICEID.SES.COM:([\w]+)',datagram)
-			# 	if matchSES:
-			# 		# If new DTT2IP / SAT>IP server that has join the network then respond to it with a unicast message
-			# 		# informing it that DEVICE ID is ours, else if this is an old DTT2IP / SAT>IP server do not do anything
-			# 		if int(matchSES.group(1)) == int(paramDict['deviceId']):
-			# 			ssdpMulticastSocket.sendto(ms_search(), (address[0], address[1]))
-			# 			# fLog.write("Info: MS_SEARCH\n")
 		except:
 			# fLog.write("Info: Something went wrong\n")
 			print 'Info: Something went wrong\n'
@@ -161,59 +145,6 @@ def callClientReactor():
 
 	# While look until script is terminated
 	while (not SSDP_TERMINATE):
-		# DEVICE ID negotiation loop, escape only when we have valid DEVICE ID
-		# while (not deviceIdOk):
-		# 	# Send the first 3 SSDP NOTIFY messages
-		# 	for i in range(3):
-		# 		# paramDict['bootId'] = int(paramDict['bootId']) + 1
-		# 		ssdpUnicastSocket.sendto(ms_notify_alive(i), (ssdpAddr, ssdpPort))
-		# 		ssdpUnicastSocket.sendto(ms_notify_alive(i), (ssdpAddr, ssdpPort))
-		# 		# fLog.write("Info: MS_NOTIFY_ALIVE\n")
-		# 		print 'Info: MS_NOTIFY_ALIVE\n'
-			# try:
-			# 	# See if DEVICE ID is free, by waiting for a message or a timeout of 5 seconds
-			# 	datagram, address = ssdpUnicastSocket.recvfrom(1024)
-			# 	datagram_array = datagram.rsplit('\r\n')
-
-			# 	try:
-			# 		# Process the message received
-			# 		first_line = datagram_array[0]
-			# 		matchMSearch = re.search(r'M-SEARCH',first_line)
-
-			# 		if matchMSearch:
-			# 			# See if somebody else is using this ID
-			# 			matchSES = re.search(r'DEVICEID.SES.COM:([\w]+)',datagram)
-			# 			if matchSES:
-			# 				if int(matchSES.group(1)) == int(paramDict['deviceId']):
-			# 					# This DEVICE ID is used an we have to annouce that we are letting it go
-			# 					# by sending a MS_OK message to the other server (i.e toClient = False)
-			# 					# and to the hole network MS_NOTIFY_BYEBYE mesasge. 
-			# 					toClient = False
-			# 					ssdpUnicastSocket.sendto(ms_ok(toClient), (address[0], address[1]))
-			# 					# fLog.write("Info: MS_OK\n")
-			# 					print 'Info: MS_OK\n'
-
-			# 					for i in range(3):
-			# 						ssdpUnicastSocket.sendto(ms_nofity_byebye(NT[i], USN[i]), (ssdpAddr, ssdpPort))
-			# 						# fLog.write("Info: MS_NOTIFY_BYEBYE\n")
-			# 						print 'Info: MS_NOTIFY_BYEBYE\n'
-
-			# 					# We have to increase the DEVICE ID	
-			# 					paramDict['deviceId'] = int(paramDict['deviceId']) + 1
-			# 	except:
-			# 		# fLog.write('Info: Something went wrong\n')
-			# 		print 'Info: Something went wrong\n'
-
-			# except:
-			# 	# Change deviceIdOk to True only when we timeout (5.0 seconds)
-			# 	# fLog.write("Info: DEVICE ID\n")
-			# print 'Info: DEVICE ID\n'
-			# deviceIdOk = True
-			# SSDP_TERMINATE = 1
-		# We have obtain out valid DEVICE ID, we have to maintain it valid on the network by sending 
-		# at pseudo random periods 3 MS_NOTIFY_ALIVE messages. The pseudo random interval is between [0, cacheControl/2].
-		# This guarantees that announcement set is repeated at least twice before it expires.
-		# fLog.write("Info: Device ID negotiation done. Sleep and send NOTIFY later\n")
 		print 'Info: Device ID negotiation done. Sleep and send NOTIFY later\n'
 		time.sleep(random.randint(0, int(90)/2))
 

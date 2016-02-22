@@ -2,6 +2,7 @@
 
 import subprocess, os, threading
 import commands, re, shutil
+from netInterfaceStatus import getServerIP
 global d_tuner
 global CHECKMUMUFILE_NOT_TERMINATE
 global DETECTION_NOT_TERMINATE
@@ -20,16 +21,17 @@ postInc = 0
 k = 0
 global servedXMLSize
 global servedXMLSize1
+global THREADING_TUNERS_NOT_TERMINATE
 
 #This class will handle any incoming request from
 #the browser 
 class myHandler(BaseHTTPRequestHandler):
 
-	def ms_notify_callback(self, counter):
-		MS_NOTIFY_EVENT = 'NOTIFY /Event HTTP/1.0\r\nHOST: 192.168.1.228:52809\r\nCONTENT-TYPE: text/xml; charset="utf-8"\r\nCONTENT-LENGTH: 267\r\nNT: upnp:event\r\nNTS: upnp:propchange\r\nSID: uuid:C0A80173-0000-5687-83E3-00000000001F\r\nSEQ: 0\r\n\r\n<e:propertyset xmlns:e="urn:schemas-upnp-org:event-1-0">\n<e:property>\n<TransferIDs> </TransferIDs>\n</e:property>\n\n<e:property>\n<SystemUpdateID>0</SystemUpdateID>\n</e:property>\n\n<e:property>\n<ContainerUpdateIDs> </ContainerUpdateIDs>\n</e:property>\n\n</e:propertyset>\n\n\r\n\r\n'
+	def ms_notify_callback(self, clientIP, clientPort):
+		MS_NOTIFY_EVENT = 'NOTIFY /Event HTTP/1.0\r\nHOST: ' + clientIP + ':' + str(clientPort) + '\r\nCONTENT-TYPE: text/xml; charset="utf-8"\r\nCONTENT-LENGTH: 268\r\nNT: upnp:event\r\nNTS: upnp:propchange\r\nSID: uuid:C0A80173-0000-5687-83E3-00000000001F\r\nSEQ: 0\r\n\r\n<e:propertyset xmlns:e="urn:schemas-upnp-org:event-1-0">\n<e:property>\n<TransferIDs> </TransferIDs>\n</e:property>\n\n<e:property>\n<SystemUpdateID>0</SystemUpdateID>\n</e:property>\n\n<e:property>\n<ContainerUpdateIDs> </ContainerUpdateIDs>\n</e:property>\n\n</e:propertyset>\r\n\r\n'
 		return MS_NOTIFY_EVENT
 
-	def do_UNSUBSCRIVE(self):
+	def do_UNSUBSCRIBE(self):
 		# TO DO
 		self.send_response(200)
 
@@ -41,16 +43,14 @@ class myHandler(BaseHTTPRequestHandler):
 		for name, value in sorted(self.headers.items()):
 			message_parts.append('%s=%s' % (name.lower(), value.rstrip()))
 
-		self.send_response(200)
-		self.send_header('SID','uuid:C0A80173-0000-5687-83E3-00000000001F')
-		self.send_header('TIMEOUT', 'Second-1800')
-		self.send_header('Content-Length', '0')
-		self.end_headers()
-		print 'Alex SUBSCRIBE'
+		# self.send_response(200)
+		# self.send_header('SID','uuid:C0A80173-0000-5687-83E3-00000000001F')
+		# self.send_header('TIMEOUT', 'Second-1800')
+		# self.send_header('Content-Length', '0')
+		# self.end_headers()
+		# print 'Alex SUBSCRIBE'
 
 		# Send the NOTIFY /Event for iOS
-		print 'Alex TCP'
-		# TO DO get dynamicaly the clients IP address and port (callback socket)
 		for message_part in message_parts:
 			match1 = re.search(r'callback', message_part)
 			if match1:
@@ -59,11 +59,18 @@ class myHandler(BaseHTTPRequestHandler):
 				if match2:
 					clientPort = int(match2.group(1))
 
-
 		clientIP = self.address_string()
 		tcpSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+		# First send the SUBSCRIBE send_response, and then the NOTIFY EVENT
+		self.send_response(200)
+		self.send_header('SID','uuid:C0A80173-0000-5687-83E3-00000000001F')
+		self.send_header('TIMEOUT', 'Second-1800')
+		self.send_header('Content-Length', '0')
+		self.end_headers()
+
 		tcpSocket.connect((clientIP, clientPort))
-		tcpSocket.send(self.ms_notify_callback(0))
+		tcpSocket.send(self.ms_notify_callback(clientIP, clientPort))
 		tcpSocket.close()
 
 	#Handler for the POST requests
@@ -79,7 +86,7 @@ class myHandler(BaseHTTPRequestHandler):
 			'CONTENT_TYPE':self.headers['Content-Type'],
 		})
 		form = str(form)
-		print form
+		match_user_agent = re.search(r'\[TV]Samsung', str(self.headers))
 		match1 = re.search(r'ObjectID.0', form)
 		match2 = re.search(r'TVChannels', form)
 
@@ -95,7 +102,6 @@ class myHandler(BaseHTTPRequestHandler):
 
 		if postInc == 0:
 			self.send_response(200)
-			print "-----0-----"
 			#Open the static file requested and send it
 			f1 = open(curdir + sep + '/alex-MAC.xml') 
 			self.send_header('CONTENT-LENGTH', '891')
@@ -108,12 +114,15 @@ class myHandler(BaseHTTPRequestHandler):
 			f1.close()
 		if postInc == 1:
 			self.send_response(200)
-			print "TVChannels"
 			# time.sleep(1)
 			#Open the static file requested and send it
 			if k == 0:
-				f2 = open(curdir + sep + '/TVChannels1.xml') 
-				self.send_header('CONTENT-LENGTH', str(servedXMLSize1))
+				if match_user_agent:
+					f2 = open(curdir + sep + '/TVChannels1.xml') 
+					self.send_header('CONTENT-LENGTH', str(servedXMLSize1))
+				else:
+					f2 = open(curdir + sep + '/TVChannels.xml') 
+					self.send_header('CONTENT-LENGTH', str(servedXMLSize))					
 			else:
 				f2 = open(curdir + sep + '/TVChannels.xml') 
 				self.send_header('CONTENT-LENGTH', str(servedXMLSize))
@@ -127,7 +136,6 @@ class myHandler(BaseHTTPRequestHandler):
 			f2.close()
 		if postInc == 2:
 			self.send_response(500)
-			print "UPnPError"
 			# time.sleep(1)
 			#Open the static file requested and send it
 			f2 = open(curdir + sep + '/UPnPError.xml') 
@@ -137,8 +145,6 @@ class myHandler(BaseHTTPRequestHandler):
 			self.end_headers()
 			self.wfile.write(f2.read())
 			f2.close()
-
-		print 'Alex POST'
 	
 	#Handler for the GET requests
 	def do_GET(self):
@@ -162,7 +168,7 @@ class myHandler(BaseHTTPRequestHandler):
 				#Open the static file requested and send it
 				f = open(curdir + sep + '/alexDescription.xml') 
 				self.send_response(200)
-				self.send_header("CONTENT-LENGTH", '1990')
+				self.send_header("CONTENT-LENGTH", '1989')
 				self.send_header('CONTENT-TYPE', 'text/xml; charset="utf-8"')
 				self.send_header("LAST-MODIFIED", "Tue, 22 Dec 2015 15:25:23 GMT")
 				self.send_header("X-User-Agent", "redsonic")
@@ -251,7 +257,6 @@ class myHandler(BaseHTTPRequestHandler):
 				self.end_headers()
 				self.wfile.write(f9.read())
 				f9.close()
-
 			return
 		except IOError:
 			self.send_error(404,'File Not Found: %s' % self.path)
@@ -305,7 +310,7 @@ def detectDvbTT2Tuners():
 							id_found = True
 							break
 					if not id_found:
-						d_tuner[str(tuner_port)] = (0, match_adapter.group(1))
+						d_tuner[str(tuner_port)] = (0, match_adapter.group(1), 0)
 						new_entries.append(str(tuner_port))
 			# Check for adapters removed
 			for tuner in d_tuner:
@@ -327,7 +332,7 @@ def detectDvbTT2Tuners():
 				if match_adapter:
 					# Default tuner triplet (availabilty, frequency, adapter_id)
 					tuner_port = int(match_adapter.group(1)) + tuner_port_init
-					d_tuner[str(tuner_port)] = (0, match_adapter.group(1))
+					d_tuner[str(tuner_port)] = (0, match_adapter.group(1), 0)
 					new_entries.append(str(tuner_port))
 			num_tuners = len(d_tuner)
 			# return (num_tuners, d_tuner, new_entries)
@@ -365,6 +370,7 @@ def dictionariesSidFreq():
 	return d_sid, d_freq
 
 def createConfiXMLForTuner(tuner_id, tuner_port, d_sid):
+	ip_addr = getServerIP()
 	f = open("allFreq" + tuner_id + ".xml" , 'w')
 	f.write('<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">\n')
 	f.write('<s:Body><u:BrowseResponse xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1"><Result>&lt;DIDL-Lite xmlns:dc=&quot;http://purl.org/dc/elements/1.1/&quot; xmlns:upnp=&quot;urn:schemas-upnp-org:metadata-1-0/upnp/&quot; xmlns=&quot;urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/&quot; xmlns:dlna=&quot;urn:schemas-dlna-org:metadata-1-0/&quot; xmlns:pns=&quot;http://www.philips.com/streamiumns/&quot; &gt;\n')
@@ -373,7 +379,7 @@ def createConfiXMLForTuner(tuner_id, tuner_port, d_sid):
 		f.write('&lt;item id=&quot;0\TVChannels\\' + str(item_id) + 
 					'&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;\n')
 		f.write('&lt;dc:title&gt;' + item + 
-					'&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:' +
+					'&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://' + ip_addr + ':' +
 					tuner_port + '/bysid/' + d_sid[item][0] + '/byfreq/' + d_sid[item][1] +
 					'&lt;/res&gt;\n')
 		f.write('&lt;/item&gt;\n\n')
@@ -384,9 +390,11 @@ def createConfiXMLForTuner(tuner_id, tuner_port, d_sid):
 	f.close()
 
 
-def createServerdXML(d_tuner, init=1, freq=0):
+def createServerdXML(init=1, freq=0):
 	global servedXMLSize
 	global servedXMLSize1
+	global d_tuner
+
 	freq_used_array = []
 	line_to_keep2 = "&lt;/item&gt;\n\n"
 	numberOfMaches = 0
@@ -402,12 +410,14 @@ def createServerdXML(d_tuner, init=1, freq=0):
 		# we perform different updates in the SERVED xml
 		if freq == 0:
 			tuner_port_unused = -1
+			# print "d_tuner", d_tuner
 			for tuner in d_tuner:
 				if d_tuner[tuner][0] != freq:
 					freq_used_array.append(d_tuner[tuner][0])
 				else:
 					tuner_port_unused = tuner
 			try:
+				# print "allFreq" + d_tuner[tuner_port_unused][1] + ".xml"
 				f2 = open("allFreq" + d_tuner[tuner_port_unused][1] + ".xml", 'r')
 				lines_init = f2.readlines()
 				f2.close()
@@ -438,25 +448,37 @@ def createServerdXML(d_tuner, init=1, freq=0):
 			except:
 				print "createServerdXML: No Tuner available found ", tuner_port_unused
 		else:
-			print "Freq received == ", freq
+			tuner_port_unused = -1
+			# print "d_tuner", d_tuner
+			for tuner in d_tuner:
+				if d_tuner[tuner][0] != 0:
+					freq_used_array.append(d_tuner[tuner][0])
+				else:
+					tuner_port_unused = tuner
+			# print "freq_used_array", freq_used_array
 			for line in lines:
 				if lines.index(line) == len(lines)-1:
 						f.write('&lt;/DIDL-Lite&gt;</Result><NumberReturned>' + str(numberOfMaches) + '</NumberReturned><TotalMatches>' + str(numberOfMaches) + '</TotalMatches><UpdateID>0</UpdateID></u:BrowseResponse></s:Body></s:Envelope>')
 				else:
+					line_found = False
 					match_other_freq = re.search(r'([\w]+)/([\w]+)/([\w]+)/byfreq/',line)
 					if match_other_freq:
-						match_freq = re.search(r'([\w]+)/([\w]+)/([\w]+)/byfreq/' + str(freq) ,line)
-						if match_freq:
-							tuner_port = match_freq.group(1)
-							line_index = line.index(tuner_port)
-							f.write(line_to_keep)
-							f.write(line[:line_index] + tuner_port + line[line_index + len(tuner_port):])
-							# print line[:line_index] + tuner_port + line[line_index + len(tuner_port):]
-							f.write(line_to_keep2)
-							numberOfMaches = numberOfMaches + 1
-						else:
+						for freq_used in freq_used_array:
+							# print  "freq_used", freq_used
+							match_freq = re.search(r'([\w]+)/([\w]+)/([\w]+)/byfreq/' + str(freq_used) ,line)
+							if match_freq:
+								line_found = True
+								tuner_port = match_freq.group(1)
+								line_index = line.index(tuner_port)
+								f.write(line_to_keep)
+								f.write(line[:line_index] + tuner_port + line[line_index + len(tuner_port):])
+								# print line[:line_index] + tuner_port + line[line_index + len(tuner_port):]
+								f.write(line_to_keep2)
+								numberOfMaches = numberOfMaches + 1
+								break
+						if not line_found:
 							for tuner in d_tuner:
-								if not d_tuner[tuner][0]:
+								if d_tuner[tuner][0] == 0:
 									tuner_port = match_other_freq.group(1)
 									line_index = line.index(tuner_port)
 									f.write(line_to_keep)
@@ -487,41 +509,72 @@ def createServerdXML(d_tuner, init=1, freq=0):
 		servedXMLSize1 = os.path.getsize("TVChannels1.xml")
 		return (servedXMLSize, d_tuner)
 
-def checkMumuFile():
+def checkMumuFile(tuner_port):
 	global CHECKMUMUFILE_NOT_TERMINATE
 	global d_tuner
 
 	while CHECKMUMUFILE_NOT_TERMINATE:
-		f = open("test_mumu.txt", 'r')
+		f = open("test_mumu" + tuner_port + ".txt", 'r')
 		freq = f.readlines()
 		f.close()
+
+		#Check for unpluged tuner, and stop the thread
+		if not d_tuner[tuner_port]:
+			break
+
 		# Check if we have receive a tuning request
 		if freq:
-			print "freq == ", freq
 			if int(freq[0]) > 100000:
 				# Assign freq to tuner 0
 				# Occupy the tuner, by making it unavailble and specify the frequency
-				d_tuner['4028']= (freq, d_tuner['4028'][1])
-				filesize, d_tuner = createServerdXML(d_tuner, 0, int(freq[0]))
-				# print "filesize ", filesize
-				# print  d_tuner
-				f = open("test_mumu.txt", 'w')
-				f.close()
+				try:
+					d_tuner[tuner_port]= (freq[0], d_tuner[tuner_port][1], d_tuner[tuner_port][2])
+					filesize, d_tuner = createServerdXML(0, int(freq[0]))
+					# print "filesize ", filesize
+					f = open("test_mumu" + tuner_port + ".txt", 'w')
+					f.close()
+				except:
+					break
 			# Check if we have receive a freeing of resources
 			elif int(freq[0]) == 0:
 				#Remove the freq from tuner 0
-				d_tuner['4028'] = (0, '0')
-				filesize, d_tuner = createServerdXML(d_tuner, 0, int(freq[0]))
-				# print "filesize ", filesize
-				# print  d_tuner
-				f = open("test_mumu.txt", 'w')
-				f.close()
+				try:
+					d_tuner[tuner_port] = (0, d_tuner[tuner_port][1], d_tuner[tuner_port][2])
+					filesize, d_tuner = createServerdXML(0, int(freq[0]))
+					# print "filesize ", filesize
+					f = open("test_mumu" + tuner_port + ".txt", 'w')
+					f.close()
+				except:
+					break
+		time.sleep(1)
 
+def startThreadingTuners():
+	global d_tuner
+	global THREADING_TUNERS_NOT_TERMINATE
+
+	while THREADING_TUNERS_NOT_TERMINATE:
+		# for tuner in d_tuner:
+		tuner = '4028'
+		tuner_index = 0
+		while tuner in d_tuner:
+			if d_tuner[tuner][2] == 0:
+				print "tuner_id", tuner
+				t2 = threading.Thread(target=checkMumuFile, args=(tuner,))
+				t2.daemon = True
+				t2.start()
+				d_tuner[tuner] = (d_tuner[tuner][0], d_tuner[tuner][1], 1)
+			tuner_index = (tuner_index + 1) % 10
+			tuner = str(int(tuner) + tuner_index)  
+			time.sleep(1)
+		
+		if len(d_tuner) == 0:
+			time.sleep(1)
 
 def main():
 	global d_tuner
 	global CHECKMUMUFILE_NOT_TERMINATE
 	global DETECTION_NOT_TERMINATE 
+	global THREADING_TUNERS_NOT_TERMINATE
 	global servedXMLSize
 	global servedXMLSize1
 
@@ -530,19 +583,25 @@ def main():
 	d_tuner = {}
 	CHECKMUMUFILE_NOT_TERMINATE = True
 	DETECTION_NOT_TERMINATE = True
+	THREADING_TUNERS_NOT_TERMINATE = True
 
+	# Update and maintain the dictionary of tuners, with regards of the hardware capabilities
 	t1 = threading.Thread(target=detectDvbTT2Tuners)
 	t1.daemon = True
 	t1.start()
 
 	# Wait for d_tuner to be created
 	while not d_tuner:
-		continue
+		time.sleep(1)
 
 	d_sid, d_freq = dictionariesSidFreq()
-	# createConfiXMLForTuner('0', '4028', d_sid)
+	for tuner in d_tuner:
+		createConfiXMLForTuner(d_tuner[tuner][1], tuner, d_sid)
+	createServerdXML()
 	# checkMumuFile()
-	t2 = threading.Thread(target=checkMumuFile)
+	# tuner_port = ['4028', '4029']
+	# for tuner in d_tuner:
+	t2 = threading.Thread(target=startThreadingTuners)
 	t2.daemon = True
 	t2.start()
 
@@ -562,6 +621,8 @@ def main():
 			t3.join(timeout=1.0)
 	except(KeyboardInterrupt, SystemExit):
 		CHECKMUMUFILE_NOT_TERMINATE = False
+		DETECTION_NOT_TERMINATE = False
+		THREADING_TUNERS_NOT_TERMINATE = False
 		server.socket.close()
 
 	# num_tuners, d_tuner, new_entries = detectDvbTT2Tuners(d_tuner)

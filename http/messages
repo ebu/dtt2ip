@@ -1,0 +1,289 @@
+GET /nmsDescription.xml HTTP/1.1
+HOST: 192.168.1.115:49153
+DATE: Tue, 22 Dec 2015 15:41:38 GMT
+CONNECTION: close
+USER-AGENT: Linux/3.16.0-37-generic, UPnP/1.0, Portable SDK for UPnP devices/1.6.17
+
+
+HTTP/1.1 200 OK
+CONTENT-LENGTH: 2039
+CONTENT-TYPE: text/xml; charset="utf-8"
+DATE: Tue, 22 Dec 2015 15:41:38 GMT
+LAST-MODIFIED: Tue, 22 Dec 2015 15:25:23 GMT
+X-User-Agent: redsonic
+SERVER: Windows2000/0.0 UPnP/1.0 PhilipsIntelSDK/1.4 DLNADOC/1.50
+CONNECTION: close
+
+<?xml version="1.0" encoding="UTF-8" ?>
+<root xmlns="urn:schemas-upnp-org:device-1-0"><specVersion><major>1</major><minor>0</minor></specVersion><device><deviceType>urn:schemas-upnp-org:device:MediaServer:1</deviceType><friendlyName>DVBLink DLNA TV Server (alex-System-Product-Name)</friendlyName><manufacturer>DVBLogic</manufacturer><manufacturerURL>http://www.dvblogic.com</manufacturerURL><modelDescription>DVBLink Home Server</modelDescription><modelName>DVBLink Home Server</modelName><modelNumber>1.0</modelNumber><modelURL>http://www.dvblogic.com/</modelURL><serialNumber>123456789002</serialNumber><UDN>uuid:5AFEF00D-BABE-DADA-FA5A-0023549E8B13</UDN><iconList><icon><mimetype>image/png</mimetype><height>48</height><width>48</width><depth>24</depth><url>dvblink_48_48.png</url></icon><icon><mimetype>image/png</mimetype><height>120</height><width>120</width><depth>24</depth><url>dvblink_120_120.png</url></icon><icon><mimetype>image/jpeg</mimetype><height>48</height><width>48</width><depth>24</depth><url>dvblink_48_48.jpeg</url></icon><icon><mimetype>image/jpeg</mimetype><height>120</height><width>120</width><depth>24</depth><url>dvblink_120_120.jpeg</url></icon></iconList><UPC>123456789</UPC><serviceList><service><serviceType>urn:schemas-upnp-org:service:ContentDirectory:1</serviceType><serviceId>urn:upnp-org:serviceId:ContentDirectory1</serviceId><controlURL>upnp/control/ContentDirectoryNmsO</controlURL><eventSubURL>upnp/event/ContentDirectoryNmsO</eventSubURL><SCPDURL>nmsContentDirectorySCPD.xml</SCPDURL></service><service><serviceType>urn:schemas-upnp-org:service:ConnectionManager:1</serviceType><serviceId>urn:upnp-org:serviceId:ConnectionManager1</serviceId><controlURL>upnp/control/ConnectionManagerNmsO</controlURL><eventSubURL>upnp/event/ConnectionManagerNmsO</eventSubURL><SCPDURL>nmsConnectionManagerSCPD.xml</SCPDURL></service></serviceList><presentationURL>http://192.168.1.115:39876/</presentationURL><dlna:X_DLNADOC xmlns:dlna="urn:schemas-dlna-org:device-1-0">DMS-1.00</dlna:X_DLNADOC></device></root>
+
+
+
+
+SUBSCRIBE /upnp/event/ContentDirectoryNmsO HTTP/1.1
+HOST: 192.168.1.115:49153
+CALLBACK: <http://192.168.1.115:49152/>
+NT: upnp:event
+TIMEOUT: Second-1810
+
+
+HTTP/1.1 200 OK
+DATE: Tue, 22 Dec 2015 15:41:38 GMT
+SERVER: Windows2000/0.0 UPnP/1.0 PhilipsIntelSDK/1.4 DLNADOC/1.50
+SID: uuid:C0A80173-0000-5679-6F32-000000000007
+TIMEOUT: Second-1810
+Content-Length: 0
+
+
+
+
+POST /upnp/control/ContentDirectoryNmsO HTTP/1.1
+HOST: 192.168.1.115:49153
+CONTENT-LENGTH: 501
+CONTENT-TYPE: text/xml; charset="utf-8"
+SOAPACTION: "urn:schemas-upnp-org:service:ContentDirectory:1#Browse"
+USER-AGENT: Linux/3.16.0-37-generic, UPnP/1.0, Portable SDK for UPnP devices/1.6.17
+
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+<s:Body><u:Browse xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1">
+<ObjectID>0</ObjectID>
+<BrowseFlag>BrowseDirectChildren</BrowseFlag>
+<Filter>id,dc:title,res,sec:CaptionInfo,sec:CaptionInfoEx,pv:subtitlefile</Filter>
+<StartingIndex>0</StartingIndex>
+<RequestedCount>0</RequestedCount>
+<SortCriteria></SortCriteria>
+</u:Browse>
+</s:Body>
+</s:Envelope>
+
+
+HTTP/1.1 200 OK
+CONTENT-LENGTH: 1132
+CONTENT-TYPE: text/xml; charset="utf-8"
+DATE: Tue, 22 Dec 2015 15:41:38 GMT
+EXT:
+Connection: close
+SERVER: Windows2000/0.0 UPnP/1.0 PhilipsIntelSDK/1.4 DLNADOC/1.50
+X-User-Agent: redsonic
+
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+<s:Body><u:BrowseResponse xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1"><Result>&lt;DIDL-Lite xmlns:dc=&quot;http://purl.org/dc/elements/1.1/&quot; xmlns:upnp=&quot;urn:schemas-upnp-org:metadata-1-0/upnp/&quot; xmlns=&quot;urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/&quot; xmlns:dlna=&quot;urn:schemas-dlna-org:metadata-1-0/&quot; xmlns:pns=&quot;http://www.philips.com/streamiumns/&quot; &gt;
+&lt;container  id=&quot;TVChannels&quot; parentID=&quot;0&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;TV Channels&lt;/dc:title&gt;&lt;upnp:class&gt;object.container&lt;/upnp:class&gt;&lt;/container&gt;
+&lt;container  id=&quot;4e9e47d6-4b3c-4ea7-b148-537821d50b94:&quot; parentID=&quot;0&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;Recorded TV&lt;/dc:title&gt;&lt;upnp:class&gt;object.container&lt;/upnp:class&gt;&lt;/container&gt;
+&lt;/DIDL-Lite&gt;</Result><NumberReturned>2</NumberReturned><TotalMatches>2</TotalMatches><UpdateID>0</UpdateID></u:BrowseResponse></s:Body></s:Envelope>
+
+
+
+
+POST /upnp/control/ContentDirectoryNmsO HTTP/1.1
+HOST: 192.168.1.115:49153
+CONTENT-LENGTH: 510
+CONTENT-TYPE: text/xml; charset="utf-8"
+SOAPACTION: "urn:schemas-upnp-org:service:ContentDirectory:1#Browse"
+USER-AGENT: Linux/3.16.0-37-generic, UPnP/1.0, Portable SDK for UPnP devices/1.6.17
+
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+<s:Body><u:Browse xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1">
+<ObjectID>TVChannels</ObjectID>
+<BrowseFlag>BrowseDirectChildren</BrowseFlag>
+<Filter>id,dc:title,res,sec:CaptionInfo,sec:CaptionInfoEx,pv:subtitlefile</Filter>
+<StartingIndex>0</StartingIndex>
+<RequestedCount>0</RequestedCount>
+<SortCriteria></SortCriteria>
+</u:Browse>
+</s:Body>
+</s:Envelope>
+
+
+HTTP/1.1 200 OK
+CONTENT-LENGTH: 11846
+CONTENT-TYPE: text/xml; charset="utf-8"
+DATE: Tue, 22 Dec 2015 15:41:38 GMT
+EXT:
+Connection: close
+SERVER: Windows2000/0.0 UPnP/1.0 PhilipsIntelSDK/1.4 DLNADOC/1.50
+X-User-Agent: redsonic
+
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+<s:Body><u:BrowseResponse xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1"><Result>&lt;DIDL-Lite xmlns:dc=&quot;http://purl.org/dc/elements/1.1/&quot; xmlns:upnp=&quot;urn:schemas-upnp-org:metadata-1-0/upnp/&quot; xmlns=&quot;urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/&quot; xmlns:dlna=&quot;urn:schemas-dlna-org:metadata-1-0/&quot; xmlns:pns=&quot;http://www.philips.com/streamiumns/&quot; &gt;
+&lt;item id=&quot;0\TVChannels\10330000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;Test UHD1&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:49153/TVChannels/10330000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10340000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;Fr3 Rhone&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:49153/TVChannels/10340000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10350000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;RTS Un&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:49153/TVChannels/10350000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10360000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;France 2&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:49153/TVChannels/10360000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10370000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;TF1&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:49153/TVChannels/10370000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10380000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;NRJ12&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:49153/TVChannels/10380000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10390000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;RTS Deux&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:49153/TVChannels/10390000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10400000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;France 5&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:49153/TVChannels/10400000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10410000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;France O&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:49153/TVChannels/10410000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10420000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;LCP&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:49153/TVChannels/10420000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10430000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;RSI LA 1&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:49153/TVChannels/10430000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10440000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;Test UHD2&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:49153/TVChannels/10440000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10450000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;TV8 MONT BLANC&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:49153/TVChannels/10450000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10460000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;RMC DECOUVERTE&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:49153/TVChannels/10460000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10470000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;NUMERO 23&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:49153/TVChannels/10470000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10480000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;6ter&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:49153/TVChannels/10480000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10490000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;Fr3 Alpes&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:49153/TVChannels/10490000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10500000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;ARTE&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:49153/TVChannels/10500000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10510000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;TMC&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:49153/TVChannels/10510000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10520000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;SRF 1&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:49153/TVChannels/10520000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10530000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;Service 1012&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:49153/TVChannels/10530000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10540000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;DATASYSTEM R7&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:49153/TVChannels/10540000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10550000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;Service 1010&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:49153/TVChannels/10550000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10560000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;Service 1011&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:49153/TVChannels/10560000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;item id=&quot;0\TVChannels\10570000&quot; parentID=&quot;TVChannels&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;Service 1014&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.videoItem.videoBroadcast&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=01700000000000000000000000000000&quot;&gt;http://192.168.1.115:49153/TVChannels/10570000&lt;/res&gt;
+&lt;/item&gt;
+
+&lt;/DIDL-Lite&gt;</Result><NumberReturned>25</NumberReturned><TotalMatches>25</TotalMatches><UpdateID>0</UpdateID></u:BrowseResponse></s:Body></s:Envelope>
+
+
+
+
+POST /upnp/control/ContentDirectoryNmsO HTTP/1.1
+HOST: 192.168.1.115:49153
+CONTENT-LENGTH: 537
+CONTENT-TYPE: text/xml; charset="utf-8"
+SOAPACTION: "urn:schemas-upnp-org:service:ContentDirectory:1#Browse"
+USER-AGENT: Linux/3.16.0-37-generic, UPnP/1.0, Portable SDK for UPnP devices/1.6.17
+
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+<s:Body><u:Browse xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1">
+<ObjectID>4e9e47d6-4b3c-4ea7-b148-537821d50b94:</ObjectID>
+<BrowseFlag>BrowseDirectChildren</BrowseFlag>
+<Filter>id,dc:title,res,sec:CaptionInfo,sec:CaptionInfoEx,pv:subtitlefile</Filter>
+<StartingIndex>0</StartingIndex>
+<RequestedCount>0</RequestedCount>
+<SortCriteria></SortCriteria>
+</u:Browse>
+</s:Body>
+</s:Envelope>
+
+HTTP/1.1 200 OK
+CONTENT-LENGTH: 1894
+CONTENT-TYPE: text/xml; charset="utf-8"
+DATE: Tue, 22 Dec 2015 15:41:38 GMT
+EXT:
+Connection: close
+SERVER: Windows2000/0.0 UPnP/1.0 PhilipsIntelSDK/1.4 DLNADOC/1.50
+X-User-Agent: redsonic
+
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+<s:Body><u:BrowseResponse xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1"><Result>&lt;DIDL-Lite xmlns:dc=&quot;http://purl.org/dc/elements/1.1/&quot; xmlns:upnp=&quot;urn:schemas-upnp-org:metadata-1-0/upnp/&quot; xmlns=&quot;urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/&quot; xmlns:dlna=&quot;urn:schemas-dlna-org:metadata-1-0/&quot; xmlns:pns=&quot;http://www.philips.com/streamiumns/&quot; &gt;
+&lt;container  id=&quot;4e9e47d6-4b3c-4ea7-b148-537821d50b94:E44367A7-6293-4492-8C07-0E551195B99F&quot; parentID=&quot;4e9e47d6-4b3c-4ea7-b148-537821d50b94:&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;Name&lt;/dc:title&gt;&lt;upnp:class&gt;object.container&lt;/upnp:class&gt;&lt;/container&gt;
+&lt;container  id=&quot;4e9e47d6-4b3c-4ea7-b148-537821d50b94:F6F08949-2A07-4074-9E9D-423D877270BB&quot; parentID=&quot;4e9e47d6-4b3c-4ea7-b148-537821d50b94:&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;Date&lt;/dc:title&gt;&lt;upnp:class&gt;object.container&lt;/upnp:class&gt;&lt;/container&gt;
+&lt;container  id=&quot;4e9e47d6-4b3c-4ea7-b148-537821d50b94:0E03FEB8-BD8F-46e7-B3EF-34F6890FB458&quot; parentID=&quot;4e9e47d6-4b3c-4ea7-b148-537821d50b94:&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;Series&lt;/dc:title&gt;&lt;upnp:class&gt;object.container&lt;/upnp:class&gt;&lt;/container&gt;
+&lt;container  id=&quot;4e9e47d6-4b3c-4ea7-b148-537821d50b94:CE482DD8-BC5E-47c3-9072-2554B968F27C&quot; parentID=&quot;4e9e47d6-4b3c-4ea7-b148-537821d50b94:&quot; restricted=&quot;1&quot;&gt;
+&lt;dc:title&gt;Genre&lt;/dc:title&gt;&lt;upnp:class&gt;object.container&lt;/upnp:class&gt;&lt;/container&gt;
+&lt;/DIDL-Lite&gt;</Result><NumberReturned>4</NumberReturned><TotalMatches>4</TotalMatches><UpdateID>0</UpdateID></u:BrowseResponse></s:Body></s:Envelope>
+
+
+
+
+POST /upnp/control/ContentDirectoryNmsO HTTP/1.1
+HOST: 192.168.1.115:49153
+CONTENT-LENGTH: 573
+CONTENT-TYPE: text/xml; charset="utf-8"
+SOAPACTION: "urn:schemas-upnp-org:service:ContentDirectory:1#Browse"
+USER-AGENT: Linux/3.16.0-37-generic, UPnP/1.0, Portable SDK for UPnP devices/1.6.17
+
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+<s:Body><u:Browse xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1">
+<ObjectID>4e9e47d6-4b3c-4ea7-b148-537821d50b94:E44367A7-6293-4492-8C07-0E551195B99F</ObjectID>
+<BrowseFlag>BrowseDirectChildren</BrowseFlag>
+<Filter>id,dc:title,res,sec:CaptionInfo,sec:CaptionInfoEx,pv:subtitlefile</Filter>
+<StartingIndex>0</StartingIndex>
+<RequestedCount>0</RequestedCount>
+<SortCriteria></SortCriteria>
+</u:Browse>
+</s:Body>
+</s:Envelope>
+
+HTTP/1.1 200 OK
+CONTENT-LENGTH: 687
+CONTENT-TYPE: text/xml; charset="utf-8"
+DATE: Tue, 22 Dec 2015 15:41:38 GMT
+EXT:
+Connection: close
+SERVER: Windows2000/0.0 UPnP/1.0 PhilipsIntelSDK/1.4 DLNADOC/1.50
+X-User-Agent: redsonic
+
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+<s:Body><u:BrowseResponse xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1"><Result>&lt;DIDL-Lite xmlns:dc=&quot;http://purl.org/dc/elements/1.1/&quot; xmlns:upnp=&quot;urn:schemas-upnp-org:metadata-1-0/upnp/&quot; xmlns=&quot;urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/&quot; xmlns:dlna=&quot;urn:schemas-dlna-org:metadata-1-0/&quot; xmlns:pns=&quot;http://www.philips.com/streamiumns/&quot; &gt;
+&lt;/DIDL-Lite&gt;</Result><NumberReturned>0</NumberReturned><TotalMatches>0</TotalMatches><UpdateID>0</UpdateID></u:BrowseResponse></s:Body></s:Envelope>

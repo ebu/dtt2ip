@@ -1,0 +1,67 @@
+<root>
+	<specVersion>
+		<major>1</major>
+		<minor>0</minor>
+	</specVersion>
+	<device>
+		<deviceType>urn:schemas-upnp-org:device:MediaServer:1</deviceType>
+		<friendlyName>DVBLink DLNA TV Server (alex-System-Product-Name)</friendlyName>
+		<manufacturer>DVBLogic</manufacturer>
+		<manufacturerURL>http://www.dvblogic.com</manufacturerURL>
+		<modelDescription>DVBLink Home Server</modelDescription>
+		<modelName>DVBLink Home Server</modelName>
+		<modelNumber>1.0</modelNumber>
+		<modelURL>http://www.dvblogic.com/</modelURL>
+		<serialNumber>123456789002</serialNumber>
+		<UDN>uuid:5AFEF00D-BABE-DADA-FA5A-0023549E8B13</UDN>
+		<iconList>
+			<icon>
+				<mimetype>image/png</mimetype>
+				<height>48</height>
+				<width>48</width>
+				<depth>24</depth>
+				<url>dvblink_48_48.png</url>
+			</icon>
+			<icon>
+				<mimetype>image/png</mimetype>
+				<height>120</height>
+				<width>120</width>
+				<depth>24</depth>
+				<url>dvblink_120_120.png</url>
+			</icon>
+			<icon>
+				<mimetype>image/jpeg</mimetype>
+				<height>48</height>
+				<width>48</width>
+				<depth>24</depth>
+				<url>dvblink_48_48.jpeg</url>
+			</icon>
+			<icon>
+				<mimetype>image/jpeg</mimetype>
+				<height>120</height>
+				<width>120</width>
+				<depth>24</depth>
+				<url>dvblink_120_120.jpeg</url>
+			</icon>
+		</iconList>
+		<UPC>123456789</UPC>
+		<serviceList>
+			<service>
+				<serviceType>urn:schemas-upnp-org:service:ContentDirectory:1</serviceType>
+				<serviceId>urn:upnp-org:serviceId:ContentDirectory1</serviceId>
+				<controlURL>upnp/control/ContentDirectoryNmsO</controlURL>
+				<eventSubURL>upnp/event/ContentDirectoryNmsO</eventSubURL>
+				<SCPDURL>nmsContentDirectorySCPD.xml</SCPDURL>
+			</service>
+			<service>
+				<serviceType>urn:schemas-upnp-org:service:ConnectionManager:1</serviceType>
+				<serviceId>urn:upnp-org:serviceId:ConnectionManager1</serviceId>
+				<controlURL>upnp/control/ConnectionManagerNmsO</controlURL>
+				<eventSubURL>upnp/event/ConnectionManagerNmsO</eventSubURL>
+				<SCPDURL>nmsConnectionManagerSCPD.xml</SCPDURL>
+			</service>
+		</serviceList>
+		<presentationURL>http://192.168.1.115:39876/</presentationURL>
+		<dlna:X_DLNADOC>DMS-1.00</dlna:X_DLNADOC>
+	</device>
+</root>

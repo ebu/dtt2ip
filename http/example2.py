@@ -151,7 +151,7 @@ class myHandler(BaseHTTPRequestHandler):
 				#Open the static file requested and send it
 				f = open(curdir + sep + '/alexDescription.xml') 
 				self.send_response(200)
-				self.send_header("CONTENT-LENGTH", '1990')
+				self.send_header("CONTENT-LENGTH", '1989')
 				self.send_header('CONTENT-TYPE', 'text/xml; charset="utf-8"')
 				self.send_header("LAST-MODIFIED", "Tue, 22 Dec 2015 15:25:23 GMT")
 				self.send_header("X-User-Agent", "redsonic")
