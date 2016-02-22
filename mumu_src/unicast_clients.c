@@ -257,7 +257,7 @@ int channel_add_unicast_client(unicast_client_t *client,mumudvb_channel_t *chann
 	unicast_client_t *last_client;
 	int iRet;
 
-	if ((filename_port) && (client_number > 1))
+	if ((filename_port) && (client_number >= 1))
 	{
 		FILE *fp;
 		char filename[sizeof "../http/test_mumu4028.txt"];
