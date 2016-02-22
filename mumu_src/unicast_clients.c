@@ -177,8 +177,8 @@ int unicast_del_client(unicast_parameters_t *unicast_vars, unicast_client_t *cli
 	if (unicast_vars->client_number == 1)
 	{
 		FILE *fp;
-		char filename[sizeof "/home/alex/Documents/MUMU-Project/test_mumu4028.txt"];
-		char *filename_b = "/home/alex/Documents/MUMU-Project/test_mumu";
+		char filename[sizeof "../http/test_mumu4028.txt"];
+		char *filename_b = "../http/test_mumu";
 		// char filename_port2[5];
 		// sprintf(filename_port2, "%d", unicast_vars->portOut); 
 		char *filename_ending = ".txt";
@@ -260,8 +260,8 @@ int channel_add_unicast_client(unicast_client_t *client,mumudvb_channel_t *chann
 	if ((filename_port) && (client_number > 1))
 	{
 		FILE *fp;
-		char filename[sizeof "/home/alex/Documents/MUMU-Project/test_mumu4028.txt"];
-		char *filename_b = "/home/alex/Documents/MUMU-Project/test_mumu";
+		char filename[sizeof "../http/test_mumu4028.txt"];
+		char *filename_b = "../http/test_mumu";
 		char freq_str[7];
 		sprintf(freq_str, "%d", freq); 
 		char *filename_ending = ".txt";
