@@ -1,0 +1,193 @@
+=encoding utf8
+
+=head1 NAME
+
+plogsrvd - Process logger daemon.
+
+=head1 SYNOPSIS
+
+plogsrvd -h | [-f] [-v] [-e stderr|both|none] [-d log directory] [-s max temp sockets] [-m any|group]
+
+=head1 DESCRIPTION
+
+Plogsrvd is the daemon server for use with the plog client.  It receives requests from the client and responds to them.  For information about the nature of the requests, and an explanation of the logfiles kept, see plog(1).  Plogsrvd uses a runtime directory (see below) for its unix socket and into which output is written.  Only one plogsrvd may exist for a given directory.
+
+=head1 INVOCATION OPTIONS
+
+None of these are required.
+
+=over
+
+=item B<-h>
+
+Show usage message and version number then exit.
+
+=item B<-e 'stderr', 'both' or 'none'>
+
+Where to log runtime errors.  By default when run as a background process, plogsrvd uses syslog, prepending the pid of the instance to messages.  If you specify 'stderr', errors will instead go to the plogsrvd's standard error stream.  If you specify 'both', errors will go to syslog and the standard error stream; 'none' cancels any error reporting.  Note that fatal initialization errors always go to stderr.  There is an explanatory list of errors under ERRORS, below.
+
+=item B<-f>
+
+Run in foreground.  Unless an explicit -e argument is given, this implies C<-e stderr>, so that errors appear on the console.
+
+=item B<-d RUNTIME DIRECTORY>
+
+This should be the full path to a directory into which log files will be written, and where the server socket will be located.  The default is from the environment's PLOGDIR, if defined, or /var/local/plog.  If the plogsrvd cannot access this directory at start-up (eg, because it does not exist, or permission is denied), a message will be reported on stderr and plogsrvd will exit.
+
+=item B<-m 'any' or 'group'>
+
+See IPC MODE below; 'any' sets 777, 'group' sets 770.
+
+=item B<-s MAX TEMP SOCKETS>
+
+Plogsrvd listens on a local socket file ('plogd_sock') in its runtime directory.  When shut down cleanly (see TERMINATION, below), plogsrvd removes this file. If this file exists at startup, plogsrvd queries to make sure a server is not already running at the same location.  To do this, it needs to create another local socket in /tmp, just as the plog client does.  These are deleted immediately, but to prevent accumulation due to malfunction or misuse, plogsrvd will exit if it finds more than MAX TEMP SOCKETS in /tmp.  The default is 20, the minimum is 2, the maximum is 4095.  Note that the default and the location of the temporary sockets can be configured differently when plogsrvd is compiled (see the README in the source package).
+
+=item B<-v>
+
+Verbose operation.  When set, the plogsrvd will issue timestamped non-error messages (eg, when a process is first logged) to its standard output stream.  One of the other things reported are trapped SIGPIPE events.
+
+=back
+
+=head1 CONFIGURATION
+
+The only configuration plogsrvd uses is the environment variable, PLOGDIR, which, if defined, indicates the runtime directory to use (see DESCRIPTION, above).  The default sans $PLOGDIR is /var/local/plog.  The runtime directory can be explicitly overridden with the C<-d> switch.
+
+=head1 ABOUT PERMISSIONS
+
+Linux's proc filesystem, which is where plogsrvd gathers its information, is very permissive: most files there are world readable.  This means anyone can view the 'stat' data for any process.  This is not true of the all the proc files, however.  If some fields in the log are blank, this is either because you kernel does not report the information required, or because the plogsrvd does not have sufficient permissions to get it.  Note that the uid of the plogsrvd need not be the same as the uid of the client which makes the request -- but see IPC MODE below for a caveat about this.
+
+=head1 IPC MODE
+
+A peculiarity of datagram based unix local sockets (which plogsrvd uses to receive requests) is that the client needs write permissions on the server socket to send a message to it.  Plogsrvd uses a default mode of 700, meaning clients with a different uid will not work.  The -m switch can be used to override this (see INVOCATION OPTIONS, above).
+
+Beware that giving write permission on the socket may be a bad idea on systems with potentially mischievous or incompetent users if they are able to use this to delete the socket, since plogsrvd will not function without it.  On linux, this is only possible if the user also has write permission on the directory, and the sticky bit for the directory is not set.  For this reason, plog's 'make install' tries to set permissions on /var/local/plog to 1777.
+
+=head1 TERMINATION
+
+The recommended way to shut down plogsrvd is to send it SIGQUIT, eg. via C<kill -3>.  This way, it can clean up after itself by removing the server socket.  You can also cause plogsrvd to exit by deleting the socket, but it will then report an error.  You can get the pid of the plogsrvd using a particular socket/runtime directory by using the client C<-q> switch, see plog(1).
+
+=head1 EXIT STATUS
+
+When cleanly shutdown, plogsrvd returns 0. There is an enumeration of the other possible status codes in I<exitcodes.h> from the source package.  They correspond to and are reported as the ERRORS below.
+
+=head1 ERRORS
+
+Errors which occur during initialization are reported on the standard error stream.  Unless otherwise noted, these are fatal:
+
+=over
+
+=item I<$PLOGDIR or Runtime path is too long.>
+
+Unix local sockets must have a full path less than 108 bytes long.  This includes the filename.  Plogsrvd places this socket file in its runtime directory, so that path is limited to 96 bytes.  You can use a symlink, however.
+
+=item I<Could not change directory.>
+
+The runtime directory does not exist or does not have correct permissions.
+
+=item I<Not enough memory.>
+
+Self-explanatory.  Plogsrvd does not require much.
+
+=item I<Set mode on socket failed.>
+
+The default (700) or desired (set with -m) mode could not be set on the server socket.  This is NOT a fatal error, but it may affect plogsrvd's functionality (see IPC MODE, above).
+
+=item I<Failed to fork.>
+
+Plogsrvd could not fork and daemonize itself.  This may reflect some unusual limitation on your system.
+
+=item I<Could not create server or socket...>
+
+This should not normally happen, but if it does, it includes a further string error from the system.
+
+=item I<Bind /tmp/.plog socket failed...>
+
+This may be something other than "/tmp/.plog" if plogsrvd was so compiled.  If plogsrvd cannot create a unix socket to use in its runtime directory because one exists there already, it tries to create one in /tmp in order to query the one in the runtime directory.  This error indicates the /tmp socket could not be used; a further system string error hopefully explains why.
+
+=item I<Query existing server failed.>
+
+This will happen if one user tries to start a plogsrvd in a directory currently occupied by another user's plogsrvd (or a stale socket left by one), and this user does not have write permission on socket (see IPC MODE above).
+
+=item I<[N]+ /tmp/.plog sockets, exiting.>
+
+This may be something other than "/tmp/.plog" if plogsrvd was so compiled.  See '-s' under INVOCATION OPTIONS, above.
+
+=item I<Plogsrvd already running on [runtime socket].>
+
+There is already a plogsrvd running in the runtime directory requested (/var/local/plog by default, see also CONFIGURATION above).
+
+=item I<Could not remove stale socket...>
+
+If a plog server socket exists in the runtime directory requested, but no server appears to be using it, plogsrvd will try to delete the old socket and create a new one.  This error indicates it could not be removed for the reason additionally reported.
+
+=item I<[directory] is not an absolute path, sorry.>
+
+The runtime directory specified in PLOGDIR or via C<-d> should be an absolute path.
+
+=back
+
+There are several other fatal errors that can occur during runtime.  By default, these will be reported to syslog (but see C<-e> under INVOCATION OPTIONS, above).
+
+=over
+
+=item I<Poll() failed...>
+
+Should be considered very unusual. This will happen if the internal poll(2) fails, or if the server socket has an error set subsequent to the poll.  A further system string error may or may not provide an accurate explanation.
+
+=item I<[runtime socket path] is gone.>
+
+Someone deleted the server socket ("plogd_sock") in the runtime directory.
+
+=back
+
+Finally, there are non-fatal runtime errors.  Some of these are redundant and may not indicate a real problem, depending on context:
+
+=over
+
+=item I<Could not unlink [runtime socket path].>
+
+When it shuts down, plogsrvd tries to remove the unix socket it was using.  This will be reported if it could not remove it (possibly because it is already gone).
+
+=item I<recvfrom() failed...>
+
+Much like 'Poll() failed', above, but non-fatal.
+
+=item I<Can't read 'stat'/'statm'/'maps'...>
+
+This refers to a file in /proc.  The process responsible for this error will no longer be monitored.
+
+=item I<Short read on 'maps'...>
+
+May happen, very rarely, on some systems.  This will cause plogsrvd to stop reporting anything beyond the "Data+Stack" field, but only for this iteration.
+
+=item I<Can't find log...>
+
+This is not an error if you removed a logfile in order to terminate logging of a process, but it gets reported anyway.
+The process responsible for this error will no longer be monitored.
+
+=item I<Error checking files...>
+
+Plogsrvd tried to stat one of its own logfiles and failed, but I<not> because the file is non-existent.  The process responsible for this error will no longer be monitored.
+
+=item I<Too many files!>
+
+When plogsrvd creates a log file, it uses the base name of the process and the process pid.  If such a file already exists, it adds .2, .3, .4, etc.  However, there is a hardcoded limit of 999.  You need to clean out the runtime directory.
+
+=item I<Can't create/append logfile...>
+
+Possibly someone has changed the permissions on the runtime directory.  A further system string error may explain.
+The process responsible for this error will no longer be monitored.
+
+=item I<sendto([some socket path]) failed...>
+
+One reason for this is in parallel with "Query existing server failed", above.
+
+=back
+
+=head1 SEE ALSO
+
+plog(1)
+
+=head1 COPYRIGHT
+
+Copyright (C) 2011 M. Eriksen. Permission is granted to copy, distribute and/or modify this document under the terms of the GNU Free Documentation License, Version 1.3 or any later version published by the Free Software Foundation (http://www.gnu.org/licenses/fdl.html).

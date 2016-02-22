@@ -48,6 +48,7 @@ apt-get install -y --force-yes debhelper dh-autoreconf autotools-dev doxygen gra
 echo "Getting V4L-DVB..."
 cd ../
 git clone https://github.com/gjasny/v4l-utils.git
+cd v4l-utils
 echo "Boostrap..."
 ./bootstrap.sh
 echo "Configure..."
@@ -56,6 +57,8 @@ echo "Make..."
 make
 echo "Make install..."
 make install
+
+
 
 
 

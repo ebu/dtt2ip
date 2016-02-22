@@ -1,0 +1,215 @@
+=encoding utf8
+
+=head1 NAME
+
+plog - Process resource logger.
+
+=head1 SYNOPSIS
+
+plog -h | [ -p pid -i interval | -l | -q pid|dir ] [-d log directory] [-t duration] [-s max temp sockets]
+
+=head1 DESCRIPTION
+
+Plog is the client used to register a process for monitoring by a plogsrvd(1).  There may be multiple such servers running, see C<-d> under INVOCATION OPTIONS below.
+
+=head1 INVOCATION OPTIONS
+
+Requests for logging require the C<-p> and C<-i> arguments; alternatively, there are the C<-q>, C<-l>, and C<-h> parameters, which do not require C<-p> and C<-i>.
+
+=over
+
+=item B<-h>
+
+Show usage message and version number then exit.
+
+=item B<-p PID>
+
+The process id of the process to log.
+
+=item B<-i INTERVAL>
+
+The interval, in minutes, at which to sample the process while logging.
+
+=item B<-l>
+
+List all processes currently being logged by the plogsrvd.
+
+=item B<-q 'pid' or 'dir'>
+
+Query the plogsrvd for its process id or runtime directory.  The later is only useful if you are not sure what the default is, and obviously makes no sense in conjunction with C<-d>.
+
+=item B<-d RUNTIME DIRECTORY>
+
+This is the directory used by the plogsrvd.  If not specified, plog assumes the content of the PLOGDIR environment variable or /var/local/plog.
+
+=item B<-t TIMEOUT>
+
+This is the number of seconds before plog times out on a request.  Generally they should be instantaneous and the default is 10, but you can use anything from 1 to 300.
+
+=item B<-s MAX TEMP SOCKETS>
+
+Plog creates a temporary unix local socket file in /tmp in order to communicate with the server.  This is removed after use, but to prevent accumulation due to malfunction or misuse, plog will exit with an error message if it finds more than MAX TEMP SOCKETS around.  The default is 20, the minimum is 2, the maximum is 4095.  That default and the actual location of the sockets can be configured when plog/plogsrvd is compiled, see the README in the source package.
+
+=back
+
+=head1 ABOUT LOG FILES
+
+The logs initiated by a plog request are kept in the relevant plogsrvd's runtime directory.  Plog receives a response informing you of the full path to this file; the name is a basename for the process and its pid (eg, 'bash.123').  If there is already a log file with this name, .2, .3, etc are appended.
+
+The first line of the log file is the command line that was used to invoke the process.  The next line is the column headers.  Here are their meanings (see also proc(5), and VIRTUAL ADDRESS SPACE VS. PHYSICAL MEMORY, below):
+
+=over
+
+=item B<Date Time>
+
+This is the time of the sample in the form month-day hour:minute.
+
+=item B<State>
+
+A single letter indicating the status of the process at the time of the sample: R = running, S = sleeping, D = uninterruptible sleep, Z = zombie, T = stopped, W = paging memory.  The normal linux scheduler includes 'D' processes in its run queue, hence they can occupy the processor doing nothing (generally, waiting on hardware input/output) and D processes cannot be killed.  Beware of this happening too frequently; it could indicate hardware problems.
+
+=item B<Prio>
+
+This is not the same as the 'nice' value, but it is affected by it.  This is the actual priority weight used by the scheduler (lower numbers are higher priority and therefore get more processor time when needed).
+
+=item B<Utime>
+
+This is the total amount of processor time actively used by the process since it started, rounded down to the second.
+
+=item B<Threads>
+
+This is the number of threads the process currently has active.
+
+=item B<VirtualSz>
+
+This is the virtual address space in use by the process.  It is not necessarily an accurate measure of how much real memory it consumes (see VIRTUAL ADDRESS SPACE VS. PHYSICAL MEMORY, below).
+
+=item B<ResidentSz>
+
+Resident Set Size (RSS). This is the amount of real physical memory used by the process. However, it includes space shared by other processes.
+
+=item B<Share>
+
+This is the percentage of the process's Resident Set Size shared by other processes.  If there is a value for Proportion (the next column), or Proportion is 'n/a', the value is computed by parsing /proc/[pid]/smaps.  If Proportion is blank, then the value was taken from /proc/[pid]/statm and should be identical to that reported by top(1).  The smaps figure will often be very similar, but should be considered more accurate and dynamic.
+
+=item B<Proportion>
+
+This is the Proportional Set Size (PSS).  It is a newer metric and may not be reported by all kernels, so the field may be blank (indicating there is no readable proc/[pid]/smaps) or 'n/a' (indicating there is no PSS data in smaps).  If present, it is all the unshared RSS, plus the shared regions, but the value for each shared region is divided by the number of other processes sharing it.  Hence, it is a good measure of the real memory load incurred.
+
+=item B<Data+Stack>
+
+This is the virtual address space accounted for by the 'data' section of a process's executable (some of which may be shared), plus the stack and heap space.  Thus, changes in this reflect changes in heap allocation, and the additional stack space incurred by additional threads.
+
+=item B<Priv&Write>
+
+This is all the virtual address space marked as private and writable; pmap(1) will also report this when invoked with the C<-d> switch.
+
+=item B<MinorFaults>
+
+This number includes faults incurred by the process's waited on childen (see proc(1)). Minor page faults (a page is a region of memory) are normal events; they happen when a virtually mapped region is actually used for the first time, meaning the linux kernel must do some juggling to provide the virtual region with real, physical memory (see VIRTUAL ADDRESS SPACE VS. PHYSICAL MEMORY, below).  Such minor faults are a processor expense, however, and excessive minor faults in a short period of time can seriously affect a process's performance.  Fortunately, these can be resolved with some intelligent memory management; one possible cause would be allocating a very large area (numerous pages) and then randomly accessing parts of it.  Unfortunately, a complete discussion is beyond the scope of this document, but you will find more information online if you search for things like 'linux minor page faults' and 'GNU mallopt'.
+
+=item B<MajFlts>
+
+These are the major page faults (also reported by top(1)), plus the number of major faults incurred by the process's waited on children.  Major page faults are more expensive, time wise, than minor ones, because they involve loading of data from storage into memory (for example, the first time some code or data from an executable object is accessed, the relevant parts of the file must be loaded from disk into memory).
+
+=back
+
+=head1 VIRTUAL ADDRESS SPACE VS. PHYSICAL MEMORY
+
+It is important to understand the difference between virtual address space and physical memory in interpreting some of the above statistics.  As the name implies, virtual address space is not real; it's basically a map of all the memory currently allocated to a process.  The limit on the size of this map is the same for each processes (generally, 2-4 GB), and it is not accumulated (ie, you may have dozens or hundreds of processes, each with its own 2-4 GB virtual address space, on a system that only actually has 512 MB of physical memory).
+
+Data cannot actually be stored or retrieved from virtual address space; real data requires real, physical memory.  It is the kernel's job to manage one in relation to another.  Virtual space stats (VirtualSz, Data+Stack, and Priv&Write) are useful for considering the structure of a process and the relationship to physical memory use, but with regard to amount of RAM actually used, the physical memory stats (ResidentSz, Share, and Proportion) are what counts.
+
+=head1 TERMINATING LOGGING
+
+There are three ways to stop logging:
+
+=over
+
+=item 1) Terminate the process being logged.
+
+=item 2) Terminate the plogsrvd doing the logging.
+
+=item 3) Remove the log file from the plogsrvd's runtime directory.
+
+=back
+
+=head1 EXIT STATUS
+
+If plog prints a usage message, either because you ask for one or because you gave it incorrect parameters, it returns 11. When otherwise successful, it returns 0. Other codes are shown in parentheses with the corresponding ERROR below; for a definitive list see I<client.c> in the source package.
+
+=head1 ERRORS
+
+All errors are printed to the standard error stream. The following fatal errors are given with the corresponding exit status in parentheses:
+
+=over
+
+=item I<$PLOGDIR is too long (1)>
+
+Unix local sockets must have a full path less than 108 bytes long.  This includes the filename.  Plogsrvd places this socket file in its runtime directory, so that path is limited to 96 bytes.  You can use a symlink, however.
+
+=item I<Create socket failed... (2)>
+
+Plog could not create a local unix socket; there should be a further explanation.
+
+=item I<Cannot bind to [socket_path]... (3)>
+
+The unix local socket could not be bound to the specified file; there should be should be a further explanation.
+
+=item I<No plog server found (4)>
+
+There is no plogsrvd active for the runtime directory (see -d under INVOCATION OPTIONS, above).
+
+=item I<[socket file] is a stale socket with no plogsrvd running (5)>
+
+The same as above, except there is a leftover local socket file in the plogsrvd runtime directory (see plogsrvd(1)).
+
+=item I<Permission denied on [socket file] (6)>
+
+See IPC MODE in plogsrvd(1).
+
+=item I<Poll(revents=[N]) error... (7)>
+
+Unlikely, but if it happens, this too should come with a further explanation.  Try again.  If you notice this happening frequently, report it via the plog website (http://cognitivedissonance.ca/cogware/plog).
+
+=item I<Request timed out (8)>
+
+See -t under INVOCATION OPTIONS, above.
+
+=item I<Out of memory! (9)>
+
+This is almost certainly not plog's fault, but it could still happen.
+
+=item I<Received SIGPIPE (10)>
+
+This is only fatal after three such events, which should be very unusual.
+
+=item I<[N]+ [tmp file name] sockets, exiting (12)>
+
+See -s under INVOCATION OPTIONS, above.
+
+=item I<Recvfrom() error (13)>
+
+Akin to the error #7 above.
+
+=item I<Sendto() returned [N]... (100+)>
+
+=back
+
+Also akin to #7.  The status code is the actual errno from the recv() call plus 100.
+
+=head1 SEE ALSO
+
+=over
+
+=item plogsrvd(1)
+
+=item proc(5)
+
+=item top(1)
+
+=back
+
+=head1 COPYRIGHT
+
+Copyright (C) 2011 M. Eriksen. Permission is granted to copy, distribute and/or modify this document under the terms of the GNU Free Documentation License, Version 1.3 or any later version published by the Free Software Foundation (http://www.gnu.org/licenses/fdl.html).
