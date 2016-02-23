@@ -70,17 +70,19 @@ cd ../
 # Running discovery...
 cd http/
 echo "Running discovery"
-python discoveryServer.py &
-PID_DISCOVERY=`ps -ef | grep discoveryServer.py | grep -v grep | awk '{print $2}'`
-echo "Addding logging for discovery..."
-plog -p ${PID_DISCOVERY} -i 5
+# python discoveryServer.py &
+# PID_DISCOVERY=`ps -ef | grep discoveryServer.py | grep -v grep | awk '{print $2}'`
+# echo "Addding logging for discovery..."
+# plog -p ${PID_DISCOVERY} -i 5
+setsid python discoveryServer.py < /dev/zero &> /dev/null &
 
 # Running configManagement
 echo "Running configManagement..."
-python startConfigManagement.py &
-PID_CONFIMG=`ps -ef | grep startConfigManagement.py | grep -v grep | awk '{print $2}'`
-echo "Adding logging for configManagement..."
-plog -p ${PID_CONFIMG} -i 5
+# python startConfigManagement.py &
+# PID_CONFIMG=`ps -ef | grep startConfigManagement.py | grep -v grep | awk '{print $2}'`
+# echo "Adding logging for configManagement..."
+# plog -p ${PID_CONFIMG} -i 5
+setsid python startConfigManagement.py < /dev/zero &> /dev/null &
 
 # Running MUMUDVB
 echo "Running MuMuDVB..."
@@ -90,8 +92,8 @@ echo "Adding logging for MuMuDVB..."
 plog -p ${PID_MUMU} -i 5
 
 
-
-
+# UPdate the following command
+# setsid python animation.py < /dev/zero &> /dev/null &
 
 
 
