@@ -400,6 +400,15 @@ def createServerdXML(init=1, freq=0):
 	numberOfMaches = 0
 	if init:
 		shutil.copy("allFreq0.xml", "TVChannels.xml")
+		# Create the xml with only the first channel 
+		f = open("TVChannels.xml", 'r')
+		lines = f.readlines()
+		f.close()
+		f = open("TVChannels1.xml", 'w')
+		for i in range(5):
+			f.write(lines[i])
+		f.write('\n&lt;/DIDL-Lite&gt;</Result><NumberReturned>1</NumberReturned><TotalMatches>' + str(numberOfMaches) +'</TotalMatches><UpdateID>0</UpdateID></u:BrowseResponse></s:Body></s:Envelope>')
+		f.close()
 	else: 
 		f = open("TVChannels.xml", 'r')
 		lines = f.readlines()
